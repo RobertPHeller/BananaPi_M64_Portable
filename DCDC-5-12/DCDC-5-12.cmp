@@ -1,0 +1,122 @@
+Cmp-Mod V01 Created by PcbNew date = Tue 14 Apr 2020 12:57:43 EDT
+
+BeginCmp
+TimeStamp = /5E9490CB;
+Reference = C101;
+ValeurCmp = 10 uF 10V;
+IdModule  = c_elec_4x5.7;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E9490BC;
+Reference = C102;
+ValeurCmp = 22 nF;
+IdModule  = c_0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949261;
+Reference = C103;
+ValeurCmp = 330 pF;
+IdModule  = c_0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E9492EB;
+Reference = C104;
+ValeurCmp = 10 uF 25V;
+IdModule  = c_elec_4x5.7;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E94903F;
+Reference = D1;
+ValeurCmp = CMSH1-60;
+IdModule  = SMB;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949000;
+Reference = L101;
+ValeurCmp = 10 uH;
+IdModule  = Inductor_5mmx5mm;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E948F4B;
+Reference = P101;
+ValeurCmp = TP5 (red);
+IdModule  = 1PIN_SMD;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E948EEE;
+Reference = P102;
+ValeurCmp = TP4 (blue);
+IdModule  = 1PIN_SMD;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949386;
+Reference = P103;
+ValeurCmp = CONN_2;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949711;
+Reference = P104;
+ValeurCmp = GND (black);
+IdModule  = 1PIN_SMD;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E948D97;
+Reference = Q1;
+ValeurCmp = FDC6331;
+IdModule  = SuperSOT-6;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949157;
+Reference = R1;
+ValeurCmp = 88.7K Ohms;
+IdModule  = SM0603_Resistor;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949166;
+Reference = R2;
+ValeurCmp = 10K Ohms;
+IdModule  = SM0603_Resistor;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E948E5B;
+Reference = R3;
+ValeurCmp = 10K Ohms;
+IdModule  = SM0603_Resistor;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E948F8F;
+Reference = R101;
+ValeurCmp = 10K Ohms;
+IdModule  = SM0603_Resistor;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E949252;
+Reference = R102;
+ValeurCmp = 33K Ohms;
+IdModule  = SM0603_Resistor;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E9489D7;
+Reference = U1;
+ValeurCmp = ADP1610;
+IdModule  = MSOP-8;
+EndCmp
+
+EndListe

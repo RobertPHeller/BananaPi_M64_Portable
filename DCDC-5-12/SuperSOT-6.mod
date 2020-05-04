@@ -1,0 +1,62 @@
+PCBNEW-LibModule-V1  Tue 14 Apr 2020 12:22:18 EDT
+# encoding utf-8
+Units mm
+$INDEX
+SuperSOT-6
+$EndINDEX
+$MODULE SuperSOT-6
+Po 0 0 0 15 5E95E2EC 00000000 ~~
+Li SuperSOT-6
+Sc 0
+AR 
+Op 0 0 0
+T0 0.0254 -2.2733 0.5 0.5 0 0.075 N V 21 N "SuperSOT-6"
+T1 0 2.4765 0.5 0.5 0 0.075 N V 21 N "VAL**"
+DS -0.8001 -1.4859 0.8001 -1.4859 0.15 21
+DS 0.8001 -1.4859 0.8001 1.4986 0.15 21
+DS 0.8001 1.4986 -0.8001 1.4986 0.15 21
+DS -0.8001 1.4986 -0.8001 -1.4859 0.15 21
+$PAD
+Sh "1" R 1.2 0.6 0 0 0
+Dr 0 0 0
+At SMD N 00888000
+Ne 0 ""
+Po -1.25 -1
+$EndPAD
+$PAD
+Sh "2" R 1.2 0.6 0 0 0
+Dr 0 0 0
+At SMD N 00888000
+Ne 0 ""
+Po -1.25 0
+$EndPAD
+$PAD
+Sh "3" R 1.2 0.6 0 0 0
+Dr 0 0 0
+At SMD N 00888000
+Ne 0 ""
+Po -1.25 1
+$EndPAD
+$PAD
+Sh "4" R 1.2 0.6 0 0 0
+Dr 0 0 0
+At SMD N 00888000
+Ne 0 ""
+Po 1.25 1
+$EndPAD
+$PAD
+Sh "5" R 1.2 0.6 0 0 0
+Dr 0 0 0
+At SMD N 00888000
+Ne 0 ""
+Po 1.25 0
+$EndPAD
+$PAD
+Sh "6" R 1.2 0.6 0 0 0
+Dr 0 0 0
+At SMD N 00888000
+Ne 0 ""
+Po 1.25 -1
+$EndPAD
+$EndMODULE SuperSOT-6
+$EndLIBRARY
