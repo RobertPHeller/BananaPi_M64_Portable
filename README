@@ -1,0 +1,9 @@
+Banana Pi M64 base portable.
+
+Includes:
+
+Case design
+
+5VDC to 12VDC power supply
+Teensy 3.2 based thumbstick pointer w/ three buttons
+
