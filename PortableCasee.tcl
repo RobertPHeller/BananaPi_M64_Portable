@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Apr 9 14:09:26 2020
-#  Last Modified : <200503.1536>
+#  Last Modified : <200505.2111>
 #
 #  Description	
 #
@@ -418,7 +418,7 @@ snit::enum Units -values {in mm}
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {14 * 25.4}]
     typevariable _Height [expr {10 * 25.4}]
-    typevariable _BottomDepth [expr {1.5 * 25.4}]
+    typevariable _BottomDepth [expr {1.75 * 25.4}]
     typevariable _MiddleTotalDepth [expr {1.5 * 25.4}]
     typevariable _MiddleLowerDepth [expr {.5 * 25.4}]
     typevariable _TopDepth [expr {(.5+.125) * 25.4}]

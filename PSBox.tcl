@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue May 5 10:07:03 2020
-#  Last Modified : <200505.1719>
+#  Last Modified : <200507.1522>
 #
 #  Description	
 #
@@ -532,6 +532,7 @@ snit::type PCBwithStrips {
     typevariable _stripIncr  2.54
     typevariable _stripOffset 1.27
     typevariable _stripThickness .1
+    typevariable _stripExtra 7.62
     typevariable _mhdia 3.5
     PSDims
     Common
@@ -564,10 +565,10 @@ snit::type PCBwithStrips {
                               [expr {$sy - ($_stripWidth / 2.0)}] \
                               0.0]]
                 set stripCP2 [GeometryFunctions translate3D_point $options(-origin) \
-                              [list [expr {$_stripOffset + $xoff + $_pspin4Xoff - $_stripIncr}]\
+                              [list [expr {$_stripOffset + $xoff + $_pspin4Xoff - $_stripIncr - $_stripExtra}]\
                                [expr {$sy - ($_stripWidth / 2.0)}] \
                                0.0]]
-                set striplen [expr {$xoff + $_pspin1Xoff}]
+                set striplen [expr {$xoff + $_pspin1Xoff + $_stripExtra}]
                 lappend strips \
                       [PrismSurfaceVector create %AUTO% \
                        -surface [PolySurface  create %AUTO% \
@@ -745,6 +746,293 @@ snit::type TB007_508_02BE {
     }
 }
 
+snit::type Littlefuse_FuseHolder_02810005H_02810008H {
+    Common
+    typevariable _dia      [expr {0.25*25.4}]
+    typevariable _height   [expr {0.23*25.4}]
+    typevariable _standoff [expr {0.032*25.4}]
+    typevariable _pinlen   [expr {0.23*25.4}]
+    typevariable _pindia   [expr {0.046*25.4}]
+    typevariable _pinXoff  2.54
+    typevariable _pinYoff  5.08
+    component body
+    component standoff1
+    component standoff2
+    component standoff3
+    component standoff4
+    component pin1
+    component pin2
+    constructor {args} {
+        $self configurelist $args
+        set bodyradius [expr {$_dia / 2.0}]
+        set pinradius  [expr {$_pindia / 2.0}]
+        set standoffdelta [expr {$bodyradius - $pinradius}]
+        install body using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list 0 0 $_standoff]] \
+              -radius $bodyradius \
+              -height $_height \
+              -direction Z \
+              -color {255 255 255}
+        install standoff1 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list 0 $standoffdelta 0]] \
+              -radius $pinradius \
+              -height $_standoff \
+              -direction Z \
+              -color {255 255 255}
+        install standoff2 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list -$standoffdelta 0 0]] \
+              -radius $pinradius \
+              -height $_standoff \
+              -direction Z \
+              -color {255 255 255}
+        install standoff3 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list 0 -$standoffdelta 0]] \
+              -radius $pinradius \
+              -height $_standoff \
+              -direction Z \
+              -color {255 255 255}
+        install standoff4 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list $standoffdelta 0 0]] \
+              -radius $pinradius \
+              -height $_standoff \
+              -direction Z \
+              -color {255 255 255}
+        install pin1 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list [expr {-($_pinXoff/2.0)}] \
+                        [expr {-($_pinYoff/2.0)}] 0]] \
+              -radius $pinradius \
+              -height -$_pinlen \
+              -direction Z \
+              -color {200 200 200}
+        install pin2 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list [expr {($_pinXoff/2.0)}] \
+                        [expr {($_pinYoff/2.0)}] 0]] \
+              -radius $pinradius \
+              -height -$_pinlen \
+              -direction Z \
+              -color {200 200 200}
+    }
+    method print {{fp stdout}} {
+        $body      print $fp
+        $standoff1 print $fp
+        $standoff2 print $fp
+        $standoff3 print $fp
+        $standoff4 print $fp
+        $pin1      print $fp
+        $pin2      print $fp
+    }
+}
+
+# 576-30313150421 3.15A fuse
+
+snit::type Littlefuse_FuseHolder_02810007H_02810010H {
+    Common
+    typevariable _width     [expr {0.25*25.4}]
+    typevariable _length    [expr {0.28*25.4}]
+    typevariable _height    [expr {0.26*25.4}]
+    typevariable _pinlen    [expr {0.20*25.4}]
+    typevariable _pindia    [expr {0.046*25.4}]
+    typevariable _pinXspace [expr {0.1*25.4}]
+    typevariable _pinYspace [expr {0.20*25.4}]
+    component body
+    component pin1
+    component pin2
+    constructor {args} {
+        $self configurelist $args
+        lassign $options(-origin) xc yc zc
+        set w2 [expr {$_width / 2.0}]
+        set l2 [expr {$_length / 2.0}]
+        install body using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [list [expr {$xc - $w2}] \
+                                      [expr {$yc - $l2}] $zc] \
+                        -vec1 [list $_width 0 0] \
+                        -vec2 [list 0 $_length 0]] \
+              -vector [list 0 0 $_height] \
+              -color {255 255 255}
+        install pin1 using Cylinder %AUTO% \
+              -bottom [list [expr {$xc - ($_pinXspace / 2.0)}] \
+                       [expr {$yc - ($_pinYspace / 2.0)}] \
+                       $zc] \
+              -radius [expr {$_pindia / 2.0}] \
+              -direction Z \
+              -height -$_pinlen \
+              -color {200 200 200}
+        install pin2 using Cylinder %AUTO% \
+              -bottom [list [expr {$xc + ($_pinXspace / 2.0)}] \
+                       [expr {$yc + ($_pinYspace / 2.0)}] \
+                       $zc] \
+              -radius [expr {$_pindia / 2.0}] \
+              -direction Z \
+              -height -$_pinlen \
+              -color {200 200 200}
+    }
+    method print {{fp stdout}} {
+        $body print $fp
+        $pin1 print $fp
+        $pin2 print $fp
+    }
+}
+
+snit::type C333 {
+    Common
+    typevariable _C333_L 7.11
+    typevariable _C333_H 10.16
+    typevariable _C333_T 4.07
+    typevariable _C333_LeadSpacing 5.08
+    typevariable _C333_LeadDia 0.51
+    typevariable _C333_LL 7.00
+    component body
+    component lead1
+    component lead2
+    constructor {args} {
+        $self configurelist $args
+        lassign $options(-origin) xc yc zc
+        set w2 [expr {$_C333_L / 2.0}]
+        install body using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [list $xc [expr {$yc - $w2}] $zc] \
+                        -vec1 [list -$_C333_H 0 0] \
+                        -vec2 [list 0 $_C333_L 0]] \
+              -vector [list 0 0 -$_C333_T] \
+              -color  {255 255 0}
+        set ls2 [expr {$_C333_LeadSpacing / 2.0}]
+        set t2  [expr {$_C333_T / 2.0}]
+        install lead1 using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc - $ls2}] [expr {$zc - $t2}]] \
+              -radius [expr {$_C333_LeadDia / 2.0}] \
+              -direction X \
+              -height $_C333_LL \
+              -color {192 192 192}
+        install lead2 using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc + $ls2}] [expr {$zc - $t2}]] \
+              -radius [expr {$_C333_LeadDia / 2.0}] \
+              -direction X \
+              -height $_C333_LL \
+              -color {192 192 192}
+    }
+    method print {{fp stdout}} {
+        $body  print $fp
+        $lead1 print $fp
+        $lead2 print $fp
+    }
+}
+
+
+snit::type AL_CAP_Radial_5mm10x12.5 {
+    Common
+    typevariable _diameter 10
+    typevariable _length  12.5
+    typevariable _leaddia .6
+    typevariable _leadspacing 5
+    typevariable _leadlength [expr {(1.25/16.0)*25.4}]
+    component body
+    component lead1
+    component lead2
+    constructor {args} {
+        $self configurelist $args
+        lassign $options(-origin) xc yc zc
+        set bodyradius [expr {$_diameter / 2.0}]
+        install body using Cylinder %AUTO% \
+              -bottom $options(-origin) \
+              -radius $bodyradius \
+              -height $_length \
+              -direction Z \
+              -color {240 240 240}
+        install lead1 using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc - ($_leadspacing / 2.0)}] $zc] \
+              -radius [expr {$_leaddia / 2.0}] \
+              -direction Z \
+              -height -$_leadlength \
+              -color {192 192 192}
+        install lead2 using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc + ($_leadspacing / 2.0)}] $zc] \
+              -radius [expr {$_leaddia / 2.0}] \
+              -direction Z \
+              -height -$_leadlength \
+              -color {192 192 192}
+    }
+    method print {{fp stdout}} {
+        $body print $fp
+        $lead1 print $fp
+        $lead2 print $fp
+    }
+}
+
+
+snit::type DO_15_bendedLeads_400_under {
+    Common
+    typevariable _bodydia 3.6
+    typevariable _bodylen 7.6
+    typevariable _leadspacing [expr {.400*25.4}]
+    typevariable _leaddia 0.9
+    typevariable _totalleadLength 25.4
+    component body
+    component lead1h
+    component lead2h
+    component lead1v
+    component lead2v
+    constructor {args} {
+        $self configurelist $args
+        lassign $options(-origin) xc yc zc
+        set l2 [expr {$_bodylen / 2.0}]
+        set brad [expr {$_bodydia / 2.0}]
+        set leadhlen [expr {($_leadspacing-$_bodylen)/2.0}]
+        set availleadvlen [expr {$_totalleadLength - $leadhlen}]
+        set leadvlen [expr {$brad+((1.0/16.0)*25.4)}]
+        if {$leadvlen > $availleadvlen} {set leadvlen $availleadvlen}
+        install body using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc - $l2}] [expr {$zc - $brad}]] \
+              -radius $brad \
+              -height $_bodylen \
+              -direction Y \
+              -color {50 50 50}
+        install lead1h using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc - $l2}] [expr {$zc - $brad}]] \
+              -radius [expr {$_leaddia/2.0}] \
+              -height -$leadhlen \
+              -direction Y \
+              -color {250 250 250}
+        install lead2h using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc + $l2}] [expr {$zc - $brad}]] \
+              -radius [expr {$_leaddia/2.0}] \
+              -height $leadhlen \
+              -direction Y \
+              -color {250 250 250}
+        install lead1v using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc - ($_leadspacing/2.0)}] [expr {$zc - $brad}]] \
+              -radius [expr {$_leaddia/2.0}] \
+              -height $leadvlen \
+              -direction Z \
+              -color {250 250 250}
+        install lead2v using Cylinder %AUTO% \
+              -bottom [list $xc [expr {$yc + ($_leadspacing/2.0)}] [expr {$zc - $brad}]] \
+              -radius [expr {$_leaddia/2.0}] \
+              -height $leadvlen \
+              -direction Z \
+              -color {250 250 250}
+        
+    }
+    method print {{fp stdout}} {
+        $body print $fp
+        $lead1h print $fp
+        $lead2h print $fp
+        $lead1v print $fp
+        $lead2v print $fp
+    }
+}
+
+        
+
 
 snit::type PSOnPCB {
     PSDims
@@ -754,6 +1042,19 @@ snit::type PSOnPCB {
     component pcboard;# BPS-MAR-ST6U-001
     component acterm;#490-TB007-508-03BE
     component dcterm;#490-TB006-508-02BE
+    component fuseholder;# 02810010H
+    component mov;# 
+    component bypasscap;# 80-C333C105K5R  1uf 50V  
+    component filtercap;# 661-EGXE160ELL221M
+    component esd;# 821-P6KE8V2A  ESD/TVS diode.
+    typevariable _fuseholderX 6.35
+    typevariable _fuseholderY 25.40
+    typevariable _bypassX [expr {76.2-27.94}]
+    typevariable _bypassY 15.24
+    typevariable _filterX [expr {76.2-5.08}]
+    typevariable _filterY 27.94
+    typevariable _esdX [expr {76.2-17.78}]
+    typevariable _esdY 17.78
     delegate method MountingHole to pcboard
     delegate method Standoff to pcboard
     constructor {args} {
@@ -774,40 +1075,62 @@ snit::type PSOnPCB {
               -origin [GeometryFunctions translate3D_point \
                        $options(-origin) \
                        [list [expr {$_psPCBlength - $_pstermxoff - $_termwidth}] $_psdctermyoff $_psPCBThickness]]
+        install bypasscap using C333 %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_bypassX $_bypassY 0]]
+        install filtercap using AL_CAP_Radial_5mm10x12.5 %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_filterX $_filterY $_psPCBThickness]]
+        install esd using DO_15_bendedLeads_400_under %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_esdX $_esdY 0]]
+        install fuseholder using Littlefuse_FuseHolder_02810007H_02810010H %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_fuseholderX $_fuseholderY $_psPCBThickness]]
+        
+
     }
     method print {{fp stdout}} {
         $powersupply print $fp
         $pcboard print $fp
         $acterm print $fp
         $dcterm print $fp
+        $bypasscap print $fp
+        $filtercap print $fp
+        $esd print $fp
+        $fuseholder print $fp
     }
 }
 
 
-## Al. box:      Mouser #563-CU-3001A
-# Base: 2.125in wide, 3.250in long, 1.625in high
-# Cover 2.031in wide, 3.156in long, 1.562in high
+## Al. box:      Mouser #563-CU-3002A
+# Base: 2.125in wide, 4.000in long, 1.625in high
+# Cover 2.031in wide, 3.906in long, 1.562in high
 
-snit::macro CU_3001ADims {} {
-    typevariable _CU_3001A_basewidth [expr {2.125*25.4}]
-    typevariable _CU_3001A_baselength [expr {3.250*25.4}]
-    typevariable _CU_3001A_baseheight [expr {1.625*25.4}]
-    typevariable _CU_3001A_baseflangewidth  [expr {0.375*25.4}]
-    typevariable _CU_3001A_baseholeoffset [expr {0.172*25.4}]
-    typevariable _CU_3001A_baseholeheightoffset [expr {0.594*25.4}]
-    typevariable _CU_3001A_baseholediameter [expr {(5.0/32.0)*25.4}]
-    typevariable _CU_3001A_coverwidth [expr {2.031*25.4}]
-    typevariable _CU_3001A_coverlength [expr {3.156*25.4}]
-    typevariable _CU_3001A_coverheight [expr {1.562*25.4}]
-    typevariable _CU_3001A_coverholeoffset [expr {0.156*25.4}]
-    typevariable _CU_3001A_coverholeheightoffset [expr {0.968*25.4}]
-    typevariable _CU_3001A_coverholediameter [expr {(3.0/32.0)*25.4}]
-    typevariable _CU_3001A_thickness [expr {0.04*25.4}]
+snit::macro CU_3002ADims {} {
+    typevariable _CU_3002A_basewidth [expr {2.125*25.4}]
+    typevariable _CU_3002A_baselength [expr {4.000*25.4}]
+    typevariable _CU_3002A_baseheight [expr {1.625*25.4}]
+    typevariable _CU_3002A_baseflangewidth  [expr {0.375*25.4}]
+    typevariable _CU_3002A_baseholeoffset [expr {0.172*25.4}]
+    typevariable _CU_3002A_baseholeheightoffset [expr {0.594*25.4}]
+    typevariable _CU_3002A_baseholediameter [expr {(5.0/32.0)*25.4}]
+    typevariable _CU_3002A_coverwidth [expr {2.031*25.4}]
+    typevariable _CU_3002A_coverlength [expr {3.906*25.4}]
+    typevariable _CU_3002A_coverheight [expr {1.562*25.4}]
+    typevariable _CU_3002A_coverholeoffset [expr {0.156*25.4}]
+    typevariable _CU_3002A_coverholeheightoffset [expr {0.968*25.4}]
+    typevariable _CU_3002A_coverholediameter [expr {(3.0/32.0)*25.4}]
+    typevariable _CU_3002A_thickness [expr {0.04*25.4}]
 }
 
-snit::type CU_3001A_Base {
+snit::type CU_3002A_Base {
     Common
-    CU_3001ADims
+    CU_3002ADims
     component bottom
     component front
     component back
@@ -827,70 +1150,124 @@ snit::type CU_3001A_Base {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list $_CU_3001A_baselength 0 0] \
-                        -vec2 [list 0 $_CU_3001A_basewidth 0]] \
-              -vector [list 0 0 $_CU_3001A_thickness] \
+                        -vec1 [list $_CU_3002A_baselength 0 0] \
+                        -vec2 [list 0 $_CU_3002A_basewidth 0]] \
+              -vector [list 0 0 $_CU_3002A_thickness] \
               -color {192 192 192}
         install front using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list 0 $_CU_3001A_basewidth 0] \
-                        -vec2 [list 0 0 $_CU_3001A_baseheight]] \
-              -vector [list $_CU_3001A_thickness 0 0] \
+                        -vec1 [list 0 $_CU_3002A_basewidth 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list $_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         install back using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list $_CU_3001A_baselength 0 0]] \
-                        -vec1 [list 0 $_CU_3001A_basewidth 0] \
-                        -vec2 [list 0 0 $_CU_3001A_baseheight]] \
-              -vector [list -$_CU_3001A_thickness 0 0] \
+                                      [list $_CU_3002A_baselength 0 0]] \
+                        -vec1 [list 0 $_CU_3002A_basewidth 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         install leftfrontflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list 0 $_CU_3001A_basewidth 0]] \
-                        -vec1 [list $_CU_3001A_baseflangewidth 0 0] \
-                        -vec2 [list 0 0 $_CU_3001A_baseheight]] \
-              -vector [list 0 -$_CU_3001A_thickness 0] \
+                                      [list 0 $_CU_3002A_basewidth 0]] \
+                        -vec1 [list $_CU_3002A_baseflangewidth 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
               -color {192 192 192}
         lassign [[$leftfrontflange cget -surface] cget -cornerpoint] lffx lffy lffz
         install leftfrontflangehole using Cylinder %AUTO% \
-              -bottom [list [expr {($lffx + $_CU_3001A_baseflangewidth) - $_CU_3001A_baseholeoffset}] \
+              -bottom [list [expr {($lffx + $_CU_3002A_baseflangewidth) - $_CU_3002A_baseholeoffset}] \
                        $lffy  \
-                       [expr {($lffz + $_CU_3001A_baseheight) - $_CU_3001A_baseholeheightoffset}]] \
-              -radius [expr {$_CU_3001A_baseholediameter / 2.0}] \
-              -height -$_CU_3001A_thickness \
+                       [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
               -direction Y \
               -color {255 255 255}
         install leftbottomflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list 0 $_CU_3001A_basewidth 0]] \
-                        -vec1 [list $_CU_3001A_baselength 0 0] \
-                        -vec2 [list 0 0 $_CU_3001A_baseflangewidth]] \
-              -vector [list 0 -$_CU_3001A_thickness 0] \
+                                      [list 0 $_CU_3002A_basewidth 0]] \
+                        -vec1 [list $_CU_3002A_baselength 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseflangewidth]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
               -color {192 192 192}
         install leftbackflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list $_CU_3001A_baselength $_CU_3001A_basewidth 0]] \
-                        -vec1 [list -$_CU_3001A_baseflangewidth 0 0] \
-                        -vec2 [list 0 0 $_CU_3001A_baseheight]] \
-              -vector [list 0 -$_CU_3001A_thickness 0] \
+                                      [list $_CU_3002A_baselength $_CU_3002A_basewidth 0]] \
+                        -vec1 [list -$_CU_3002A_baseflangewidth 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
               -color {192 192 192}                        
         lassign [[$leftbackflange cget -surface] cget -cornerpoint] lffx lffy lffz
         install leftbackflangehole using Cylinder %AUTO% \
-              -bottom [list [expr {($lffx - $_CU_3001A_baseflangewidth) + $_CU_3001A_baseholeoffset}] \
+              -bottom [list [expr {($lffx - $_CU_3002A_baseflangewidth) + $_CU_3002A_baseholeoffset}] \
                        $lffy  \
-                       [expr {($lffz + $_CU_3001A_baseheight) - $_CU_3001A_baseholeheightoffset}]] \
-              -radius [expr {$_CU_3001A_baseholediameter / 2.0}] \
-              -height -$_CU_3001A_thickness \
+                       [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
+              -direction Y \
+              -color {255 255 255}
+                install leftfrontflange using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list 0 $_CU_3002A_basewidth 0]] \
+                        -vec1 [list $_CU_3002A_baseflangewidth 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -color {192 192 192}
+        install rightfrontflange using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list 0 0 0]] \
+                        -vec1 [list $_CU_3002A_baseflangewidth 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -color {192 192 192}
+        lassign [[$rightfrontflange cget -surface] cget -cornerpoint] lffx lffy lffz
+        install rightfrontflangehole using Cylinder %AUTO% \
+              -bottom [list [expr {($lffx + $_CU_3002A_baseflangewidth) - $_CU_3002A_baseholeoffset}] \
+                       $lffy  \
+                       [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
+              -direction Y \
+              -color {255 255 255}
+        install rightbottomflange using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list 0 0 0]] \
+                        -vec1 [list $_CU_3002A_baselength 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseflangewidth]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -color {192 192 192}
+        install rightbackflange using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list $_CU_3002A_baselength 0 0]] \
+                        -vec1 [list -$_CU_3002A_baseflangewidth 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_baseheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -color {192 192 192}                        
+        lassign [[$rightbackflange cget -surface] cget -cornerpoint] lffx lffy lffz
+        install rightbackflangehole using Cylinder %AUTO% \
+              -bottom [list [expr {($lffx - $_CU_3002A_baseflangewidth) + $_CU_3002A_baseholeoffset}] \
+                       $lffy  \
+                       [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
               -direction Y \
               -color {255 255 255}
     }
@@ -903,45 +1280,321 @@ snit::type CU_3001A_Base {
         $leftbottomflange print $fp
         $leftbackflange print $fp
         $leftbackflangehole print $fp
+        $rightfrontflange print $fp
+        $rightfrontflangehole print $fp
+        $rightbottomflange print $fp
+        $rightbackflange print $fp
+        $rightbackflangehole print $fp
         
     }
 }
 
-snit::type CU_3001A_Cover {
+snit::type CU_3002A_Cover {
     Common
-    CU_3001ADims
+    CU_3002ADims
+    component top
+    component left
+    component leftfronthole
+    component leftbackhole
+    component right
+    component rightfronthole
+    component rightbackhole
     constructor {args} {
-        $args configurelist $args
+        $self configurelist $args
+        install top using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list $_CU_3002A_thickness $_CU_3002A_thickness [expr {$_CU_3002A_thickness + $_CU_3002A_coverheight}]]]\
+                        -vec1 [list $_CU_3002A_coverlength 0 0] \
+                        -vec2 [list 0 $_CU_3002A_coverwidth 0]] \
+              -vector [list 0 0 -$_CU_3002A_thickness] \
+              -color  {192 192 192}
+        install left using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list $_CU_3002A_thickness $_CU_3002A_thickness $_CU_3002A_thickness]]\
+                        -vec1 [list $_CU_3002A_coverlength 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_coverheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -color  {192 192 192}
+        lassign [[$left cget -surface] cget -cornerpoint] lx ly lz
+        install leftfronthole using Cylinder %AUTO% \
+              -bottom [list [expr {$lx + $_CU_3002A_coverholeoffset}] \
+                       $ly [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
+              -direction Y \
+              -color {255 255 255}
+        install leftbackhole  using Cylinder %AUTO% \
+              -bottom [list [expr {$lx + $_CU_3002A_coverlength - $_CU_3002A_coverholeoffset}] \
+                       $ly [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
+              -direction Y \
+              -color {255 255 255}
+        install right using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point \
+                                      $options(-origin) \
+                                      [list $_CU_3002A_thickness \
+                                       [expr {$_CU_3002A_thickness + $_CU_3002A_coverwidth}] \
+                                       $_CU_3002A_thickness]]\
+                        -vec1 [list $_CU_3002A_coverlength 0 0] \
+                        -vec2 [list 0 0 $_CU_3002A_coverheight]] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -color  {192 192 192}
+        lassign [[$right cget -surface] cget -cornerpoint] rx ry rz
+        install rightfronthole using Cylinder %AUTO% \
+              -bottom [list [expr {$rx + $_CU_3002A_coverholeoffset}] \
+                       $ry [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
+              -direction Y \
+              -color {255 255 255}
+        install rightbackhole  using Cylinder %AUTO% \
+              -bottom [list [expr {$rx + $_CU_3002A_coverlength - $_CU_3002A_coverholeoffset}] \
+                       $ry [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
+              -height -$_CU_3002A_thickness \
+              -direction Y \
+              -color {255 255 255}
     }
     method print {{fp stdout}} {
+        $top print $fp
+        $left print $fp
+        $leftfronthole print $fp
+        $leftbackhole print $fp
+        $right print $fp
+        $rightfronthole print $fp
+        $rightbackhole print $fp
     }
 }
 
 
-snit::type CU_3001A {
+snit::type CU_3002A {
     Common
-    CU_3001ADims
+    CU_3002ADims
     component base
     component cover
     constructor {args} {
         $self configurelist $args
-        install base using CU_3001A_Base %AUTO% \
+        install base using CU_3002A_Base %AUTO% \
               -origin $options(-origin)
-#        install cover using CU_3001A_Cover %AUTO% \
-#              -origin $options(-origin)
+        install cover using CU_3002A_Cover %AUTO% \
+              -origin $options(-origin)
     }
     method print {{fp stdout}} {
         $base print $fp
-#        $cover print $fp
+        $cover print $fp
     }
 }
 
+snit::macro 701w202_890462Dims {} {
+    typevariable _flangewidth 30.7
+    typevariable _flangeheight 23.7
+    typevariable _flangedepth 3.2
+    typevariable _bodywidth 27
+    typevariable _bodyheight 20
+    typevariable _bodydepth 16
+    typevariable _lugwidth 24
+    typevariable _lugheight 16
+    typevariable _lugdepth 7
+}
+
+snit::type 701w202_890462 {
+    Common
+    701w202_890462Dims
+    component flange
+    component body
+    component solderlugs
+    constructor {args} {
+        $self configurelist $args
+        set flangexoff [expr {($_flangewidth - $_bodywidth)/2.0}]
+        set flageeyoff [expr {($_flangeheight - $_bodyheight)/2.0}]
+        install flange using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point \
+                                      $options(-origin) \
+                                      [list 0 -$flangexoff -$flageeyoff]] \
+                        -vec1 [list 0 $_flangewidth 0] \
+                        -vec2 [list 0 0 $_flangeheight]] \
+              -vector [list -$_flangedepth 0 0] \
+              -color {0 0 0}
+        install body using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint $options(-origin) \
+                        -vec1 [list 0 $_bodywidth 0] \
+                        -vec2 [list 0 0 $_bodyheight]] \
+              -vector [list $_bodydepth 0 0] \
+              -color {0 0 0}
+        set lugxoff [expr {($_bodywidth - $_lugwidth) / 2.0}]
+        set lugyoff [expr {($_bodyheight - $_lugheight) / 2.0}]
+        install solderlugs using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point \
+                                      $options(-origin) \
+                                      [list $_bodydepth $lugxoff $lugyoff]] \
+                        -vec1 [list 0 $_lugwidth 0] \
+                        -vec2 [list 0 0 $_lugheight]] \
+              -vector [list $_lugdepth 0 0] \
+              -color {192 192 192}
+    }
+    method print {{fp stdout}} {
+        $flange print $fp
+        $body   print $fp
+        $solderlugs print $fp
+    }
+}
+
+snit::type DCStrainRelief {
+    Common
+    typevariable _holedia 11.40
+    typevariable _flangedia 13.40
+    typevariable _flangedepth 4.0
+    typevariable _bodydia 13.31
+    typevariable _bodydepth 6.0
+    component flange
+    component body
+    constructor {args} {
+        $self configurelist $args
+        install flange using Cylinder %AUTO% \
+              -bottom $options(-origin) \
+              -radius [expr {$_flangedia / 2.0}] \
+              -height $_flangedepth \
+              -direction X \
+              -color {0 0 0}
+        install body using Cylinder %AUTO% \
+              -bottom $options(-origin) \
+              -radius [expr {$_bodydia / 2.0}] \
+              -height -$_bodydepth \
+              -direction X \
+              -color {0 0 0}
+    }
+    method print {{fp stdout}} {
+        $flange print $fp
+        $body   print $fp
+    }
+}
+
+# 472-02510SS-05P-AT00 DC Fans DC Axial Fan, 25x10mm, 5VDC, 2.5CFM, Rib, Sleeve Bearing, Tachometer, 3 Lead Wires
+
+snit::macro Fan02510SS_05P_AT00Dims {} {
+    typevariable _fanwidth_height 25
+    typevariable _fandepth 10
+    typevariable _fanmholespacing 20
+    typevariable _fanmholedia 2.8
+    typevariable _fanholedia 24.3
+}
+
+snit::type Fan02510SS_05P_AT00 {
+    Common
+    Fan02510SS_05P_AT00Dims
+    component body
+    component mh1
+    component mh2
+    component mh3
+    component mh4
+    constructor {args} {
+        $self configurelist $args
+        install body using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint $options(-origin) \
+                        -vec1 [list $_fanwidth_height 0 0] \
+                        -vec2 [list 0 0 $_fanwidth_height]] \
+              -vector [list 0 $_fandepth 0] \
+              -color {0 0 0}
+        set mhXYoff [expr {($_fanwidth_height-$_fanmholespacing)/2.0}]
+        install mh1 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list $mhXYoff 0 $mhXYoff]] \
+              -radius [expr {$_fanmholedia/2.0}] \
+              -direction Y \
+              -height $_fandepth \
+              -color {255 255 255}
+        install mh2 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list [expr {$mhXYoff+$_fanmholespacing}] 0 $mhXYoff]] \
+              -radius [expr {$_fanmholedia/2.0}] \
+              -direction Y \
+              -height $_fandepth \
+              -color {255 255 255}
+        install mh3 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list $mhXYoff 0  [expr {$mhXYoff+$_fanmholespacing}]]] \
+              -radius [expr {$_fanmholedia/2.0}] \
+              -direction Y \
+              -height $_fandepth \
+              -color {255 255 255}
+        install mh4 using Cylinder %AUTO% \
+              -bottom [GeometryFunctions translate3D_point $options(-origin) \
+                       [list [expr {$mhXYoff+$_fanmholespacing}] 0 [expr {$mhXYoff+$_fanmholespacing}]]] \
+              -radius [expr {$_fanmholedia/2.0}] \
+              -direction Y \
+              -height $_fandepth \
+              -color {255 255 255}
+    }
+    method print {{fp stdout}} {
+        $body print $fp
+        $mh1  print $fp
+        $mh2  print $fp
+        $mh3  print $fp
+        $mh4  print $fp
+    }
+    method MountingHole {name i yBase height} {
+        lassign [[set mh$i] cget -bottom] mhx mhy mhz
+        return [Cyninder create $name \
+                -bottom [list $mhx $yBase $mhz] \
+                -radius [expr {$_fanmholedia/2.0}] \
+                -direction Y \
+                -height $height \
+                -color {255 255 255}]
+    }
+    method FanHole {name yBase height} {
+        lassign $options(-origin) ox oy oz
+        set x [expr {$ox + ($_fanwidth_height/2.0)}]
+        set y $yBase
+        set z [expr {$oz + ($_fanwidth_height/2.0)}]
+        return [Cylinder create $name \
+                -bottom [list $x $y $z] \
+                -radius [expr {$_fanholedia/2.0}] \
+                -direction Y \
+                -height $height \
+                -color {255 255 255}]
+    }
+}
+
+
+
 snit::type PSBox {
     Common
-    CU_3001ADims
+    CU_3002ADims
+    Fan02510SS_05P_AT00Dims
     PSDims
     typevariable _standoff_height 6.0
     typevariable _standoff_dia 5.0
+    typevariable _inletYoff  24
+    typevariable _inletZoff  19
+    typevariable _dcstrainYoff 26.9875
+    typevariable _dcstrainZoff 20.6375
+    proc _fanYoff {} {
+        return [expr {$_CU_3002A_thickness + $_CU_3002A_coverwidth}]
+    }
+    proc _fanZoff {} {
+        return [expr {$_CU_3002A_baseflangewidth+$_CU_3002A_thickness}]
+    }
+    proc _fan1Xoff {} {
+        return [expr {($_CU_3002A_coverlength-(2*$_fanwidth_height))/2.0}]
+    }
+    proc _fan2Xoff {} {
+        return [expr {[_fan1Xoff]+$_fanwidth_height}]
+    }
     component box
     component pcb
     component standoff1
@@ -952,24 +1605,40 @@ snit::type PSBox {
     component mh2
     component mh3
     component mh4
+    component inlet
+    component dcstrainrelief
+    component fan1
+    component fan2
     constructor {args} {
         $self configurelist $args
-        install box using CU_3001A %AUTO% \
+        install box using CU_3002A %AUTO% \
               -origin $options(-origin)
         install pcb using PSOnPCB %AUTO% \
               -origin [GeometryFunctions translate3D_point $options(-origin) \
-                       [list [expr {($_CU_3001A_baselength-$_psPCBlength)/2.0}] \
-                        [expr {($_CU_3001A_basewidth-$_psPCBwidth)/2.0}] \
-                        [expr {$_CU_3001A_thickness+$_standoff_height}]]]
+                       [list [expr {($_CU_3002A_baselength-$_psPCBlength)/2.0}] \
+                        [expr {($_CU_3002A_basewidth-$_psPCBwidth)/2.0}] \
+                        [expr {$_CU_3002A_thickness+$_standoff_height}]]]
         lassign $options(-origin) x y z
-        set standoff1 [$pcb Standoff %AUTO% 1 [expr {$z + $_CU_3001A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
-        set standoff2 [$pcb Standoff %AUTO% 2 [expr {$z + $_CU_3001A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
-        set standoff3 [$pcb Standoff %AUTO% 3 [expr {$z + $_CU_3001A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
-        set standoff4 [$pcb Standoff %AUTO% 4 [expr {$z + $_CU_3001A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
-        set mh1       [$pcb MountingHole %AUTO% 1 $z $_CU_3001A_thickness]
-        set mh2       [$pcb MountingHole %AUTO% 2 $z $_CU_3001A_thickness]
-        set mh3       [$pcb MountingHole %AUTO% 3 $z $_CU_3001A_thickness]
-        set mh4       [$pcb MountingHole %AUTO% 4 $z $_CU_3001A_thickness]
+        set standoff1 [$pcb Standoff %AUTO% 1 [expr {$z + $_CU_3002A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
+        set standoff2 [$pcb Standoff %AUTO% 2 [expr {$z + $_CU_3002A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
+        set standoff3 [$pcb Standoff %AUTO% 3 [expr {$z + $_CU_3002A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
+        set standoff4 [$pcb Standoff %AUTO% 4 [expr {$z + $_CU_3002A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
+        set mh1       [$pcb MountingHole %AUTO% 1 $z $_CU_3002A_thickness]
+        set mh2       [$pcb MountingHole %AUTO% 2 $z $_CU_3002A_thickness]
+        set mh3       [$pcb MountingHole %AUTO% 3 $z $_CU_3002A_thickness]
+        set mh4       [$pcb MountingHole %AUTO% 4 $z $_CU_3002A_thickness]
+        install inlet using 701w202_890462 %AUTO% \
+              -origin [GeometryFunctions translate3D_point $options(-origin) \
+                       [list 0 $_inletYoff $_inletZoff]]
+        install dcstrainrelief using DCStrainRelief %AUTO% \
+              -origin [GeometryFunctions translate3D_point $options(-origin) \
+                       [list $_CU_3002A_baselength $_dcstrainYoff $_dcstrainZoff]]
+        install fan1 using Fan02510SS_05P_AT00 %AUTO% \
+              -origin [GeometryFunctions translate3D_point $options(-origin) \
+                       [list [_fan1Xoff] [_fanYoff] [_fanZoff]]]
+        install fan2 using Fan02510SS_05P_AT00 %AUTO% \
+              -origin [GeometryFunctions translate3D_point $options(-origin) \
+                       [list [_fan2Xoff] [_fanYoff] [_fanZoff]]]
     }
     method print {{fp stdout}} {
         $box print $fp
@@ -982,6 +1651,10 @@ snit::type PSBox {
         $mh2       print $fp
         $mh3       print $fp
         $mh4       print $fp
+        $inlet     print $fp
+        $dcstrainrelief print $fp
+        $fan1      print $fp
+        $fan2      print $fp
     }
 }
 
@@ -993,5 +1666,6 @@ puts $modelFP {DEFCOL 0 0 0}
 
 PSBox create psbox
 psbox print $modelFP
+
 
 close $modelFP
