@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue May 5 10:07:03 2020
-#  Last Modified : <200508.1252>
+#  Last Modified : <200508.1408>
 #
 #  Description	
 #
@@ -647,6 +647,10 @@ snit::type PCBwithStrips {
         lassign [[set mh$i] cget -bottom] x y dummy
         return [list $x $y $z]
     }
+    method MountingHoleRadius {} {
+        return [expr {$_mhdia / 2.0}]
+    }
+    
     method MountingHole {name i baseZ height} {
         lassign [[set mh$i] cget -bottom] x y z
         set bottom [list $x $y $baseZ]
@@ -1151,6 +1155,7 @@ snit::type PSOnPCB {
     typevariable _wiredia 1.5
     delegate method MountingHole to pcboard
     delegate method MountingHoleBottom to pcboard
+    delegate method MountingHoleRadius to pcboard
     delegate method Standoff to pcboard
     constructor {args} {
         $self configurelist $args
@@ -1878,6 +1883,10 @@ snit::type PSBox {
             }
             incr i
         }
+        puts $reportfp [format {Radius: %g} [$pcb MountingHoleRadius]]
+        if {$macrofp ne {}} {
+            puts $macrofp [format {    typevariable _psBoxMHRadius %g} [$pcb MountingHoleRadius]]
+        }
         set inletSlangeSurf [$inlet FlangeSurface]
         set flangecorner [$inletSlangeSurf cget -cornerpoint]
         set flangevec1   [$inletSlangeSurf cget -vec1]
@@ -1925,9 +1934,9 @@ close $modelFP
 set mountingCutoutReport [open [file rootname [info script]]_mountReport.txt w]
 set mountingCutoutMacro  [open [file rootname [info script]]_mountMacro.tcl w]
 psbox CaseHolesAndCutouts -reportfp $mountingCutoutReport \
-      -macrofp $mountingCutoutMacro -rotation 90 \
+      -macrofp $mountingCutoutMacro -rotation -90 \
       -origin [list [expr {(14 * 25.4)-10-(2.125*25.4)}] \
-               [expr {(10 * 25.4)-(4.000*25.4)}] \
+               [expr {(10 * 25.4)-(0.000*25.4)}] \
                [expr {(1.0/8.0)*25.4}]]
 close $mountingCutoutReport
 close $mountingCutoutMacro
