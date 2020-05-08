@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue May 5 10:07:03 2020
-#  Last Modified : <200507.2038>
+#  Last Modified : <200508.1252>
 #
 #  Description	
 #
@@ -643,6 +643,10 @@ snit::type PCBwithStrips {
         $mh3 print $fp
         $mh4 print $fp
     }
+    method MountingHoleBottom {i {z 0}} {
+        lassign [[set mh$i] cget -bottom] x y dummy
+        return [list $x $y $z]
+    }
     method MountingHole {name i baseZ height} {
         lassign [[set mh$i] cget -bottom] x y z
         set bottom [list $x $y $baseZ]
@@ -1081,8 +1085,8 @@ snit::type B72220S2301K101 {
               -height -$leadhlen \
               -color {250 250 250}
         lassign [$lead1h cget -bottom] l1x l1y l1z
-        set l1vheight [expr {($zc-(((1/16.0)*2.54)) + $l1z)}]
-        puts stderr "*** $type create $self: zc = $zc, l1z = $l1z, l1vheight = $l1vheight"
+        set l1vheight [expr {abs($zc-(((1/16.0)*2.54)) + $l1z)}]
+        #puts stderr "*** $type create $self: zc = $zc, l1z = $l1z, l1vheight = $l1vheight"
         set l1vy      [expr {$l1y - $leadhlen}]
         install lead1v using Cylinder %AUTO% \
               -bottom [list $l1x $l1vy $l1z] \
@@ -1099,7 +1103,7 @@ snit::type B72220S2301K101 {
               -height $leadhlen \
               -color {250 250 250}
         lassign [$lead2h cget -bottom] l2x l2y l2z
-        set l2vheight [expr {($zc-(((1/16.0)*2.54)) + $l2z)}]
+        set l2vheight [expr {abs($zc-(((1/16.0)*2.54)) + $l2z)}]
         set l2vy      [expr {$l2y + $leadhlen}]
         install lead2v using Cylinder %AUTO% \
               -bottom [list $l2x $l2vy $l2z] \
@@ -1135,6 +1139,7 @@ snit::type PSOnPCB {
     component bypasscap;# 80-C333C105K5R  1uf 50V  
     component filtercap;# 661-EGXE160ELL221M
     component esd;# 821-P6KE8V2A  ESD/TVS diode.
+    variable wires [list]
     typevariable _fuseholderX 6.35
     typevariable _fuseholderY 25.40
     typevariable _bypassX [expr {76.2-27.94}]
@@ -1143,7 +1148,9 @@ snit::type PSOnPCB {
     typevariable _filterY 27.94
     typevariable _esdX [expr {76.2-17.78}]
     typevariable _esdY 17.78
+    typevariable _wiredia 1.5
     delegate method MountingHole to pcboard
+    delegate method MountingHoleBottom to pcboard
     delegate method Standoff to pcboard
     constructor {args} {
         $self configurelist $args
@@ -1183,9 +1190,99 @@ snit::type PSOnPCB {
               -origin [GeometryFunctions translate3D_point \
                        $options(-origin) \
                        [list [expr {$xoff + $_pspin1Xoff}] \
-                        [expr {$_psPCBwidth / 2.0}] 0]] \
-
-
+                        [expr {$_psPCBwidth / 2.0}] 0]]
+        set groundj1X [expr {$_psPCBlength / 2.0}]
+        set groundj1Y [expr {($_pspin1Yoff - 2.54)+$yoff}]
+        set groundj1L [expr {20.32+5.08}]
+        set wireradius [expr {$_wiredia / 2.0}]
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $groundj1X $groundj1Y -$wireradius]] \
+                       -radius $wireradius \
+                       -direction Y \
+                       -height $groundj1L \
+                       -color {0 255 0}]
+        for {set i 1} {$i <= 3} {incr i} {
+            set yy [expr {$i * 2.54}]
+            set xx [expr {($i & 1) * 2.54}]
+            set y1 [expr {$groundj1Y - $yy}]
+            set y2 [expr {$groundj1Y+$groundj1L+$yy}]
+            set x  [expr {$groundj1X + $xx}]
+            lappend wires [Cylinder create %AUTO% \
+                           -bottom [GeometryFunctions translate3D_point \
+                                    $options(-origin) \
+                                    [list $x $y1 -$wireradius]] \
+                           -radius $wireradius \
+                           -direction Y \
+                           -height 2.54 \
+                           -color {0 255 0}]
+            lappend wires [Cylinder create %AUTO% \
+                           -bottom [GeometryFunctions translate3D_point \
+                                    $options(-origin) \
+                                    [list $x $y2 -$wireradius]] \
+                           -radius $wireradius \
+                           -direction Y \
+                           -height -2.54 \
+                           -color {0 255 0}]
+        }
+        set l1Y [expr {$_psactermyoff + (5*2.54)}]
+        set l1X [expr {5.08 + 2.54}]
+        set l1L 5.08
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $l1X $l1Y -$wireradius]] \
+                       -radius $wireradius \
+                       -direction Y \
+                       -height $l1L \
+                       -color {0 0 0}]
+        set l2Y [expr {$l1Y + 5.08 +5.08}]
+        set l2X 5.08
+        set l2L 5.08
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $l2X $l2Y -$wireradius]] \
+                       -radius $wireradius \
+                       -direction Y \
+                       -height $l2L \
+                       -color {0 0 0}]
+        set P1Y [expr {$_psdctermyoff + (3*2.54)}]
+        set P1X [expr {$_psPCBlength - $_pstermxoff - ($_termwidth/2.0) - 2.54}]
+        set P1L 5.08
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $P1X $P1Y -$wireradius]] \
+                       -radius $wireradius \
+                       -direction Y \
+                       -height $P1L \
+                       -color {255 0 0}]
+        set P2Y [expr {$P1Y + $P1L}]
+        set P2X [expr {$P1X - 2.54}]
+        set P2L 7.62
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $P2X $P2Y -$wireradius]] \
+                       -radius $wireradius \
+                       -direction Y \
+                       -height $P2L \
+                       -color {255 0 0}]
+        set M1Y [expr {$_psdctermyoff + 2.54}]
+        set M1X [expr {$P2X - 2.54}]
+        set M1L [expr {2.54*5}]
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $M1X $M1Y -$wireradius]] \
+                       -radius $wireradius \
+                       -direction Y \
+                       -height $M1L \
+                       -color {0 0 0}]
+        
+        
     }
     method print {{fp stdout}} {
         $powersupply print $fp
@@ -1197,6 +1294,9 @@ snit::type PSOnPCB {
         $esd print $fp
         $fuseholder print $fp
         $mov print $fp
+        foreach w $wires {
+            $w print $fp
+        }
     }
 }
 
@@ -1539,6 +1639,9 @@ snit::type 701w202_890462 {
               -vector [list $_lugdepth 0 0] \
               -color {192 192 192}
     }
+    method FlangeSurface {} {
+        return [$flange cget -surface]
+    }
     method print {{fp stdout}} {
         $flange print $fp
         $body   print $fp
@@ -1657,8 +1760,7 @@ snit::type Fan02510SS_05P_AT00 {
         set z [expr {$oz + ($_fanwidth_height/2.0)}]
         return [Cylinder create $name \
                 -bottom [list $x $y $z] \
-                -radius [expr {$_fanholedia/2.0}] \
-                -direction Y \
+                -radius [expr {$_fanholedia/2.0}] \                -direction Y \
                 -height $height \
                 -color {255 255 255}]
     }
@@ -1750,6 +1852,59 @@ snit::type PSBox {
         $fan1      print $fp
         $fan2      print $fp
     }
+    method CaseHolesAndCutouts {args} {
+        set reportfp [from args -reportfp stdout]
+        set macrofp  [from args -macrofp  {}]
+        if {$macrofp ne {}} {
+            puts -nonewline $macrofp "snit::macro PSBoxHolesAndCutouts {} "
+            puts $macrofp [format {%c} 123]
+        }
+        set origin [from args -origin [list 0.0 0.0 0.0]]
+        set rotation [from args -rotation 0.0]
+        set points [list]
+        for {set i 1} {$i <= 4} {incr i} {
+            lassign [$pcb MountingHoleBottom $i] mx my mz
+            lappend points [list $mx $my $mz 1]
+        }
+        set rotated [GeometryFunctions rotateZAxis $points [GeometryFunctions radians $rotation]]
+        set translated [GeometryFunctions translate3D $rotated $origin]
+        puts $reportfp "Mounting holes:"
+        set i 1
+        foreach p $translated {
+            lassign $p x y z h
+            puts $reportfp [format {%d %g %g %g} $i $x $y $z]
+            if {$macrofp ne {}} {
+                puts $macrofp [format {    typevariable _psBoxMH%d [list %g %g 0]} $i $x $y]
+            }
+            incr i
+        }
+        set inletSlangeSurf [$inlet FlangeSurface]
+        set flangecorner [$inletSlangeSurf cget -cornerpoint]
+        set flangevec1   [$inletSlangeSurf cget -vec1]
+        set flangevec2   [$inletSlangeSurf cget -vec2]
+        set points [GeometryFunctions MakeHomogenous [list $flangecorner $flangevec1 $flangevec2]]
+        set rotated [GeometryFunctions rotateZAxis $points [GeometryFunctions radians $rotation]]
+        set translated [GeometryFunctions translate3D $rotated $origin]
+        puts $reportfp "Inlet opening:"
+        lassign [lindex $translated 0] x y z h
+        puts $reportfp [format {-cornerpoint %g %g %g} $x $y $z]
+        if {$macrofp ne {}} {
+            puts $macrofp [format {    typevariable _inletCornerPoint [list %g %g %g]} $x $y $z]
+        }
+        lassign [lindex $rotated 1] x y z h
+        puts $reportfp [format {-vec1 %g %g %g} $x $y $z]
+        if {$macrofp ne {}} {
+            puts $macrofp [format {    typevariable _inletVec1 [list %g %g %g]} $x $y $z]
+        }
+        lassign [lindex $rotated 2] x y z h
+        puts $reportfp [format {-vec2 %g %g %g} $x $y $z]
+        if {$macrofp ne {}} {
+            puts $macrofp [format {    typevariable _inletVec2 [list %g %g %g]} $x $y $z]
+        }
+        if {$macrofp ne {}} {
+            puts $macrofp [format {%c} 125]
+        }
+    }
 }
 
 set modelFP [open [file rootname [info script]].gcad w]
@@ -1766,3 +1921,13 @@ psbox print $modelFP
 
 
 close $modelFP
+
+set mountingCutoutReport [open [file rootname [info script]]_mountReport.txt w]
+set mountingCutoutMacro  [open [file rootname [info script]]_mountMacro.tcl w]
+psbox CaseHolesAndCutouts -reportfp $mountingCutoutReport \
+      -macrofp $mountingCutoutMacro -rotation 90 \
+      -origin [list [expr {(14 * 25.4)-10-(2.125*25.4)}] \
+               [expr {(10 * 25.4)-(4.000*25.4)}] \
+               [expr {(1.0/8.0)*25.4}]]
+close $mountingCutoutReport
+close $mountingCutoutMacro
