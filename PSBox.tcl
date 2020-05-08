@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue May 5 10:07:03 2020
-#  Last Modified : <200507.1522>
+#  Last Modified : <200507.2038>
 #
 #  Description	
 #
@@ -1031,7 +1031,95 @@ snit::type DO_15_bendedLeads_400_under {
     }
 }
 
-        
+snit::type B72220S2301K101 {
+    Common
+    typevariable _W 21.5
+    typevariable _th 6.1
+    typevariable _h 25.5
+    typevariable _d 1.0
+    typevariable _e 10
+    typevariable _a 2.1
+    typevariable _l 25.0
+    typevariable _seatoffset 3
+    typevariable _leadspacing [expr {8 * 2.54}]
+    component body
+    component seat1
+    component seat2
+    component lead1h
+    component lead2h
+    component lead1v
+    component lead2v
+    constructor {args} {
+        $self configurelist $args
+        lassign $options(-origin) xc yc zc
+        set bodyradius [expr {$_W / 2.0}]
+        install body using Cylinder %AUTO% \
+              -bottom [list [expr {$xc +  $bodyradius}] $yc $zc] \
+              -radius $bodyradius \
+              -direction Z \
+              -height -$_th \
+              -color {0 0 0}
+        install seat1 using Cylinder %AUTO% \
+              -bottom [list [expr {$xc + ($_seatoffset*.5)}] [expr {$yc - ($_e/2.0)}] [expr {($zc - ($_th/2.0)) - ($_a/2.0)}]] \
+              -radius $_d \
+              -direction X \
+              -height [expr {$_seatoffset*(-1.5)}] \
+              -color {0 0 0}
+        install seat2 using Cylinder %AUTO% \
+              -bottom [list [expr {$xc + ($_seatoffset*.5)}] [expr {$yc + ($_e/2.0)}] [expr {($zc - ($_th/2.0)) + ($_a/2.0)}]] \
+              -radius $_d \
+              -direction X \
+              -height [expr {$_seatoffset*(-1.5)}] \
+              -color {0 0 0}
+        set leadhlen [expr {($_leadspacing/2.0)-($_e/2.0)}]
+        install lead1h using Cylinder %AUTO% \
+              -bottom [list [expr {$xc -$_seatoffset}] \
+                       [expr {$yc - ($_e/2.0)}] \
+                       [expr {($zc - ($_th/2.0)) - ($_a/2.0)}]] \
+              -radius [expr {$_d / 2.0}] \
+              -direction Y \
+              -height -$leadhlen \
+              -color {250 250 250}
+        lassign [$lead1h cget -bottom] l1x l1y l1z
+        set l1vheight [expr {($zc-(((1/16.0)*2.54)) + $l1z)}]
+        puts stderr "*** $type create $self: zc = $zc, l1z = $l1z, l1vheight = $l1vheight"
+        set l1vy      [expr {$l1y - $leadhlen}]
+        install lead1v using Cylinder %AUTO% \
+              -bottom [list $l1x $l1vy $l1z] \
+              -radius [expr {$_d / 2.0}] \
+              -direction Z \
+              -height $l1vheight \
+              -color {250 250 250}
+        install lead2h using Cylinder %AUTO% \
+              -bottom [list [expr {$xc -$_seatoffset}] \
+                       [expr {$yc + ($_e/2.0)}] \
+                       [expr {($zc - ($_th/2.0)) + ($_a/2.0)}]] \
+              -radius [expr {$_d / 2.0}] \
+              -direction Y \
+              -height $leadhlen \
+              -color {250 250 250}
+        lassign [$lead2h cget -bottom] l2x l2y l2z
+        set l2vheight [expr {($zc-(((1/16.0)*2.54)) + $l2z)}]
+        set l2vy      [expr {$l2y + $leadhlen}]
+        install lead2v using Cylinder %AUTO% \
+              -bottom [list $l2x $l2vy $l2z] \
+              -radius [expr {$_d / 2.0}] \
+              -direction Z \
+              -height $l2vheight \
+              -color {250 250 250}
+    }
+    method print {{fp stdout}} {
+        $body print $fp
+        $seat1 print $fp
+        $seat2 print $fp
+        $lead1h print $fp
+        $lead1v print $fp
+        $lead2h print $fp
+        $lead2v print $fp
+
+    }
+}
+
 
 
 snit::type PSOnPCB {
@@ -1043,7 +1131,7 @@ snit::type PSOnPCB {
     component acterm;#490-TB007-508-03BE
     component dcterm;#490-TB006-508-02BE
     component fuseholder;# 02810010H
-    component mov;# 
+    component mov;# 871-B72220S2301K101
     component bypasscap;# 80-C333C105K5R  1uf 50V  
     component filtercap;# 661-EGXE160ELL221M
     component esd;# 821-P6KE8V2A  ESD/TVS diode.
@@ -1091,7 +1179,12 @@ snit::type PSOnPCB {
               -origin [GeometryFunctions translate3D_point \
                        $options(-origin) \
                        [list $_fuseholderX $_fuseholderY $_psPCBThickness]]
-        
+        install mov using B72220S2301K101 %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list [expr {$xoff + $_pspin1Xoff}] \
+                        [expr {$_psPCBwidth / 2.0}] 0]] \
+
 
     }
     method print {{fp stdout}} {
@@ -1103,6 +1196,7 @@ snit::type PSOnPCB {
         $filtercap print $fp
         $esd print $fp
         $fuseholder print $fp
+        $mov print $fp
     }
 }
 
@@ -1577,7 +1671,7 @@ snit::type PSBox {
     CU_3002ADims
     Fan02510SS_05P_AT00Dims
     PSDims
-    typevariable _standoff_height 6.0
+    typevariable _standoff_height 9.0
     typevariable _standoff_dia 5.0
     typevariable _inletYoff  24
     typevariable _inletZoff  19
@@ -1666,6 +1760,9 @@ puts $modelFP {DEFCOL 0 0 0}
 
 PSBox create psbox
 psbox print $modelFP
+
+#PSOnPCB create pcb
+#pcb print $modelFP
 
 
 close $modelFP
