@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:36:05 2020
-#  Last Modified : <200509.1154>
+#  Last Modified : <200509.1355>
 #
 #  Description	
 #
@@ -53,7 +53,9 @@ AddKitDir = $(top_srcdir)/BuildScripts/AddKitDir.kit
 AddKitFile = $(top_srcdir)/BuildScripts/AddKitFile.kit
 MakePkgIndex = $(top_srcdir)/BuildScripts/MakePkgIndex.kit
 
-BananaPiM64ModelLibScripts = Common.tcl M64.tcl PSBox.tcl Case.tcl
+BananaPiM64ModelLibScripts = Common.tcl M64.tcl PSBox.tcl Case.tcl \
+	PowerSupply.tcl Diode.tcl MOV.tcl TerminalBlocks.tcl \
+	FuseHolder.tcl PSPCB.tcl Electromech.tcl
 
 
 BananaPiM64Model.kit : BananaPiM64Model.tcl $(BananaPiM64ModelLibScripts) \
