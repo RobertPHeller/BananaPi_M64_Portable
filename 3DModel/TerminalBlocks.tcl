@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:39:13 2020
-#  Last Modified : <200509.1341>
+#  Last Modified : <200509.1449>
 #
 #  Description	
 #
@@ -58,6 +58,7 @@ snit::macro TB007_508_xxBE {} {
 
 snit::type TB007_508_03BE {
     TB007_508_xxBE
+    typemethod Length {} {return $_3belength}
     Common
     component body
     component pin1
@@ -69,25 +70,25 @@ snit::type TB007_508_03BE {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list $_termwidth 0 0] \
-                        -vec2 [list 0 $_3belength 0]] \
+                        -vec1 [list 0 $_termwidth 0] \
+                        -vec2 [list $_3belength 0 0]] \
               -vector [list 0 0 $_termheight] \
               -color  [list 0 0 255]
         install pin1 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_termhxoff $_termhyoff 0]] \
+                       [list $_termhyoff $_termhxoff 0]] \
               -radius [expr {$_termpindia / 2.0}] \
               -height -$_termpinlen \
               -color {255 255 255}
         install pin2 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_termhxoff [expr {$_termhyoff + $_termpitch}] 0]] \
+                       [list [expr {$_termhyoff + $_termpitch}] $_termhxoff 0]] \
               -radius [expr {$_termpindia / 2.0}] \
               -height -$_termpinlen \
               -color {255 255 255}
         install pin3 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_termhxoff [expr {$_termhyoff + (2*$_termpitch)}] 0]] \
+                       [list [expr {$_termhyoff + (2*$_termpitch)}] $_termhxoff 0]] \
               -radius [expr {$_termpindia / 2.0}] \
               -height -$_termpinlen \
               -color {255 255 255}
@@ -102,6 +103,7 @@ snit::type TB007_508_03BE {
 
 snit::type TB007_508_02BE {
     TB007_508_xxBE
+    typemethod Length {} {return $_2belength}
     Common
     component body
     component pin1
@@ -112,19 +114,19 @@ snit::type TB007_508_02BE {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list $_termwidth 0 0] \
-                        -vec2 [list 0 $_2belength 0]] \
+                        -vec1 [list 0 $_termwidth 0] \
+                        -vec2 [list $_2belength 0 0]] \
               -vector [list 0 0 $_termheight] \
               -color  [list 0 0 255]
         install pin1 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_termhxoff $_termhyoff 0]] \
+                       [list $_termhyoff $_termhxoff 0]] \
               -radius [expr {$_termpindia / 2.0}] \
               -height -$_termpinlen \
               -color {255 255 255}
         install pin2 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_termhxoff [expr {$_termhyoff + $_termpitch}] 0]] \
+                       [list [expr {$_termhyoff + $_termpitch}] $_termhxoff 0]] \
               -radius [expr {$_termpindia / 2.0}] \
               -height -$_termpinlen \
               -color {255 255 255}

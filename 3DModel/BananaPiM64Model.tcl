@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200509.1357>
+#  Last Modified : <200509.1420>
 #
 #  Description	
 #
@@ -63,7 +63,7 @@ PortableM64Case create m64case
 #M64Board create m64 -origin [list [PortableM64Case M64XOff] [PortableM64Case M64YOff] [PortableM64Case M64ZOff]]
 #m64 print $modelFP
 
-PCBwithStrips create pcb
+PSOnPCB create pcb
 pcb print $modelFP
 
 close $modelFP

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:33:36 2020
-#  Last Modified : <200509.1340>
+#  Last Modified : <200509.1439>
 #
 #  Description	
 #
@@ -52,14 +52,14 @@ snit::macro PSDims {} {
     typevariable _psheight 23.5
     typevariable _pspindia 1.0
     typevariable _pspinlength 6.0
-    typevariable _pspin1Xoff [expr {(53.8-45.72)/2.0}]
-    typevariable _pspin1Yoff [expr {(28.8-20.32)/2.0}]
-    typevariable _pspin2Xoff [expr {(53.8-45.72)/2.0}]
-    typevariable _pspin2Yoff [expr {((28.8-20.32)/2.0)+20.32}]
-    typevariable _pspin3Xoff [expr {((53.8-45.72)/2.0)+45.72}]
+    typevariable _pspin1Xoff [expr {((53.8-45.72)/2.0)+45.72}]
+    typevariable _pspin1Yoff [expr {((28.8-20.32)/2.0)+20.32}]
+    typevariable _pspin2Xoff [expr {((53.8-45.72)/2.0)+45.72}]
+    typevariable _pspin2Yoff [expr {(28.8-20.32)/2.0}]
+    typevariable _pspin3Xoff [expr {(53.8-45.72)/2.0}]
     typevariable _pspin3Yoff [expr {((28.8-20.32)/2.0)+10.16}]
-    typevariable _pspin4Xoff [expr {((53.8-45.72)/2.0)+45.72}]
-    typevariable _pspin4Yoff [expr {(28.8-20.32)/2.0}]
+    typevariable _pspin4Xoff [expr {(53.8-45.72)/2.0}]
+    typevariable _pspin4Yoff [expr {((28.8-20.32)/2.0)+20.32}]
 }
 
 snit::type PSK_S15C {
@@ -77,34 +77,34 @@ snit::type PSK_S15C {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list $_pslength 0 0] \
-                        -vec2 [list 0 $_pswidth 0]] \
+                        -vec1 [list 0 $_pslength 0] \
+                        -vec2 [list $_pswidth 0 0]] \
               -vector [list 0 0 $_psheight] \
               -color [list 0 0 0]
         install pin1 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_pspin1Xoff $_pspin1Yoff 0]] \
+                       [list $_pspin1Yoff $_pspin1Xoff 0]] \
               -radius [expr {$_pspindia / 2.0}] \
               -height [expr {-$_pspinlength}] \
               -color {255 255 255}
         install pin2 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_pspin2Xoff $_pspin2Yoff 0]] \
+                       [list $_pspin2Yoff $_pspin2Xoff 0]] \
               -radius [expr {$_pspindia / 2.0}] \
               -height [expr {-$_pspinlength}] \
               -color {255 255 255}
         install pin3 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_pspin3Xoff $_pspin3Yoff 0]] \
+                       [list $_pspin3Yoff $_pspin3Xoff 0]] \
               -radius [expr {$_pspindia / 2.0}] \
               -height [expr {-$_pspinlength}] \
               -color {255 255 255}
         install pin4 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_pspin4Xoff $_pspin4Yoff 0]] \
+                       [list $_pspin4Yoff $_pspin4Xoff 0]] \
               -radius [expr {$_pspindia / 2.0}] \
               -height [expr {-$_pspinlength}] \
-              -color {255 255 255}
+              -color {255 255 244}
     }
     method print {{fp stdout}} {
         $body print $fp
