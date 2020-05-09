@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Apr 9 14:09:26 2020
-#  Last Modified : <200508.1418>
+#  Last Modified : <200508.2058>
 #
 #  Description	
 #
@@ -907,9 +907,9 @@ snit::type PortableM64CaseBottomFrontPanel {
         set fp [PostScriptFile fp]
         set xi 0
         set yi 2
-        set xorg 5
+        set xorg 0
         set yorg 0
-        set xscale -.01968
+        set xscale .01968
         set yscale .01968
         set surf [$panel cget -surface]
         PostScriptFile newPage {Front bottom Cutouts}
@@ -920,11 +920,66 @@ snit::type PortableM64CaseBottomFrontPanel {
         _cutout [$gpiocutout cget -surface] $cx $cz
     }
     proc _cutout {cutoutSurf cx cy} {
-        lassign [$cutoutSurf cget -cornerpoint] dummy cux cuy
-        lassign [$cutoutSurf cget -vec1] dummy w dummy
-        set w [expr {-($w)}]
+        lassign [$cutoutSurf cget -cornerpoint] cux dummy cuy
+        lassign [$cutoutSurf cget -vec1] w dummy dummy
         lassign [$cutoutSurf cget -vec2] dummy dummy h
         PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
+    }
+}
+
+
+snit::type PortableM64CaseBottomRightPanel {
+    PSBoxHolesAndCutouts
+    component panel
+    delegate method * to panel except {print}
+    delegate option * to panel
+    variable fangrillholes [list]
+    typevariable _fangrillholeradius [expr {6.35/2.0}];# 1/4 in
+    proc _makeHole {i x y h} {
+        lassign [set _fan${i}Center] cx cy cz
+        set dia [set _fan${i}Diameter]
+        return [Cylinder create %AUTO% \
+                -bottom [list $cx \
+                         [expr {$cy + ($x*($dia/2.0))}] \
+                         [expr {$cz + ($y*($dia/2.0))}]] \
+                -radius $_fangrillholeradius \
+                -direction X \
+                -height $h \
+                -color {255 255 255}]
+    }
+    constructor {args} {
+        install panel using PortableM64CaseRightPanel %AUTO% \
+              -origin [from args -origin] \
+              -depth  [from args -depth]
+        set panelThick [$panel PanelThickness]
+        set x .25
+        set y .75
+        lappend fangrillholes [_makeHole 1  $x  $y $panelThick]
+        lappend fangrillholes [_makeHole 1  $y  $x $panelThick]
+        lappend fangrillholes [_makeHole 1  $y -$x $panelThick]
+        lappend fangrillholes [_makeHole 1  $x -$y $panelThick]
+        lappend fangrillholes [_makeHole 1 -$x -$y $panelThick]
+        lappend fangrillholes [_makeHole 1 -$y -$x $panelThick]
+        lappend fangrillholes [_makeHole 1 -$y  $x $panelThick]
+        lappend fangrillholes [_makeHole 1 -$x  $y $panelThick]
+        lappend fangrillholes [_makeHole 1  0   0  $panelThick]
+        lappend fangrillholes [_makeHole 2  $x  $y $panelThick]
+        lappend fangrillholes [_makeHole 2  $y  $x $panelThick]
+        lappend fangrillholes [_makeHole 2  $y -$x $panelThick]
+        lappend fangrillholes [_makeHole 2  $x -$y $panelThick]
+        lappend fangrillholes [_makeHole 2 -$x -$y $panelThick]
+        lappend fangrillholes [_makeHole 2 -$y -$x $panelThick]
+        lappend fangrillholes [_makeHole 2 -$y  $x $panelThick]
+        lappend fangrillholes [_makeHole 2 -$x  $y $panelThick]
+        lappend fangrillholes [_makeHole 2  0   0  $panelThick]
+    }
+    method print {{fp stdout}} {
+        $panel print $fp
+        foreach fgh $fangrillholes {
+            $fgh print $fp
+        }
+    }
+    method printPS {} {
     }
 }
 
@@ -958,7 +1013,7 @@ snit::type PortableM64CaseBottomBackPanel {
         set fp [PostScriptFile fp]
         set xi 0
         set yi 2
-        set xorg 5
+        set xorg 7
         set yorg 0
         set xscale -.01968
         set yscale .01968
@@ -971,13 +1026,14 @@ snit::type PortableM64CaseBottomBackPanel {
         _cutout [$inletcutout cget -surface] $cx $cz
     }
     proc _cutout {cutoutSurf cx cy} {
-        lassign [$cutoutSurf cget -cornerpoint] dummy cux cuy
-        lassign [$cutoutSurf cget -vec1] dummy w dummy
-        set w [expr {-($w)}]
+        lassign [$cutoutSurf cget -cornerpoint] cux dummy cuy
+        lassign [$cutoutSurf cget -vec1] w dummy dummy
         lassign [$cutoutSurf cget -vec2] dummy dummy h
         PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
     }
 }
+
+
 
 
 snit::type PortableM64CaseBottom {
@@ -994,7 +1050,7 @@ snit::type PortableM64CaseBottom {
         install left   using PortableM64CaseBottomLeftPanel %AUTO% \
               -origin $options(-origin) \
               -depth $_BottomDepth
-        install right   using PortableM64CaseRightPanel %AUTO% \
+        install right   using PortableM64CaseBottomRightPanel %AUTO% \
               -origin $options(-origin) \
               -depth $_BottomDepth
         install front   using PortableM64CaseBottomFrontPanel %AUTO% \

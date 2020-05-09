@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue May 5 10:07:03 2020
-#  Last Modified : <200508.1408>
+#  Last Modified : <200508.2057>
 #
 #  Description	
 #
@@ -1765,9 +1765,37 @@ snit::type Fan02510SS_05P_AT00 {
         set z [expr {$oz + ($_fanwidth_height/2.0)}]
         return [Cylinder create $name \
                 -bottom [list $x $y $z] \
-                -radius [expr {$_fanholedia/2.0}] \                -direction Y \
+                -radius [expr {$_fanholedia/2.0}] \
+                -direction Y \
                 -height $height \
                 -color {255 255 255}]
+    }
+    method FanHoleDims {args} {
+        set i [from args -fanno 1]
+        set reportfp [from args -reportfp stdout]
+        set macrofp  [from args -macrofp  {}]
+        set origin [from args -origin [list 0.0 0.0 0.0]]
+        set rotation [from args -rotation 0.0]
+        set fansurf [$body cget -surface]
+        set corner  [$fansurf cget -cornerpoint]
+        lassign $corner ox oy oz
+        #puts stderr "*** $self FanHoleDims: corner = ($ox $oy $oz)"
+        set x [expr {$ox + $_fandepth}]
+        set y [expr {$oy + ($_fanwidth_height/2.0)}]
+        set z [expr {$oz + ($_fanwidth_height/2.0)}]
+        set points [list [list $x $y $z 1]]
+        #puts stderr "*** $self FanHoleDims: points (center) is $points"
+        set rotated [GeometryFunctions rotateZAxis $points [GeometryFunctions radians $rotation]]
+        #puts stderr "*** $self FanHoleDims: rotated (center) is $rotated"
+        set translated [GeometryFunctions translate3D $rotated $origin]
+        #puts stderr "*** $self FanHoleDims: translated (center) is $translated"
+        lassign [lindex $translated 0] ox oy oz H
+        #puts stderr "*** $self FanHoleDims: ox oy oz (center): ($ox $oy $oz)"
+        puts $reportfp [format {Fan%d: Center {%g %g %g}, Diameter %g} $i $ox $oy $oz $_fanholedia]
+        if {$macrofp ne {}} {
+            puts $macrofp [format {    typevariable _fan%dCenter {%g %g %g}} $i $ox $oy $oz]
+            puts $macrofp [format {    typevariable _fan%dDiameter %g} $i $_fanholedia]
+        }
     }
 }
 
@@ -1910,6 +1938,10 @@ snit::type PSBox {
         if {$macrofp ne {}} {
             puts $macrofp [format {    typevariable _inletVec2 [list %g %g %g]} $x $y $z]
         }
+        $fan1 FanHoleDims -fanno 1 -reportfp $reportfp -macrofp $macrofp \
+              -origin $origin -rotation $rotation
+        $fan2 FanHoleDims -fanno 2 -reportfp $reportfp -macrofp $macrofp \
+              -origin $origin -rotation $rotation
         if {$macrofp ne {}} {
             puts $macrofp [format {%c} 125]
         }
@@ -1935,7 +1967,7 @@ set mountingCutoutReport [open [file rootname [info script]]_mountReport.txt w]
 set mountingCutoutMacro  [open [file rootname [info script]]_mountMacro.tcl w]
 psbox CaseHolesAndCutouts -reportfp $mountingCutoutReport \
       -macrofp $mountingCutoutMacro -rotation -90 \
-      -origin [list [expr {(14 * 25.4)-10-(2.125*25.4)}] \
+      -origin [list [expr {(14 * 25.4)-13.175-(2.125*25.4)}] \
                [expr {(10 * 25.4)-(0.000*25.4)}] \
                [expr {(1.0/8.0)*25.4}]]
 close $mountingCutoutReport
