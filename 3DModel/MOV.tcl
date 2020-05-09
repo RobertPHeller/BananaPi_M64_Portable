@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:47:52 2020
-#  Last Modified : <200509.1348>
+#  Last Modified : <200509.1911>
 #
 #  Description	
 #
@@ -65,55 +65,55 @@ snit::type B72220S2301K101 {
         lassign $options(-origin) xc yc zc
         set bodyradius [expr {$_W / 2.0}]
         install body using Cylinder %AUTO% \
-              -bottom [list [expr {$xc +  $bodyradius}] $yc $zc] \
+              -bottom [list $xc [expr {$yc -  $bodyradius}] $zc] \
               -radius $bodyradius \
               -direction Z \
               -height -$_th \
               -color {0 0 0}
         install seat1 using Cylinder %AUTO% \
-              -bottom [list [expr {$xc + ($_seatoffset*.5)}] [expr {$yc - ($_e/2.0)}] [expr {($zc - ($_th/2.0)) - ($_a/2.0)}]] \
+              -bottom [list [expr {$xc - ($_e/2.0)}] [expr {$yc + ($_seatoffset*.5)}] [expr {($zc - ($_th/2.0)) - ($_a/2.0)}]] \
               -radius $_d \
-              -direction X \
+              -direction Y \
               -height [expr {$_seatoffset*(-1.5)}] \
               -color {0 0 0}
         install seat2 using Cylinder %AUTO% \
-              -bottom [list [expr {$xc + ($_seatoffset*.5)}] [expr {$yc + ($_e/2.0)}] [expr {($zc - ($_th/2.0)) + ($_a/2.0)}]] \
+              -bottom [list [expr {$xc + ($_e/2.0)}] [expr {$yc + ($_seatoffset*.5)}] [expr {($zc - ($_th/2.0)) + ($_a/2.0)}]] \
               -radius $_d \
-              -direction X \
+              -direction Y \
               -height [expr {$_seatoffset*(-1.5)}] \
               -color {0 0 0}
         set leadhlen [expr {($_leadspacing/2.0)-($_e/2.0)}]
         install lead1h using Cylinder %AUTO% \
-              -bottom [list [expr {$xc -$_seatoffset}] \
-                       [expr {$yc - ($_e/2.0)}] \
+              -bottom [list [expr {$xc - ($_e/2.0)}] \
+                             [expr {$yc + ($_seatoffset*.5)}] \
                        [expr {($zc - ($_th/2.0)) - ($_a/2.0)}]] \
               -radius [expr {$_d / 2.0}] \
-              -direction Y \
+              -direction X \
               -height -$leadhlen \
               -color {250 250 250}
         lassign [$lead1h cget -bottom] l1x l1y l1z
         set l1vheight [expr {abs($zc-(((1/16.0)*2.54)) + $l1z)}]
         #puts stderr "*** $type create $self: zc = $zc, l1z = $l1z, l1vheight = $l1vheight"
-        set l1vy      [expr {$l1y - $leadhlen}]
+        set l1vx      [expr {$l1x - $leadhlen}]
         install lead1v using Cylinder %AUTO% \
-              -bottom [list $l1x $l1vy $l1z] \
+              -bottom [list $l1vx $l1y $l1z] \
               -radius [expr {$_d / 2.0}] \
               -direction Z \
               -height $l1vheight \
               -color {250 250 250}
         install lead2h using Cylinder %AUTO% \
-              -bottom [list [expr {$xc -$_seatoffset}] \
-                       [expr {$yc + ($_e/2.0)}] \
+              -bottom [list [expr {$xc + ($_e/2.0)}] \
+                       [expr {$yc + ($_seatoffset*.5)}] \
                        [expr {($zc - ($_th/2.0)) + ($_a/2.0)}]] \
               -radius [expr {$_d / 2.0}] \
-              -direction Y \
+              -direction X \
               -height $leadhlen \
               -color {250 250 250}
         lassign [$lead2h cget -bottom] l2x l2y l2z
         set l2vheight [expr {abs($zc-(((1/16.0)*2.54)) + $l2z)}]
-        set l2vy      [expr {$l2y + $leadhlen}]
+        set l2vx      [expr {$l2x + $leadhlen}]
         install lead2v using Cylinder %AUTO% \
-              -bottom [list $l2x $l2vy $l2z] \
+              -bottom [list $l2vx $l2y $l2z] \
               -radius [expr {$_d / 2.0}] \
               -direction Z \
               -height $l2vheight \
@@ -131,4 +131,4 @@ snit::type B72220S2301K101 {
     }
 }
 
-package provide MOV.tcl
+package provide MOV 1.0

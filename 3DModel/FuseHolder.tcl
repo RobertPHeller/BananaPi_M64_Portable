@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:43:33 2020
-#  Last Modified : <200509.1344>
+#  Last Modified : <200509.1808>
 #
 #  Description	
 #
@@ -64,23 +64,23 @@ snit::type Littlefuse_FuseHolder_02810007H_02810010H {
         install body using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
-                        -cornerpoint [list [expr {$xc - $w2}] \
-                                      [expr {$yc - $l2}] $zc] \
-                        -vec1 [list $_width 0 0] \
-                        -vec2 [list 0 $_length 0]] \
+                        -cornerpoint [list [expr {$xc - $l2}] \
+                                      [expr {$yc - $w2}] $zc] \
+                        -vec1 [list 0 $_width 0] \
+                        -vec2 [list $_length 0 0]] \
               -vector [list 0 0 $_height] \
               -color {255 255 255}
         install pin1 using Cylinder %AUTO% \
-              -bottom [list [expr {$xc - ($_pinXspace / 2.0)}] \
-                       [expr {$yc - ($_pinYspace / 2.0)}] \
+              -bottom [list [expr {$xc - ($_pinYspace / 2.0)}] \
+                       [expr {$yc - ($_pinXspace / 2.0)}] \
                        $zc] \
               -radius [expr {$_pindia / 2.0}] \
               -direction Z \
               -height -$_pinlen \
               -color {200 200 200}
         install pin2 using Cylinder %AUTO% \
-              -bottom [list [expr {$xc + ($_pinXspace / 2.0)}] \
-                       [expr {$yc + ($_pinYspace / 2.0)}] \
+              -bottom [list [expr {$xc + ($_pinYspace / 2.0)}] \
+                       [expr {$yc + ($_pinXspace / 2.0)}] \
                        $zc] \
               -radius [expr {$_pindia / 2.0}] \
               -direction Z \

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:36:01 2020
-#  Last Modified : <200509.1449>
+#  Last Modified : <200509.1951>
 #
 #  Description	
 #
@@ -43,6 +43,10 @@
 package require Common
 package require PowerSupply
 package require TerminalBlocks
+package require Capacitors
+package require Diode
+package require FuseHolder
+package require MOV
 
 snit::macro PCBDims {} {
     typevariable _psPCBwidth 45.72
@@ -216,14 +220,14 @@ snit::type PSOnPCB {
     component filtercap;# 661-EGXE160ELL221M
     component esd;# 821-P6KE8V2A  ESD/TVS diode.
     variable wires [list]
-    typevariable _fuseholderX 6.35
-    typevariable _fuseholderY 25.40
-    typevariable _bypassX [expr {76.2-27.94}]
-    typevariable _bypassY 15.24
-    typevariable _filterX [expr {76.2-5.08}]
-    typevariable _filterY 27.94
-    typevariable _esdX [expr {76.2-17.78}]
-    typevariable _esdY 17.78
+    typevariable _fuseholderX [expr {76.2-6.35}]
+    typevariable _fuseholderY [expr {45.72-25.40}]
+    typevariable _bypassX 27.94;#[expr {76.2-27.94}]
+    typevariable _bypassY [expr {45.72-15.24}]
+    typevariable _filterX 5.08;#[expr {76.2-5.08}]
+    typevariable _filterY [expr {45.72-27.94}]
+    typevariable _esdX 17.78;#[expr {76.2-17.78}]
+    typevariable _esdY [expr {45.72-17.78}]
     typevariable _wiredia 1.5
     delegate method MountingHole to pcboard
     delegate method MountingHoleBottom to pcboard
@@ -247,117 +251,117 @@ snit::type PSOnPCB {
               -origin [GeometryFunctions translate3D_point \
                        $options(-origin) \
                        [list [expr {$_psPCBwidth - $_psdctermyoff - [TB007_508_02BE Length]}] $_pstermxoff $_psPCBThickness]]
-        #install bypasscap using C333 %AUTO% \
-        #      -origin [GeometryFunctions translate3D_point \
-        #               $options(-origin) \
-        #               [list $_bypassX $_bypassY 0]]
-        #install filtercap using AL_CAP_Radial_5mm10x12.5 %AUTO% \
-        #      -origin [GeometryFunctions translate3D_point \
-        #               $options(-origin) \
-        #               [list $_filterX $_filterY $_psPCBThickness]]
-        #install esd using DO_15_bendedLeads_400_under %AUTO% \
-        #      -origin [GeometryFunctions translate3D_point \
-        #               $options(-origin) \
-        #               [list $_esdX $_esdY 0]]
-        #install fuseholder using Littlefuse_FuseHolder_02810007H_02810010H %AUTO% \
-        #      -origin [GeometryFunctions translate3D_point \
-        #               $options(-origin) \
-        #               [list $_fuseholderX $_fuseholderY $_psPCBThickness]]
-        #install mov using B72220S2301K101 %AUTO% \
-        #      -origin [GeometryFunctions translate3D_point \
-        #               $options(-origin) \
-        #               [list [expr {$xoff + $_pspin1Xoff}] \
-        #                [expr {$_psPCBwidth / 2.0}] 0]]
-        #set groundj1X [expr {$_psPCBlength / 2.0}]
-        #set groundj1Y [expr {($_pspin1Yoff - 2.54)+$yoff}]
-        #set groundj1L [expr {20.32+5.08}]
-        #set wireradius [expr {$_wiredia / 2.0}]
-        #lappend wires [Cylinder create %AUTO% \
-        #               -bottom [GeometryFunctions translate3D_point \
-        #                        $options(-origin) \
-        #                        [list $groundj1X $groundj1Y -$wireradius]] \
-        #               -radius $wireradius \
-        #               -direction Y \
-        #               -height $groundj1L \
-        #               -color {0 255 0}]
-        #for {set i 1} {$i <= 3} {incr i} {
-        #    set yy [expr {$i * 2.54}]
-        #    set xx [expr {($i & 1) * 2.54}]
-        #    set y1 [expr {$groundj1Y - $yy}]
-        #    set y2 [expr {$groundj1Y+$groundj1L+$yy}]
-        #    set x  [expr {$groundj1X + $xx}]
-        #    lappend wires [Cylinder create %AUTO% \
-        #                   -bottom [GeometryFunctions translate3D_point \
-        #                            $options(-origin) \
-        #                            [list $x $y1 -$wireradius]] \
-        #                   -radius $wireradius \
-        #                   -direction Y \
-        #                   -height 2.54 \
-        #                   -color {0 255 0}]
-        #    lappend wires [Cylinder create %AUTO% \
-        #                   -bottom [GeometryFunctions translate3D_point \
-        #                            $options(-origin) \
-        #                            [list $x $y2 -$wireradius]] \
-        #                   -radius $wireradius \
-        #                   -direction Y \
-        #                   -height -2.54 \
-        #                   -color {0 255 0}]
-        #}
-        #set l1Y [expr {$_psactermyoff + (5*2.54)}]
-        #set l1X [expr {5.08 + 2.54}]
-        #set l1L 5.08
-        #lappend wires [Cylinder create %AUTO% \
-        #               -bottom [GeometryFunctions translate3D_point \
-        #                        $options(-origin) \
-        #                        [list $l1X $l1Y -$wireradius]] \
-        #               -radius $wireradius \
-        #               -direction Y \
-        #               -height $l1L \
-        #               -color {0 0 0}]
-        #set l2Y [expr {$l1Y + 5.08 +5.08}]
-        #set l2X 5.08
-        #set l2L 5.08
-        #lappend wires [Cylinder create %AUTO% \
-        #               -bottom [GeometryFunctions translate3D_point \
-        #                        $options(-origin) \
-        #                        [list $l2X $l2Y -$wireradius]] \
-        #               -radius $wireradius \
-        #               -direction Y \
-        #               -height $l2L \
-        #               -color {0 0 0}]
-        #set P1Y [expr {$_psdctermyoff + (3*2.54)}]
-        #set P1X [expr {$_psPCBlength - $_pstermxoff - ($_termwidth/2.0) - 2.54}]
-        #set P1L 5.08
-        #lappend wires [Cylinder create %AUTO% \
-        #               -bottom [GeometryFunctions translate3D_point \
-        #                        $options(-origin) \
-        #                        [list $P1X $P1Y -$wireradius]] \
-        #               -radius $wireradius \
-        #               -direction Y \
-        #               -height $P1L \
-        #               -color {255 0 0}]
-        #set P2Y [expr {$P1Y + $P1L}]
-        #set P2X [expr {$P1X - 2.54}]
-        #set P2L 7.62
-        #lappend wires [Cylinder create %AUTO% \
-        #               -bottom [GeometryFunctions translate3D_point \
-        #                        $options(-origin) \
-        #                        [list $P2X $P2Y -$wireradius]] \
-        #               -radius $wireradius \
-        #               -direction Y \
-        #               -height $P2L \
-        #               -color {255 0 0}]
-        #set M1Y [expr {$_psdctermyoff + 2.54}]
-        #set M1X [expr {$P2X - 2.54}]
-        #set M1L [expr {2.54*5}]
-        #lappend wires [Cylinder create %AUTO% \
-        #               -bottom [GeometryFunctions translate3D_point \
-        #                        $options(-origin) \
-        #                        [list $M1X $M1Y -$wireradius]] \
-        #               -radius $wireradius \
-        #               -direction Y \
-        #               -height $M1L \
-        #               -color {0 0 0}]
+        install bypasscap using C333 %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_bypassY $_bypassX 0]]
+        install filtercap using AL_CAP_Radial_5mm10x12.5 %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_filterY $_filterX $_psPCBThickness]]
+        install esd using DO_15_bendedLeads_400_under %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_esdY $_esdX 0]]
+        install fuseholder using Littlefuse_FuseHolder_02810007H_02810010H %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list $_fuseholderY $_fuseholderX $_psPCBThickness]]
+        install mov using B72220S2301K101 %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list [expr {$_psPCBwidth / 2.0}] \
+                        [expr {($_psPCBlength - ($yoff+$_pspin3Xoff+3) + 3.81)}] 0]]
+        set groundj1X [expr {($_psPCBlength / 2.0)+1.27}]
+        set groundj1Y [expr {($_pspin1Yoff)+$yoff}]
+        set groundj1L [expr {20.32+5.08}]
+        set wireradius [expr {$_wiredia / 2.0}]
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $groundj1Y $groundj1X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height -$groundj1L \
+                       -color {0 255 0}]
+        for {set i 1} {$i <= 3} {incr i} {
+            set yy [expr {$i * 2.54}]
+            set xx [expr {($i & 1) * 2.54}]
+            set y1 [expr {$groundj1Y + $yy}]
+            set y2 [expr {$groundj1Y-$groundj1L-$yy}]
+            set x  [expr {$groundj1X - $xx}]
+            lappend wires [Cylinder create %AUTO% \
+                           -bottom [GeometryFunctions translate3D_point \
+                                    $options(-origin) \
+                                    [list $y1 $x -$wireradius]] \
+                           -radius $wireradius \
+                           -direction X \
+                           -height -2.54 \
+                           -color {0 255 0}]
+            lappend wires [Cylinder create %AUTO% \
+                           -bottom [GeometryFunctions translate3D_point \
+                                    $options(-origin) \
+                                    [list $y2 $x -$wireradius]] \
+                           -radius $wireradius \
+                           -direction X \
+                           -height  2.54 \
+                           -color {0 255 0}]
+        }
+        set l1Y [expr {$_psactermyoff + (7*2.54)}]
+        set l1X [expr {$_psPCBlength-(5.08 + 2.54)}]
+        set l1L 5.08
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $l1Y $l1X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $l1L \
+                       -color {0 0 0}]
+        set l2Y [expr {$l1Y - 5.08 - 5.08}]
+        set l2X [expr {$_psPCBlength-5.08}]
+        set l2L 5.08
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $l2Y $l2X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $l2L \
+                       -color {0 0 0}]
+        set P1Y [expr {$_psdctermyoff + (5*2.54)}]
+        set P1X [expr {$_pstermxoff + ($_termwidth/2.0) + 2.54}]
+        set P1L 5.08
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $P1Y $P1X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $P1L \
+                       -color {255 0 0}]
+        set P2Y [expr {$P1Y - $P1L - 2.54}]
+        set P2X [expr {$P1X + 2.54}]
+        set P2L 7.62
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $P2Y $P2X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $P2L \
+                       -color {255 0 0}]
+        set M1Y [expr {$_psdctermyoff + 5.08 + 5.08}]
+        set M1X [expr {$P2X + 2.54}]
+        set M1L [expr {2.54*5}]
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $M1Y $M1X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $M1L \
+                       -color {0 0 0}]
         
         
     }
@@ -366,14 +370,14 @@ snit::type PSOnPCB {
         $pcboard print $fp
         $acterm print $fp
         $dcterm print $fp
-        #$bypasscap print $fp
-        #$filtercap print $fp
-        #$esd print $fp
-        #$fuseholder print $fp
-        #$mov print $fp
-        #foreach w $wires {
-        #    $w print $fp
-        #}
+        $bypasscap print $fp
+        $filtercap print $fp
+        $esd print $fp
+        $fuseholder print $fp
+        $mov print $fp
+        foreach w $wires {
+            $w print $fp
+        }
     }
 }
 

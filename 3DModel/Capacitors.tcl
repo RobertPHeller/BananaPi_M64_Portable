@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:45:19 2020
-#  Last Modified : <200509.1346>
+#  Last Modified : <200509.1632>
 #
 #  Description	
 #
@@ -60,24 +60,24 @@ snit::type C333 {
         install body using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
-                        -cornerpoint [list $xc [expr {$yc - $w2}] $zc] \
-                        -vec1 [list -$_C333_H 0 0] \
-                        -vec2 [list 0 $_C333_L 0]] \
+                        -cornerpoint [list [expr {$xc - $w2}] $yc  $zc] \
+                        -vec1 [list 0 $_C333_H 0] \
+                        -vec2 [list $_C333_L 0 0]] \
               -vector [list 0 0 -$_C333_T] \
               -color  {255 255 0}
         set ls2 [expr {$_C333_LeadSpacing / 2.0}]
         set t2  [expr {$_C333_T / 2.0}]
         install lead1 using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc - $ls2}] [expr {$zc - $t2}]] \
+              -bottom [list [expr {$xc - $ls2}] $yc [expr {$zc - $t2}]] \
               -radius [expr {$_C333_LeadDia / 2.0}] \
-              -direction X \
-              -height $_C333_LL \
+              -direction Y \
+              -height -$_C333_LL \
               -color {192 192 192}
         install lead2 using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc + $ls2}] [expr {$zc - $t2}]] \
+              -bottom [list [expr {$xc + $ls2}] $yc [expr {$zc - $t2}]] \
               -radius [expr {$_C333_LeadDia / 2.0}] \
-              -direction X \
-              -height $_C333_LL \
+              -direction Y \
+              -height -$_C333_LL \
               -color {192 192 192}
     }
     method print {{fp stdout}} {
@@ -109,13 +109,13 @@ snit::type AL_CAP_Radial_5mm10x12.5 {
               -direction Z \
               -color {240 240 240}
         install lead1 using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc - ($_leadspacing / 2.0)}] $zc] \
+              -bottom [list [expr {$xc - ($_leadspacing / 2.0)}] $yc $zc] \
               -radius [expr {$_leaddia / 2.0}] \
               -direction Z \
               -height -$_leadlength \
               -color {192 192 192}
         install lead2 using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc + ($_leadspacing / 2.0)}] $zc] \
+              -bottom [list [expr {$xc + ($_leadspacing / 2.0)}] $yc $zc] \
               -radius [expr {$_leaddia / 2.0}] \
               -direction Z \
               -height -$_leadlength \

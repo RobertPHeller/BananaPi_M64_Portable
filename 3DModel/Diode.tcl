@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:46:43 2020
-#  Last Modified : <200509.1347>
+#  Last Modified : <200509.1642>
 #
 #  Description	
 #
@@ -64,31 +64,31 @@ snit::type DO_15_bendedLeads_400_under {
         set leadvlen [expr {$brad+((1.0/16.0)*25.4)}]
         if {$leadvlen > $availleadvlen} {set leadvlen $availleadvlen}
         install body using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc - $l2}] [expr {$zc - $brad}]] \
+              -bottom [list [expr {$xc - $l2}] $yc [expr {$zc - $brad}]] \
               -radius $brad \
               -height $_bodylen \
-              -direction Y \
+              -direction X \
               -color {50 50 50}
         install lead1h using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc - $l2}] [expr {$zc - $brad}]] \
+              -bottom [list [expr {$xc - $l2}] $yc [expr {$zc - $brad}]] \
               -radius [expr {$_leaddia/2.0}] \
               -height -$leadhlen \
-              -direction Y \
+              -direction X \
               -color {250 250 250}
         install lead2h using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc + $l2}] [expr {$zc - $brad}]] \
+              -bottom [list [expr {$xc + $l2}] $yc [expr {$zc - $brad}]] \
               -radius [expr {$_leaddia/2.0}] \
               -height $leadhlen \
-              -direction Y \
+              -direction X \
               -color {250 250 250}
         install lead1v using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc - ($_leadspacing/2.0)}] [expr {$zc - $brad}]] \
+              -bottom [list [expr {$xc - ($_leadspacing/2.0)}] $yc [expr {$zc - $brad}]] \
               -radius [expr {$_leaddia/2.0}] \
               -height $leadvlen \
               -direction Z \
               -color {250 250 250}
         install lead2v using Cylinder %AUTO% \
-              -bottom [list $xc [expr {$yc + ($_leadspacing/2.0)}] [expr {$zc - $brad}]] \
+              -bottom [list [expr {$xc + ($_leadspacing/2.0)}] $yc [expr {$zc - $brad}]] \
               -radius [expr {$_leaddia/2.0}] \
               -height $leadvlen \
               -direction Z \
