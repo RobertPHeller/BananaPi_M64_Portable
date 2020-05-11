@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200509.1952>
+#  Last Modified : <200510.0809>
 #
 #  Description	
 #
@@ -59,19 +59,17 @@ set modelFP [open $gcadfile w]
 GCadPrefix $modelFP
 
 PortableM64Case create m64case
-#m64case print $modelFP
-#M64Board create m64 -origin [list [PortableM64Case M64XOff] [PortableM64Case M64YOff] [PortableM64Case M64ZOff]]
-#m64 print $modelFP
+m64case print $modelFP
 
-PSOnPCB create pcb
-pcb print $modelFP
+#PSOnPCB create pcb
+#pcb print $modelFP
 
 close $modelFP
 
-#m64case addPart parts
+m64case addPart parts
 
 PostScriptFile open -filename [file join $dirname ${scriptroot}.ps]
-#m64case printPS
+m64case printPS
 PostScriptFile close
 
 package require csv

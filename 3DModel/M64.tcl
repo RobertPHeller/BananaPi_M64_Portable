@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 10:07:22 2020
-#  Last Modified : <200509.1226>
+#  Last Modified : <200510.0938>
 #
 #  Description	
 #
@@ -195,7 +195,6 @@ snit::type M64Board {
               -direction Z \
               -height -$_m64Standoff \
               -color {255 255 255}
-              
     }
     method print {{fp stdout}} {
         $board print $fp

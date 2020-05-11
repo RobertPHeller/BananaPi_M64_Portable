@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:50:48 2020
-#  Last Modified : <200509.1355>
+#  Last Modified : <200510.1939>
 #
 #  Description	
 #
@@ -62,37 +62,37 @@ snit::type 701w202_890462 {
     component solderlugs
     constructor {args} {
         $self configurelist $args
-        set flangexoff [expr {($_flangewidth - $_bodywidth)/2.0}]
-        set flageeyoff [expr {($_flangeheight - $_bodyheight)/2.0}]
+        set flangeyoff [expr {($_flangewidth - $_bodywidth)/2.0}]
+        set flangexoff [expr {($_flangeheight - $_bodyheight)/2.0}]
         install flange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point \
                                       $options(-origin) \
-                                      [list 0 -$flangexoff -$flageeyoff]] \
-                        -vec1 [list 0 $_flangewidth 0] \
+                                      [list -$flangexoff 0 -$flangeyoff]] \
+                        -vec1 [list $_flangewidth 0 0] \
                         -vec2 [list 0 0 $_flangeheight]] \
-              -vector [list -$_flangedepth 0 0] \
+              -vector [list 0 $_flangedepth 0] \
               -color {0 0 0}
         install body using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list 0 $_bodywidth 0] \
+                        -vec1 [list $_bodywidth 0 0] \
                         -vec2 [list 0 0 $_bodyheight]] \
-              -vector [list $_bodydepth 0 0] \
+              -vector [list 0 -$_bodydepth 0] \
               -color {0 0 0}
-        set lugxoff [expr {($_bodywidth - $_lugwidth) / 2.0}]
-        set lugyoff [expr {($_bodyheight - $_lugheight) / 2.0}]
+        set lugyoff [expr {($_bodywidth - $_lugwidth) / 2.0}]
+        set lugxoff [expr {($_bodyheight - $_lugheight) / 2.0}]
         install solderlugs using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point \
                                       $options(-origin) \
-                                      [list $_bodydepth $lugxoff $lugyoff]] \
-                        -vec1 [list 0 $_lugwidth 0] \
+                                      [list $lugxoff -$_bodydepth $lugyoff]] \
+                        -vec1 [list $_lugwidth 0 0] \
                         -vec2 [list 0 0 $_lugheight]] \
-              -vector [list $_lugdepth 0 0] \
+              -vector [list 0 -$_lugdepth 0] \
               -color {192 192 192}
     }
     method FlangeSurface {} {
@@ -119,14 +119,14 @@ snit::type DCStrainRelief {
         install flange using Cylinder %AUTO% \
               -bottom $options(-origin) \
               -radius [expr {$_flangedia / 2.0}] \
-              -height $_flangedepth \
-              -direction X \
+              -height -$_flangedepth \
+              -direction Y \
               -color {0 0 0}
         install body using Cylinder %AUTO% \
               -bottom $options(-origin) \
               -radius [expr {$_bodydia / 2.0}] \
-              -height -$_bodydepth \
-              -direction X \
+              -height $_bodydepth \
+              -direction Y \
               -color {0 0 0}
     }
     method print {{fp stdout}} {
@@ -159,37 +159,37 @@ snit::type Fan02510SS_05P_AT00 {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list $_fanwidth_height 0 0] \
+                        -vec1 [list 0 $_fanwidth_height 0] \
                         -vec2 [list 0 0 $_fanwidth_height]] \
-              -vector [list 0 $_fandepth 0] \
+              -vector [list $_fandepth 0 0] \
               -color {0 0 0}
         set mhXYoff [expr {($_fanwidth_height-$_fanmholespacing)/2.0}]
         install mh1 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $mhXYoff 0 $mhXYoff]] \
+                       [list 0 $mhXYoff $mhXYoff]] \
               -radius [expr {$_fanmholedia/2.0}] \
-              -direction Y \
+              -direction X \
               -height $_fandepth \
               -color {255 255 255}
         install mh2 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list [expr {$mhXYoff+$_fanmholespacing}] 0 $mhXYoff]] \
+                       [list 0 [expr {$mhXYoff+$_fanmholespacing}] $mhXYoff]] \
               -radius [expr {$_fanmholedia/2.0}] \
-              -direction Y \
+              -direction X \
               -height $_fandepth \
               -color {255 255 255}
         install mh3 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $mhXYoff 0  [expr {$mhXYoff+$_fanmholespacing}]]] \
+                       [list 0 $mhXYoff  [expr {$mhXYoff+$_fanmholespacing}]]] \
               -radius [expr {$_fanmholedia/2.0}] \
-              -direction Y \
+              -direction X \
               -height $_fandepth \
               -color {255 255 255}
         install mh4 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) \
-                       [list [expr {$mhXYoff+$_fanmholespacing}] 0 [expr {$mhXYoff+$_fanmholespacing}]]] \
+                       [list 0 [expr {$mhXYoff+$_fanmholespacing}] [expr {$mhXYoff+$_fanmholespacing}]]] \
               -radius [expr {$_fanmholedia/2.0}] \
-              -direction Y \
+              -direction X \
               -height $_fandepth \
               -color {255 255 255}
     }
@@ -200,53 +200,37 @@ snit::type Fan02510SS_05P_AT00 {
         $mh3  print $fp
         $mh4  print $fp
     }
-    method MountingHole {name i yBase height} {
+    method MountingHole {name i xBase height} {
         lassign [[set mh$i] cget -bottom] mhx mhy mhz
-        return [Cyninder create $name \
-                -bottom [list $mhx $yBase $mhz] \
+        return [Cylinder create $name \
+                -bottom [list $xBase $mhy $mhz] \
                 -radius [expr {$_fanmholedia/2.0}] \
-                -direction Y \
+                -direction X \
                 -height $height \
                 -color {255 255 255}]
     }
-    method FanHole {name yBase height} {
+    method RoundFanHole {name xBase height} {
         lassign $options(-origin) ox oy oz
-        set x [expr {$ox + ($_fanwidth_height/2.0)}]
-        set y $yBase
+        set x $xBase
+        set y [expr {$oy + ($_fanwidth_height/2.0)}]
         set z [expr {$oz + ($_fanwidth_height/2.0)}]
         return [Cylinder create $name \
                 -bottom [list $x $y $z] \
                 -radius [expr {$_fanholedia/2.0}] \
-                -direction Y \
+                -direction X \
                 -height $height \
                 -color {255 255 255}]
     }
-    method FanHoleDims {args} {
-        set i [from args -fanno 1]
-        set reportfp [from args -reportfp stdout]
-        set macrofp  [from args -macrofp  {}]
-        set origin [from args -origin [list 0.0 0.0 0.0]]
-        set rotation [from args -rotation 0.0]
-        set fansurf [$body cget -surface]
-        set corner  [$fansurf cget -cornerpoint]
-        lassign $corner ox oy oz
-        #puts stderr "*** $self FanHoleDims: corner = ($ox $oy $oz)"
-        set x [expr {$ox + $_fandepth}]
-        set y [expr {$oy + ($_fanwidth_height/2.0)}]
-        set z [expr {$oz + ($_fanwidth_height/2.0)}]
-        set points [list [list $x $y $z 1]]
-        #puts stderr "*** $self FanHoleDims: points (center) is $points"
-        set rotated [GeometryFunctions rotateZAxis $points [GeometryFunctions radians $rotation]]
-        #puts stderr "*** $self FanHoleDims: rotated (center) is $rotated"
-        set translated [GeometryFunctions translate3D $rotated $origin]
-        #puts stderr "*** $self FanHoleDims: translated (center) is $translated"
-        lassign [lindex $translated 0] ox oy oz H
-        #puts stderr "*** $self FanHoleDims: ox oy oz (center): ($ox $oy $oz)"
-        puts $reportfp [format {Fan%d: Center {%g %g %g}, Diameter %g} $i $ox $oy $oz $_fanholedia]
-        if {$macrofp ne {}} {
-            puts $macrofp [format {    typevariable _fan%dCenter {%g %g %g}} $i $ox $oy $oz]
-            puts $macrofp [format {    typevariable _fan%dDiameter %g} $i $_fanholedia]
-        }
+    method SquareFanHole {name xBase height} {
+        lassign $options(-origin) ox oy oz
+        return [PrismSurfaceVector %AUTO% \
+                -surface [PolySurface  create %AUTO% \
+                          -rectangle yes \
+                          -cornerpoint [list $xBase $oy $oz] \
+                          -vec1 [list 0 $_fanwidth_height 0] \
+                          -vec2 [list 0 0 $_fanwidth_height]] \
+                -vector [list $height 0 0] \
+                -color {255 255 255}]
     }
 }
 

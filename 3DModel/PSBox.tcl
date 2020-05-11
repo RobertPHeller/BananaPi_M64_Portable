@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:53:56 2020
-#  Last Modified : <200509.1352>
+#  Last Modified : <200510.1950>
 #
 #  Description	
 #
@@ -87,125 +87,125 @@ snit::type CU_3002A_Base {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list $_CU_3002A_baselength 0 0] \
-                        -vec2 [list 0 $_CU_3002A_basewidth 0]] \
+                        -vec1 [list 0 $_CU_3002A_baselength 0] \
+                        -vec2 [list $_CU_3002A_basewidth 0 0]] \
               -vector [list 0 0 $_CU_3002A_thickness] \
               -color {192 192 192}
         install front using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list 0 $_CU_3002A_basewidth 0] \
+                        -vec1 [list $_CU_3002A_basewidth 0 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list $_CU_3002A_thickness 0 0] \
+              -vector [list 0 $_CU_3002A_thickness 0] \
               -color {192 192 192}
         install back using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list $_CU_3002A_baselength 0 0]] \
-                        -vec1 [list 0 $_CU_3002A_basewidth 0] \
+                                      [list 0 $_CU_3002A_baselength 0]] \
+                        -vec1 [list $_CU_3002A_basewidth 0 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list -$_CU_3002A_thickness 0 0] \
+              -vector [list 0 -$_CU_3002A_thickness 0] \
               -color {192 192 192}
         install leftfrontflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list 0 $_CU_3002A_basewidth 0]] \
-                        -vec1 [list $_CU_3002A_baseflangewidth 0 0] \
+                                      [list $_CU_3002A_basewidth 0 0]] \
+                        -vec1 [list 0 $_CU_3002A_baseflangewidth 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         lassign [[$leftfrontflange cget -surface] cget -cornerpoint] lffx lffy lffz
         install leftfrontflangehole using Cylinder %AUTO% \
-              -bottom [list [expr {($lffx + $_CU_3002A_baseflangewidth) - $_CU_3002A_baseholeoffset}] \
-                       $lffy  \
+              -bottom [list $lffx \
+                       [expr {($lffy + $_CU_3002A_baseflangewidth) - $_CU_3002A_baseholeoffset}]  \
                        [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
               -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
         install leftbottomflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list 0 $_CU_3002A_basewidth 0]] \
-                        -vec1 [list $_CU_3002A_baselength 0 0] \
+                                      [list $_CU_3002A_basewidth 0 0]] \
+                        -vec1 [list 0 $_CU_3002A_baselength 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseflangewidth]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         install leftbackflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list $_CU_3002A_baselength $_CU_3002A_basewidth 0]] \
-                        -vec1 [list -$_CU_3002A_baseflangewidth 0 0] \
+                                      [list $_CU_3002A_basewidth $_CU_3002A_baselength 0]] \
+                        -vec1 [list 0 -$_CU_3002A_baseflangewidth 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}                        
         lassign [[$leftbackflange cget -surface] cget -cornerpoint] lffx lffy lffz
         install leftbackflangehole using Cylinder %AUTO% \
-              -bottom [list [expr {($lffx - $_CU_3002A_baseflangewidth) + $_CU_3002A_baseholeoffset}] \
-                       $lffy  \
+              -bottom [list $lffx  \
+                       [expr {($lffy - $_CU_3002A_baseflangewidth) + $_CU_3002A_baseholeoffset}] \
                        [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
               -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
-                install leftfrontflange using PrismSurfaceVector %AUTO% \
+        install leftfrontflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list 0 $_CU_3002A_basewidth 0]] \
-                        -vec1 [list $_CU_3002A_baseflangewidth 0 0] \
+                                      [list $_CU_3002A_basewidth 0 0]] \
+                        -vec1 [list 0 $_CU_3002A_baseflangewidth 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         install rightfrontflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
                                       [list 0 0 0]] \
-                        -vec1 [list $_CU_3002A_baseflangewidth 0 0] \
+                        -vec1 [list 0 $_CU_3002A_baseflangewidth 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         lassign [[$rightfrontflange cget -surface] cget -cornerpoint] lffx lffy lffz
         install rightfrontflangehole using Cylinder %AUTO% \
-              -bottom [list [expr {($lffx + $_CU_3002A_baseflangewidth) - $_CU_3002A_baseholeoffset}] \
-                       $lffy  \
+              -bottom [list $lffx  \
+                       [expr {($lffy + $_CU_3002A_baseflangewidth) - $_CU_3002A_baseholeoffset}] \
                        [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
               -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
         install rightbottomflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
                                       [list 0 0 0]] \
-                        -vec1 [list $_CU_3002A_baselength 0 0] \
+                        -vec1 [list 0 $_CU_3002A_baselength 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseflangewidth]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}
         install rightbackflange using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list $_CU_3002A_baselength 0 0]] \
-                        -vec1 [list -$_CU_3002A_baseflangewidth 0 0] \
+                                      [list 0 $_CU_3002A_baselength 0]] \
+                        -vec1 [list 0 -$_CU_3002A_baseflangewidth 0] \
                         -vec2 [list 0 0 $_CU_3002A_baseheight]] \
-              -vector [list 0 -$_CU_3002A_thickness 0] \
+              -vector [list -$_CU_3002A_thickness 0 0] \
               -color {192 192 192}                        
         lassign [[$rightbackflange cget -surface] cget -cornerpoint] lffx lffy lffz
         install rightbackflangehole using Cylinder %AUTO% \
-              -bottom [list [expr {($lffx - $_CU_3002A_baseflangewidth) + $_CU_3002A_baseholeoffset}] \
-                       $lffy  \
+              -bottom [list $lffx  \
+                       [expr {($lffy - $_CU_3002A_baseflangewidth) + $_CU_3002A_baseholeoffset}] \
                        [expr {($lffz + $_CU_3002A_baseheight) - $_CU_3002A_baseholeheightoffset}]] \
               -radius [expr {$_CU_3002A_baseholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
     }
     method print {{fp stdout}} {
@@ -243,8 +243,8 @@ snit::type CU_3002A_Cover {
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
                                       [list $_CU_3002A_thickness $_CU_3002A_thickness [expr {$_CU_3002A_thickness + $_CU_3002A_coverheight}]]]\
-                        -vec1 [list $_CU_3002A_coverlength 0 0] \
-                        -vec2 [list 0 $_CU_3002A_coverwidth 0]] \
+                        -vec1 [list 0 $_CU_3002A_coverlength 0] \
+                        -vec2 [list $_CU_3002A_coverwidth 0 0]] \
               -vector [list 0 0 -$_CU_3002A_thickness] \
               -color  {192 192 192}
         install left using PrismSurfaceVector %AUTO% \
@@ -252,51 +252,51 @@ snit::type CU_3002A_Cover {
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
                                       [list $_CU_3002A_thickness $_CU_3002A_thickness $_CU_3002A_thickness]]\
-                        -vec1 [list $_CU_3002A_coverlength 0 0] \
+                        -vec1 [list 0 $_CU_3002A_coverlength 0] \
                         -vec2 [list 0 0 $_CU_3002A_coverheight]] \
               -vector [list 0 -$_CU_3002A_thickness 0] \
               -color  {192 192 192}
         lassign [[$left cget -surface] cget -cornerpoint] lx ly lz
         install leftfronthole using Cylinder %AUTO% \
-              -bottom [list [expr {$lx + $_CU_3002A_coverholeoffset}] \
-                       $ly [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -bottom [list $lx [expr {$ly + $_CU_3002A_coverholeoffset}] \
+                       [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
               -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
         install leftbackhole  using Cylinder %AUTO% \
-              -bottom [list [expr {$lx + $_CU_3002A_coverlength - $_CU_3002A_coverholeoffset}] \
-                       $ly [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -bottom [list $lx [expr {$ly + $_CU_3002A_coverlength - $_CU_3002A_coverholeoffset}] \
+                       [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
               -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
         install right using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point \
                                       $options(-origin) \
-                                      [list $_CU_3002A_thickness \
-                                       [expr {$_CU_3002A_thickness + $_CU_3002A_coverwidth}] \
+                                      [list [expr {$_CU_3002A_thickness + $_CU_3002A_coverwidth}] \
+                                       $_CU_3002A_thickness \
                                        $_CU_3002A_thickness]]\
-                        -vec1 [list $_CU_3002A_coverlength 0 0] \
+                        -vec1 [list 0 $_CU_3002A_coverlength 0] \
                         -vec2 [list 0 0 $_CU_3002A_coverheight]] \
               -vector [list 0 -$_CU_3002A_thickness 0] \
               -color  {192 192 192}
         lassign [[$right cget -surface] cget -cornerpoint] rx ry rz
         install rightfronthole using Cylinder %AUTO% \
-              -bottom [list [expr {$rx + $_CU_3002A_coverholeoffset}] \
-                       $ry [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -bottom [list $rx [expr {$ry + $_CU_3002A_coverholeoffset}] \
+                       [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
               -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
         install rightbackhole  using Cylinder %AUTO% \
-              -bottom [list [expr {$rx + $_CU_3002A_coverlength - $_CU_3002A_coverholeoffset}] \
-                       $ry [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
+              -bottom [list $rx [expr {$ry + $_CU_3002A_coverlength - $_CU_3002A_coverholeoffset}] \
+                       [expr {$_CU_3002A_thickness+$_CU_3002A_coverholeheightoffset}]] \
               -radius [expr {$_CU_3002A_coverholediameter / 2.0}] \
               -height -$_CU_3002A_thickness \
-              -direction Y \
+              -direction X \
               -color {255 255 255}
     }
     method print {{fp stdout}} {
@@ -335,26 +335,30 @@ snit::type PSBox {
     CU_3002ADims
     Fan02510SS_05P_AT00Dims
     PSDims
+    PCBDims
+    701w202_890462Dims
     typevariable _standoff_height 9.0
     typevariable _standoff_dia 5.0
-    typevariable _inletYoff  24
+    typevariable _inletXoff  4
     typevariable _inletZoff  19
-    typevariable _dcstrainYoff 26.9875
+    typevariable _dcstrainXoff 26.9875
     typevariable _dcstrainZoff 20.6375
-    proc _fanYoff {} {
+    proc _fanXoff {} {
         return [expr {$_CU_3002A_thickness + $_CU_3002A_coverwidth}]
     }
     proc _fanZoff {} {
         return [expr {$_CU_3002A_baseflangewidth+$_CU_3002A_thickness}]
     }
-    proc _fan1Xoff {} {
+    proc _fan1Yoff {} {
         return [expr {($_CU_3002A_coverlength-(2*$_fanwidth_height))/2.0}]
     }
-    proc _fan2Xoff {} {
-        return [expr {[_fan1Xoff]+$_fanwidth_height}]
+    proc _fan2Yoff {} {
+        return [expr {[_fan1Yoff]+$_fanwidth_height}]
     }
     component box
     component pcb
+    delegate method MountingHole to pcb
+    delegate method Standoff to pcb
     component standoff1
     component standoff2
     component standoff3
@@ -364,17 +368,30 @@ snit::type PSBox {
     component mh3
     component mh4
     component inlet
+    method InletFlangCutout {name panelDepth} {
+        return [PrismSurfaceVector create $name \
+                -surface [$inlet FlangeSurface] \
+                -vector [list 0 $panelDepth 0] -color {255 255 255}]
+    }
     component dcstrainrelief
     component fan1
+    component fan1mh1
+    component fan1mh2
+    component fan1mh3
+    component fan1mh4
     component fan2
+    component fan2mh1
+    component fan2mh2
+    component fan2mh3
+    component fan2mh4
     constructor {args} {
         $self configurelist $args
         install box using CU_3002A %AUTO% \
               -origin $options(-origin)
         install pcb using PSOnPCB %AUTO% \
               -origin [GeometryFunctions translate3D_point $options(-origin) \
-                       [list [expr {($_CU_3002A_baselength-$_psPCBlength)/2.0}] \
-                        [expr {($_CU_3002A_basewidth-$_psPCBwidth)/2.0}] \
+                       [list [expr {($_CU_3002A_basewidth-$_psPCBwidth)/2.0}] \
+                        [expr {($_CU_3002A_baselength-$_psPCBlength)/2.0}] \
                         [expr {$_CU_3002A_thickness+$_standoff_height}]]]
         lassign $options(-origin) x y z
         set standoff1 [$pcb Standoff %AUTO% 1 [expr {$z + $_CU_3002A_thickness}] $_standoff_height $_standoff_dia {255 255 0}]
@@ -387,17 +404,30 @@ snit::type PSBox {
         set mh4       [$pcb MountingHole %AUTO% 4 $z $_CU_3002A_thickness]
         install inlet using 701w202_890462 %AUTO% \
               -origin [GeometryFunctions translate3D_point $options(-origin) \
-                       [list 0 $_inletYoff $_inletZoff]]
+                       [list $_inletXoff $_CU_3002A_baselength $_inletZoff]]
         install dcstrainrelief using DCStrainRelief %AUTO% \
               -origin [GeometryFunctions translate3D_point $options(-origin) \
-                       [list $_CU_3002A_baselength $_dcstrainYoff $_dcstrainZoff]]
+                       [list $_dcstrainXoff 0 $_dcstrainZoff]]
         install fan1 using Fan02510SS_05P_AT00 %AUTO% \
               -origin [GeometryFunctions translate3D_point $options(-origin) \
-                       [list [_fan1Xoff] [_fanYoff] [_fanZoff]]]
+                       [list [_fanXoff] [_fan1Yoff] [_fanZoff]]]
         install fan2 using Fan02510SS_05P_AT00 %AUTO% \
               -origin [GeometryFunctions translate3D_point $options(-origin) \
-                       [list [_fan2Xoff] [_fanYoff] [_fanZoff]]]
+                       [list [_fanXoff] [_fan2Yoff] [_fanZoff]]]
+        lassign [$fan1 cget -origin] fx fy fz
+        set fan1mh1 [$fan1 MountingHole %AUTO% 1 $fx -$_CU_3002A_thickness]
+        set fan1mh2 [$fan1 MountingHole %AUTO% 2 $fx -$_CU_3002A_thickness]
+        set fan1mh3 [$fan1 MountingHole %AUTO% 3 $fx -$_CU_3002A_thickness]
+        set fan1mh4 [$fan1 MountingHole %AUTO% 4 $fx -$_CU_3002A_thickness]
+        set fan2mh1 [$fan2 MountingHole %AUTO% 1 $fx -$_CU_3002A_thickness]
+        set fan2mh2 [$fan2 MountingHole %AUTO% 2 $fx -$_CU_3002A_thickness]
+        set fan2mh3 [$fan2 MountingHole %AUTO% 3 $fx -$_CU_3002A_thickness]
+        set fan2mh4 [$fan2 MountingHole %AUTO% 4 $fx -$_CU_3002A_thickness]
     }
+    delegate method SquareFanHole1 to fan1 as SquareFanHole
+    delegate method SquareFanHole2 to fan2 as SquareFanHole
+    delegate method RoundFanHole1 to fan1 as RoundFanHole
+    delegate method RoundFanHole2 to fan2 as RoundFanHole
     method print {{fp stdout}} {
         $box print $fp
         $pcb print $fp
@@ -413,67 +443,14 @@ snit::type PSBox {
         $dcstrainrelief print $fp
         $fan1      print $fp
         $fan2      print $fp
-    }
-    method CaseHolesAndCutouts {args} {
-        set reportfp [from args -reportfp stdout]
-        set macrofp  [from args -macrofp  {}]
-        if {$macrofp ne {}} {
-            puts -nonewline $macrofp "snit::macro PSBoxHolesAndCutouts {} "
-            puts $macrofp [format {%c} 123]
-        }
-        set origin [from args -origin [list 0.0 0.0 0.0]]
-        set rotation [from args -rotation 0.0]
-        set points [list]
-        for {set i 1} {$i <= 4} {incr i} {
-            lassign [$pcb MountingHoleBottom $i] mx my mz
-            lappend points [list $mx $my $mz 1]
-        }
-        set rotated [GeometryFunctions rotateZAxis $points [GeometryFunctions radians $rotation]]
-        set translated [GeometryFunctions translate3D $rotated $origin]
-        puts $reportfp "Mounting holes:"
-        set i 1
-        foreach p $translated {
-            lassign $p x y z h
-            puts $reportfp [format {%d %g %g %g} $i $x $y $z]
-            if {$macrofp ne {}} {
-                puts $macrofp [format {    typevariable _psBoxMH%d [list %g %g 0]} $i $x $y]
-            }
-            incr i
-        }
-        puts $reportfp [format {Radius: %g} [$pcb MountingHoleRadius]]
-        if {$macrofp ne {}} {
-            puts $macrofp [format {    typevariable _psBoxMHRadius %g} [$pcb MountingHoleRadius]]
-        }
-        set inletSlangeSurf [$inlet FlangeSurface]
-        set flangecorner [$inletSlangeSurf cget -cornerpoint]
-        set flangevec1   [$inletSlangeSurf cget -vec1]
-        set flangevec2   [$inletSlangeSurf cget -vec2]
-        set points [GeometryFunctions MakeHomogenous [list $flangecorner $flangevec1 $flangevec2]]
-        set rotated [GeometryFunctions rotateZAxis $points [GeometryFunctions radians $rotation]]
-        set translated [GeometryFunctions translate3D $rotated $origin]
-        puts $reportfp "Inlet opening:"
-        lassign [lindex $translated 0] x y z h
-        puts $reportfp [format {-cornerpoint %g %g %g} $x $y $z]
-        if {$macrofp ne {}} {
-            puts $macrofp [format {    typevariable _inletCornerPoint [list %g %g %g]} $x $y $z]
-        }
-        lassign [lindex $rotated 1] x y z h
-        puts $reportfp [format {-vec1 %g %g %g} $x $y $z]
-        if {$macrofp ne {}} {
-            puts $macrofp [format {    typevariable _inletVec1 [list %g %g %g]} $x $y $z]
-        }
-        lassign [lindex $rotated 2] x y z h
-        puts $reportfp [format {-vec2 %g %g %g} $x $y $z]
-        if {$macrofp ne {}} {
-            puts $macrofp [format {    typevariable _inletVec2 [list %g %g %g]} $x $y $z]
-        }
-        $fan1 FanHoleDims -fanno 1 -reportfp $reportfp -macrofp $macrofp \
-              -origin $origin -rotation $rotation
-        $fan2 FanHoleDims -fanno 2 -reportfp $reportfp -macrofp $macrofp \
-              -origin $origin -rotation $rotation
-        if {$macrofp ne {}} {
-            puts $macrofp [format {%c} 125]
-        }
+        $fan1mh1   print $fp
+        $fan1mh2   print $fp
+        $fan1mh3   print $fp
+        $fan1mh4   print $fp
+        $fan2mh1   print $fp
+        $fan2mh2   print $fp
+        $fan2mh3   print $fp
+        $fan2mh4   print $fp
     }
 }
 
