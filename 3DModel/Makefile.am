@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:36:05 2020
-#  Last Modified : <200515.0846>
+#  Last Modified : <200515.1626>
 #
 #  Description	
 #
@@ -56,7 +56,8 @@ MakePkgIndex = $(top_srcdir)/BuildScripts/MakePkgIndex.kit
 BananaPiM64ModelLibScripts = Common.tcl M64.tcl PSBox.tcl Case.tcl \
 	PowerSupply.tcl Diode.tcl MOV.tcl TerminalBlocks.tcl \
 	FuseHolder.tcl PSPCB.tcl Electromech.tcl Capacitors.tcl \
-	DCDC-5-12.tcl LCDMountingBracket.tcl LCDScreen.tcl
+	DCDC-5-12.tcl LCDMountingBracket.tcl LCDScreen.tcl \
+	HDMIConverter.tcl
 
 EXTRA_DIST += $(BananaPiM64ModelLibScripts)
 

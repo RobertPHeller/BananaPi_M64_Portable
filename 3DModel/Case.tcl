@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200515.1144>
+#  Last Modified : <200515.1912>
 #
 #  Description	
 #
@@ -46,6 +46,7 @@ package require PSBox
 package require DCDC_5_12
 package require LCDScreen
 package require LCDMountingBracket
+package require HDMIConverter
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15 * 25.4}]
@@ -255,6 +256,7 @@ snit::type PortableM64CaseBackPanel {
 snit::type PortableM64CaseBottomPanel {
     Common
     M64Dims
+    HDMIConverterDims
     option -psbox -default {} -readonly yes
     option -dcdc512 -default {} -readonly yes
     component panel
@@ -276,6 +278,15 @@ snit::type PortableM64CaseBottomPanel {
     component dcdc512_standoff2
     component dcdc512_standoff3
     component dcdc512_standoff4
+    component hdmiconvertermainboard
+    component hdmiconvertermainboard_mh1
+    component hdmiconvertermainboard_mh2
+    component hdmiconvertermainboard_mh3
+    component hdmiconvertermainboard_mh4
+    component hdmiconvertermainboard_standoff1
+    component hdmiconvertermainboard_standoff2
+    component hdmiconvertermainboard_standoff3
+    component hdmiconvertermainboard_standoff4
     component widthdim
     component lengthdim
     constructor {args} {
@@ -334,6 +345,12 @@ snit::type PortableM64CaseBottomPanel {
             set dcdc512_standoff3 [$options(-dcdc512) Standoff %AUTO% 3 [expr {$cz + [$panel PanelThickness]}] 6]
             set dcdc512_standoff4 [$options(-dcdc512) Standoff %AUTO% 4 [expr {$cz + [$panel PanelThickness]}] 6]
         }
+        set panelsurf [$panel cget -surface]
+        lassign [$panelsurf cget -vec2] dummy panelheight dummy
+        install hdmiconvertermainboard using HDMIConverterMainBoard %AUTO% \
+              -origin [list [expr {$cx + 12.7}] \
+                       [expr {$cy + $panelheight - (12.7+$_HDMIConv_mainboardHeight)}] \
+                       [expr {$cz + 6.35}]]
         set psurf [$panel cget -surface]
         set vec1  [$psurf cget -vec1]
         set w [lindex $vec1 0]
@@ -377,6 +394,7 @@ snit::type PortableM64CaseBottomPanel {
             $dcdc512_standoff3 print $fp
             $dcdc512_standoff4 print $fp
         }
+        $hdmiconvertermainboard print $fp
         $widthdim print $fp
         $lengthdim print $fp
     }
@@ -898,8 +916,8 @@ snit::type PortableM64Case {
         install caseTop    using PortableM64CaseTop %AUTO%    -origin $options(-origin)
     }
     method print {{fp stdout}} {
-        #$caseBottom print $fp
-        $caseMiddle print $fp
+        $caseBottom print $fp
+        #$caseMiddle print $fp
         #$caseTop    print $fp
     }
     method addPart {partListArrayName} {
