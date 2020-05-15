@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200515.1128>
+#  Last Modified : <200515.1144>
 #
 #  Description	
 #
@@ -755,12 +755,28 @@ snit::type PortableM64CaseMiddlePanel {
               -origin [list [expr {$cx + $wOffset}] \
                        [expr {$cy + 12.7}] \
                        [expr {$cz-((6.5/2.0)+(((1.0/2.0)*25.4)/2.0))}]]
+        set leftbracket_m1 [$leftbracket MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set leftbracket_m2 [$leftbracket MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set leftbracket_m3 [$leftbracket MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
+        set leftbracket_m4 [$leftbracket MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
+        set rightbracket_m1 [$rightbracket MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set rightbracket_m2 [$rightbracket MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set rightbracket_m3 [$rightbracket MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
+        set rightbracket_m4 [$rightbracket MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
     }
     method print {{fp stdout}} {
         $panel print $fp
         $leftbracket print $fp
         $rightbracket print $fp
         $screen print $fp
+        $leftbracket_m1 print $fp
+        $leftbracket_m2 print $fp
+        $leftbracket_m3 print $fp
+        $leftbracket_m4 print $fp
+        $rightbracket_m1 print $fp
+        $rightbracket_m2 print $fp
+        $rightbracket_m3 print $fp
+        $rightbracket_m4 print $fp
     }
 }
 
