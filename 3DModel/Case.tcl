@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200514.2141>
+#  Last Modified : <200514.2311>
 #
 #  Description	
 #
@@ -46,7 +46,7 @@ package require PSBox
 package require DCDC_5_12
 
 snit::macro PortableM64CaseCommon {} {
-    typevariable _Width [expr {14 * 25.4}]
+    typevariable _Width [expr {15 * 25.4}]
     typevariable _Height [expr {10 * 25.4}]
     typevariable _BottomDepth [expr {1.75 * 25.4}]
     typevariable _MiddleTotalDepth [expr {1.5 * 25.4}]

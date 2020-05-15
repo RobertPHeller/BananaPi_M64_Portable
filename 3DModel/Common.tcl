@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 09:45:23 2020
-#  Last Modified : <200514.2136>
+#  Last Modified : <200515.0910>
 #
 #  Description	
 #
@@ -511,6 +511,90 @@ snit::type PostScriptFile {
         puts $psFP {%%EOF}
         close $psFP
         set psFP {}
+    }
+}
+
+snit::type Angle {
+    component a
+    component b
+    proc signof {x} {
+        if {$x < 0} {
+            return -1
+        } elseif {$x > 0} {
+            return 1
+        } else {
+            return 0
+        }
+    }
+    option -origin -type point -default {0.0 0.0 0.0} -readonly yes
+    option -height -type snit::double -default 0.0 -readonly yes
+    option -width -type snit::double -default 0.0 -readonly yes
+    option -length -type snit::double -default 0.0 -readonly yes
+    option -thickness -type snit::double -default 0.0 -readonly yes
+    option -direction -type Direction -readonly yes -default Y
+    option -color -type color -default {192 192 192} -readonly yes
+    constructor {args} {
+        $self configurelist $args
+        switch $options(-direction) {
+            X {
+                install a using PrismSurfaceVector %AUTO% \
+                      -surface [PolySurface  create %AUTO% \
+                                -rectangle yes \
+                                -cornerpoint $options(-origin) \
+                                -vec1 [list $options(-length) 0 0] \
+                                -vec2 [list 0 $options(-width) 0]] \
+                      -vector [list  0 0 [expr {[signof $options(-height)]*$options(-thickness)}]] \
+                      -color $options(-color)
+                install b using PrismSurfaceVector %AUTO% \
+                      -surface [PolySurface  create %AUTO% \
+                                -rectangle yes \
+                                -cornerpoint $options(-origin) \
+                                -vec1 [list $options(-length) 0 0] \
+                                -vec2 [list 0 0 $options(-height)]] \
+                      -vector [list 0 [expr {[signof $options(-width)]*$options(-thickness)}] 0] \
+                      -color $options(-color)
+            }
+            Y {
+                install a using PrismSurfaceVector %AUTO% \
+                      -surface [PolySurface  create %AUTO% \
+                                -rectangle yes \
+                                -cornerpoint $options(-origin) \
+                                -vec1 [list $options(-width) 0 0] \
+                                -vec2 [list 0 $options(-length) 0]] \
+                      -vector [list  0 0 [expr {[signof $options(-height)]*$options(-thickness)}]] \
+                      -color $options(-color)
+                install b using PrismSurfaceVector %AUTO% \
+                      -surface [PolySurface  create %AUTO% \
+                                -rectangle yes \
+                                -cornerpoint $options(-origin) \
+                                -vec1 [list 0 0 $options(-height)] \
+                                -vec2 [list 0 $options(-length) 0]] \
+                      -vector [list [expr {[signof $options(-width)]*$options(-thickness)}] 0 0] \
+                      -color $options(-color)
+            }
+            Z {
+                install a using PrismSurfaceVector %AUTO% \
+                      -surface [PolySurface  create %AUTO% \
+                                -rectangle yes \
+                                -cornerpoint $options(-origin) \
+                                -vec1 [list 0 0 $options(-length)] \
+                                -vec2 [list 0 $options(-width) 0]] \
+                      -vector [list [expr {[signof $options(-height)]*$options(-thickness)}] 0 0] \
+                      -color $options(-color)
+                install b using PrismSurfaceVector %AUTO% \
+                      -surface [PolySurface  create %AUTO% \
+                                -rectangle yes \
+                                -cornerpoint $options(-origin) \
+                                -vec1 [list 0 0 $options(-length)] \
+                                -vec2 [list $options(-height) 0 0]] \
+                      -vector [list 0 [expr {[signof $options(-width)]*$options(-thickness)}] 0] \
+                      -color $options(-color)
+            }
+        }
+    }
+    method print {{fp stdout}} {
+        $a print $fp
+        $b print $fp
     }
 }
 
