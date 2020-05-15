@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200510.1955>
+#  Last Modified : <200514.2141>
 #
 #  Description	
 #
@@ -43,6 +43,7 @@
 package require Common
 package require M64
 package require PSBox
+package require DCDC_5_12
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {14 * 25.4}]
@@ -253,6 +254,7 @@ snit::type PortableM64CaseBottomPanel {
     Common
     M64Dims
     option -psbox -default {} -readonly yes
+    option -dcdc512 -default {} -readonly yes
     component panel
     delegate method * to panel except {print}
     delegate option * to panel
@@ -264,6 +266,16 @@ snit::type PortableM64CaseBottomPanel {
     component psbox_m2
     component psbox_m3
     component psbox_m4
+    component dcdc512_m1
+    component dcdc512_m2
+    component dcdc512_m3
+    component dcdc512_m4
+    component dcdc512_standoff1
+    component dcdc512_standoff2
+    component dcdc512_standoff3
+    component dcdc512_standoff4
+    component widthdim
+    component lengthdim
     constructor {args} {
         install panel using PortableM64CasePanel %AUTO% \
               -origin [from args -origin]
@@ -310,6 +322,36 @@ snit::type PortableM64CaseBottomPanel {
             set psbox_m3 [$options(-psbox) MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
             set psbox_m4 [$options(-psbox) MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
         }
+        if {$options(-dcdc512) ne {}} {
+            set dcdc512_m1 [$options(-dcdc512) MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+            set dcdc512_m2 [$options(-dcdc512) MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+            set dcdc512_m3 [$options(-dcdc512) MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
+            set dcdc512_m4 [$options(-dcdc512) MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
+            set dcdc512_standoff1 [$options(-dcdc512) Standoff %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] 6]
+            set dcdc512_standoff2 [$options(-dcdc512) Standoff %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] 6]
+            set dcdc512_standoff3 [$options(-dcdc512) Standoff %AUTO% 3 [expr {$cz + [$panel PanelThickness]}] 6]
+            set dcdc512_standoff4 [$options(-dcdc512) Standoff %AUTO% 4 [expr {$cz + [$panel PanelThickness]}] 6]
+        }
+        set psurf [$panel cget -surface]
+        set vec1  [$psurf cget -vec1]
+        set w [lindex $vec1 0]
+        set mid [expr {$w / 2.0}]
+        set toffz -20
+        install widthdim using Dim3D %AUTO% \
+              -point1 [$panel PanelCornerPoint] \
+              -point2 [list [expr {$cx + $w}] $cy $cz] \
+              -textpoint [list [expr {$cx + $mid}] $cy [expr {$cz + $toffz}]] \
+              -plane P \
+              -additionaltext " mm"
+        set vec2 [$psurf cget -vec2]
+        set l [lindex $vec2 1]
+        set mid [expr {$l / 2.0}]
+        install lengthdim using Dim3D %AUTO% \
+              -point1 [$panel PanelCornerPoint] \
+              -point2 [list $cx [expr {$cy + $l}] $cz] \
+              -textpoint [list $cx [expr {$cy + $mid}] [expr {$cz + $toffz}]] \
+              -plane P \
+              -additionaltext " mm"
     }
     method print {{fp stdout}} {
         $panel print $fp
@@ -323,6 +365,18 @@ snit::type PortableM64CaseBottomPanel {
             $psbox_m3 print $fp
             $psbox_m4 print $fp
         }
+        if {$options(-dcdc512) ne {}} {
+            $dcdc512_m1 print $fp
+            $dcdc512_m2 print $fp
+            $dcdc512_m3 print $fp
+            $dcdc512_m4 print $fp
+            $dcdc512_standoff1 print $fp
+            $dcdc512_standoff2 print $fp
+            $dcdc512_standoff3 print $fp
+            $dcdc512_standoff4 print $fp
+        }
+        $widthdim print $fp
+        $lengthdim print $fp
     }
     method printPS {} {
         set fp  [PostScriptFile fp]
@@ -593,6 +647,10 @@ snit::type PortableM64CaseBottom {
     component back
     component m64
     component psbox
+    component dcdc512
+    typevariable _dcdc512Xoff 100
+    typevariable _dcdc512Yoff [expr {1*25.4}]
+    typevariable _dcdc512StandoffHeight 6
     constructor {args} {
         $self configurelist $args
         install psbox using PSBox %AUTO% \
@@ -602,9 +660,20 @@ snit::type PortableM64CaseBottom {
                               $_CU_3002A_basewidth}] \
                         [expr {$_Height - $_CU_3002A_baselength - \
                          $_WallThickness}] \
-                        $_WallThickness]]
+                              $_WallThickness]]
+        install m64 using M64Board %AUTO% \
+              -origin [GeometryFunctions translate3D_point \
+                       $options(-origin) \
+                       [list [expr {$_m64XOff+$_WallThickness}] \
+                        [expr {$_m64YOff+$_WallThickness}] \
+                        [expr {$_m64Standoff+$_WallThickness}]]]
+        install dcdc512 using DCDC_5_12_Horiz12Right %AUTO% \
+            -origin [GeometryFunctions translate3D_point $options(-origin) \
+                     [list [expr {$_dcdc512Xoff + $_WallThickness}] \
+                      [expr {$_dcdc512Yoff + $_WallThickness}] \
+                      [expr {$_dcdc512StandoffHeight + $_WallThickness}]]]
         install bottom using PortableM64CaseBottomPanel %AUTO% \
-              -origin $options(-origin) -psbox $psbox
+              -origin $options(-origin) -psbox $psbox -dcdc512 $dcdc512
         install left   using PortableM64CaseBottomLeftPanel %AUTO% \
               -origin $options(-origin) \
               -depth $_BottomDepth
@@ -617,12 +686,6 @@ snit::type PortableM64CaseBottom {
         install back   using PortableM64CaseBottomBackPanel %AUTO% \
               -origin $options(-origin) \
               -depth $_BottomDepth -psbox $psbox
-        install m64 using M64Board %AUTO% \
-              -origin [GeometryFunctions translate3D_point \
-                       $options(-origin) \
-                       [list [expr {$_m64XOff+$_WallThickness}] \
-                        [expr {$_m64YOff+$_WallThickness}] \
-                        [expr {$_m64Standoff+$_WallThickness}]]]
     }
     method print {{fp stdout}} {
         $bottom print $fp
@@ -632,6 +695,7 @@ snit::type PortableM64CaseBottom {
         $back   print $fp
         $m64    print $fp
         $psbox  print $fp
+        $dcdc512 print $fp
     }
     method addPart {partListArrayName} {
         upvar $partListArrayName partListArray

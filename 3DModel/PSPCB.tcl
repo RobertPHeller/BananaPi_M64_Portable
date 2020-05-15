@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 13:36:01 2020
-#  Last Modified : <200509.1951>
+#  Last Modified : <200511.0943>
 #
 #  Description	
 #
@@ -329,31 +329,9 @@ snit::type PSOnPCB {
                        -direction X \
                        -height $l2L \
                        -color {0 0 0}]
-        set P1Y [expr {$_psdctermyoff + (5*2.54)}]
-        set P1X [expr {$_pstermxoff + ($_termwidth/2.0) + 2.54}]
-        set P1L 5.08
-        lappend wires [Cylinder create %AUTO% \
-                       -bottom [GeometryFunctions translate3D_point \
-                                $options(-origin) \
-                                [list $P1Y $P1X -$wireradius]] \
-                       -radius $wireradius \
-                       -direction X \
-                       -height $P1L \
-                       -color {255 0 0}]
-        set P2Y [expr {$P1Y - $P1L - 2.54}]
-        set P2X [expr {$P1X + 2.54}]
-        set P2L 7.62
-        lappend wires [Cylinder create %AUTO% \
-                       -bottom [GeometryFunctions translate3D_point \
-                                $options(-origin) \
-                                [list $P2Y $P2X -$wireradius]] \
-                       -radius $wireradius \
-                       -direction X \
-                       -height $P2L \
-                       -color {255 0 0}]
-        set M1Y [expr {$_psdctermyoff + 5.08 + 5.08}]
-        set M1X [expr {$P2X + 2.54}]
-        set M1L [expr {2.54*5}]
+        set M1Y [expr {$_psdctermyoff + (5*2.54)}]
+        set M1X [expr {$_pstermxoff + ($_termwidth/2.0) + 2.54}]
+        set M1L 5.08
         lappend wires [Cylinder create %AUTO% \
                        -bottom [GeometryFunctions translate3D_point \
                                 $options(-origin) \
@@ -362,6 +340,28 @@ snit::type PSOnPCB {
                        -direction X \
                        -height $M1L \
                        -color {0 0 0}]
+        set M2Y [expr {$M1Y - $M1L - 2.54}]
+        set M2X [expr {$M1X + 2.54}]
+        set M2L 7.62
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $M2Y $M2X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $M2L \
+                       -color {0 0 0}]
+        set P1Y [expr {$_psdctermyoff + 5.08 + 5.08}]
+        set P1X [expr {$M2X + 2.54}]
+        set P1L [expr {2.54*5}]
+        lappend wires [Cylinder create %AUTO% \
+                       -bottom [GeometryFunctions translate3D_point \
+                                $options(-origin) \
+                                [list $P1Y $P1X -$wireradius]] \
+                       -radius $wireradius \
+                       -direction X \
+                       -height $P1L \
+                       -color {255 0 0}]
         
         
     }

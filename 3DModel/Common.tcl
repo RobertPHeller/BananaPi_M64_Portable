@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 09:45:23 2020
-#  Last Modified : <200509.1028>
+#  Last Modified : <200514.2136>
 #
 #  Description	
 #
@@ -51,12 +51,9 @@ snit::integer cval -min 0 -max 255
 snit::listtype color -minlen 3 -maxlen 3 -type cval
 snit::enum Direction -values {X Y Z}
 
-## Generic solid cylinders
-snit::type Cylinder {
+snit::type Circle {
     option -bottom -type point -readonly yes -default {0 0 0}
     option -radius -type snit::double -readonly yes -default 1
-    option -height -type snit::double -readonly yes -default 1
-    option -color -type color -readonly yes -default {0 0 0}
     option -direction -type Direction -readonly yes -default Z
     variable index
     typevariable _index 20
@@ -66,23 +63,56 @@ snit::type Cylinder {
         incr _index
     }
     method print {{fp stdout}} {
-        puts $fp [eval [list format {DEFCOL %d %d %d}] $options(-color)]
         puts $fp [format {C%d = P (%f %f %f) VAL (%f) D%s} $index \
                   [lindex $options(-bottom) 0] \
                   [lindex $options(-bottom) 1] \
                   [lindex $options(-bottom) 2] \
                   $options(-radius) $options(-direction)]
-        puts $fp [format {b%d = PRISM C%d %f} $index $index $options(-height)]
+    }
+    method Index {} {return $index}
+    typemethod validate {obj} {
+        if {[catch {$obj info type} thetype]} {
+            error "Not a $type: $obj"
+        } elseif {$thetype ne $type} {
+            error "Not a $type: $obj"
+        } else {
+            return $obj
+        }
+    }
+}
+
+## Generic solid cylinders
+snit::type Cylinder {
+    component circle
+    delegate option * to circle
+    option -height -type snit::double -readonly yes -default 1
+    option -color -type color -readonly yes -default {0 0 0}
+    variable index
+    typevariable _index 20
+    constructor {args} {
+        install circle using Circle %AUTO% \
+              -bottom [from args -bottom {0 0 0}] \
+              -radius [from args -radius 1] \
+              -direction [from args -direction Z]
+        $self configurelist $args
+        set index $_index
+        incr _index
+    }
+    method print {{fp stdout}} {
+        puts $fp [eval [list format {DEFCOL %d %d %d}] $options(-color)]
+        $circle print $fp
+        puts $fp [format {b%d = PRISM C%d %f} $index [$circle Index] $options(-height)]
     }
     method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {xscale .01968} {yscale .01968}} {
-        set b $options(-bottom)
+        set b [$self cget -bottom]
         set xcenter [lindex $b $xi]
         set ycenter [lindex $b $yi]
-        set raduis  $options(-radius)
+        set raduis  [$self cget -radius]
         puts $fp [format {gsave %f %f translate %f %f scale} $xorg $yorg $xscale $yscale]
         puts $fp [format {newpath %f %f %f 0 360 arc fill} $xcenter $ycenter $raduis]
         puts $fp {grestore}
     }
+    method TheCircle {} {return $circle}
     typemethod validate {obj} {
         if {[catch {$obj info type} thetype]} {
             error "Not a $type: $obj"
@@ -197,6 +227,79 @@ snit::type PrismSurfaceVector {
         }
     }
 }
+
+snit::enum DimPlane -values {X Y Z P}
+
+snit::type NoteIndex {
+    variable index
+    typevariable _index 10
+    constructor {args} {
+        set index $_index
+        incr _index
+    }
+    method Index {} {return $index}
+}
+
+snit::type Dim3D {
+    option -point1 -type point -default {0.0 0.0 0.0} -readonly yes
+    option -point2 -type point -default {0.0 0.0 0.0} -readonly yes
+    option -textpoint -type point -default {0.0 0.0 0.0} -readonly yes
+    option -plane -type DimPlane -default P -readonly yes 
+    option -additionaltext -default {} -readonly yes
+    component index
+    constructor {args} {
+        $self configurelist $args
+        install index using NoteIndex %AUTO%
+    }
+    method print {{fp stdout}} {
+        puts $fp [format {n%d = DIM3 P(%f %f %f) P(%f %f %f) P(%f %f %f) %s "%s"} \
+                  [$index Index] [lindex $options(-point1) 0] \
+                  [lindex $options(-point1) 1] [lindex $options(-point1) 2] \
+                  [lindex $options(-point2) 0] [lindex $options(-point2) 1] \
+                  [lindex $options(-point2) 2] [lindex $options(-textpoint) 0] \
+                  [lindex $options(-textpoint) 1] \
+                  [lindex $options(-textpoint) 2] $options(-plane) $options(-additionaltext)]
+    }
+}
+
+
+snit::type DimDiameter {
+    option -textpoint -type point -default {0.0 0.0 0.0} -readonly yes
+    option -circle -type Circle -readonly yes -default {}
+    option -additionaltext -default {} -readonly yes
+    component index
+    constructor {args} {
+        $self configurelist $args
+        install index using NoteIndex %AUTO%
+    }
+    method print {{fp stdout}} {
+        puts $fp [format {n%d = DIMD C%d P(%f %f %f) "%s"} \
+                  [$index Index] [$options(-circle) Index] \
+                  [lindex $options(-textpoint) 0] \
+                  [lindex $options(-textpoint) 1] \
+                  [lindex $options(-textpoint) 2] $options(-additionaltext)]
+    }
+}
+    
+snit::type Text {
+    option -textpoint -type point -default {0.0 0.0 0.0} -readonly yes
+    option -size -type snit::double -default 10 -readonly yes
+    option -angle -type snit::double -default 0 -readonly yes
+    option -text -default {} -readonly yes
+    component index
+    constructor {args} {
+        $self configurelist $arg
+        install index using NoteIndex %AUTO%
+    }
+    method print {{fp stdout}} {
+        puts $fp [format {n%d = P(%f %f %f) %f ANG(%f) "%s"} [$index Index] \
+                  [lindex $options(-textpoint) 0] \
+                  [lindex $options(-textpoint) 1] \
+                  [lindex $options(-textpoint) 2] \
+                  $options(-size) $options(-angle) $options(-text)]
+    }
+}
+    
 
 ## Assorted geometic functions
 snit::type GeometryFunctions {
@@ -439,6 +542,7 @@ proc GCadPrefix {{fp stdout}} {
     ## GCad prefix blather.
     puts $fp "# [clock format [clock seconds] -format {%Y/%m/%d-%M:%M:%S}]"
     puts $fp {DEFCOL 0 0 0}
+    puts $fp {DEFTX 12.7 12.7 1.0}
 }
 
 package provide Common 1.0

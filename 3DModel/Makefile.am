@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:36:05 2020
-#  Last Modified : <200509.1629>
+#  Last Modified : <200511.1638>
 #
 #  Description	
 #
@@ -45,7 +45,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = BuildScripts
-EXTRA_DIST = bootstrap
+EXTRA_DIST = bootstrap BananaPiM64Model.tcl
 
 bin_SCRIPTS = BananaPiM64Model.kit
 
@@ -55,8 +55,10 @@ MakePkgIndex = $(top_srcdir)/BuildScripts/MakePkgIndex.kit
 
 BananaPiM64ModelLibScripts = Common.tcl M64.tcl PSBox.tcl Case.tcl \
 	PowerSupply.tcl Diode.tcl MOV.tcl TerminalBlocks.tcl \
-	FuseHolder.tcl PSPCB.tcl Electromech.tcl Capacitors.tcl
+	FuseHolder.tcl PSPCB.tcl Electromech.tcl Capacitors.tcl \
+	DCDC-5-12.tcl
 
+EXTRA_DIST += $(BananaPiM64ModelLibScripts)
 
 BananaPiM64Model.kit : BananaPiM64Model.tcl $(BananaPiM64ModelLibScripts) \
 			COPYING

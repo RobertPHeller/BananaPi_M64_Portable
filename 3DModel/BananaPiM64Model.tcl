@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200510.0809>
+#  Last Modified : <200511.1652>
 #
 #  Description	
 #
@@ -46,6 +46,7 @@ package require Common
 package require M64
 package require PSBox
 package require Case
+package require DCDC_5_12
 
 set scriptroot [file rootname [file tail [info script]]]
 set dirname [file dirname [file dirname [file dirname \
@@ -61,8 +62,11 @@ GCadPrefix $modelFP
 PortableM64Case create m64case
 m64case print $modelFP
 
-#PSOnPCB create pcb
+#PSOnPCB create pcb -origin [list 0 0 -100]
 #pcb print $modelFP
+
+#DCDC_5_12_Horiz12Right create dcdcvert
+#dcdcvert print $modelFP
 
 close $modelFP
 
