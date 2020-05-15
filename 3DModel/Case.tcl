@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200514.2311>
+#  Last Modified : <200515.1128>
 #
 #  Description	
 #
@@ -44,6 +44,8 @@ package require Common
 package require M64
 package require PSBox
 package require DCDC_5_12
+package require LCDScreen
+package require LCDMountingBracket
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15 * 25.4}]
@@ -713,6 +715,56 @@ snit::type PortableM64CaseBottom {
     }
 }
 
+snit::type PortableM64CaseMiddlePanel {
+    Common
+    LCDDims
+    BracketAngleDims
+    Common
+    component panel
+    delegate method * to panel except {print}
+    delegate option * to panel
+    component leftbracket
+    component rightbracket
+    component screen
+    component leftbracket_m1
+    component leftbracket_m2
+    component leftbracket_m3
+    component leftbracket_m4
+    component rightbracket_m1
+    component rightbracket_m2
+    component rightbracket_m3
+    component rightbracket_m4
+    constructor {args} {
+        install panel using PortableM64CasePanel %AUTO% \
+              -origin [from args -origin]
+        $self configurelist $args
+        lassign [$panel PanelCornerPoint] cx cy cz
+        set psurf [$panel cget -surface]
+        set vec1  [$psurf cget -vec1]
+        set panelWidth [lindex $vec1 0]
+        set vec2 [$psurf cget -vec2]
+        set panelLength [lindex $vec2 1]
+        set wOffset [expr {($panelWidth / 2.0)-($_LCDWidth/2.0)}]
+        install leftbracket using LCDMountingBracket %AUTO% \
+              -origin [list [expr {$cx + $wOffset}] [expr {$cy + 12.7}] $cz] \
+              -side L
+        install rightbracket using LCDMountingBracket %AUTO% \
+              -origin [list [expr {$cx + $wOffset + $_LCDWidth}] [expr {$cy + 12.7}] $cz] \
+              -side R
+        install screen using LCDScreen %AUTO% \
+              -origin [list [expr {$cx + $wOffset}] \
+                       [expr {$cy + 12.7}] \
+                       [expr {$cz-((6.5/2.0)+(((1.0/2.0)*25.4)/2.0))}]]
+    }
+    method print {{fp stdout}} {
+        $panel print $fp
+        $leftbracket print $fp
+        $rightbracket print $fp
+        $screen print $fp
+    }
+}
+
+
 snit::type PortableM64CaseMiddle {
     Common
     PortableM64CaseCommon
@@ -723,7 +775,7 @@ snit::type PortableM64CaseMiddle {
     component back
     constructor {args} {
         $self configurelist $args
-        install middle using PortableM64CasePanel %AUTO% \
+        install middle using PortableM64CaseMiddlePanel %AUTO% \
               -origin [GeometryFunctions translate3D_point \
                        $options(-origin) \
                        [list 0 0 [expr {$_MiddleLowerDepth+$_BottomDepth}]]]
@@ -830,8 +882,8 @@ snit::type PortableM64Case {
         install caseTop    using PortableM64CaseTop %AUTO%    -origin $options(-origin)
     }
     method print {{fp stdout}} {
-        $caseBottom print $fp
-        #$caseMiddle print $fp
+        #$caseBottom print $fp
+        $caseMiddle print $fp
         #$caseTop    print $fp
     }
     method addPart {partListArrayName} {

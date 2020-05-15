@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri May 15 07:49:02 2020
-#  Last Modified : <200515.0922>
+#  Last Modified : <200515.1112>
 #
 #  Description	
 #
@@ -219,6 +219,15 @@ snit::type LCDMountingBracket {
                       -direction Z
             }
         }
+    }
+    method MountingHole {name i zBase height} {
+        lassign [[set bracketm$i] cget -bottom] hx hy hz
+        return [Cylinder create $name \
+                -bottom [list $hx $hy $zBase] \
+                -radius $_BRACKET_r \
+                -height $height \
+                -color {255 255 255} \
+                -direction Z]
     }
     method print {{fp stdout}} {
         $angle print $fp

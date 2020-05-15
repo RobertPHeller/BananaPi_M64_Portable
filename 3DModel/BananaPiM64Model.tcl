@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200515.0917>
+#  Last Modified : <200515.1125>
 #
 #  Description	
 #
@@ -62,7 +62,7 @@ set modelFP [open $gcadfile w]
 GCadPrefix $modelFP
 
 PortableM64Case create m64case
-#m64case print $modelFP
+m64case print $modelFP
 
 #PSOnPCB create pcb -origin [list 0 0 -100]
 #pcb print $modelFP
@@ -70,13 +70,13 @@ PortableM64Case create m64case
 #DCDC_5_12_Horiz12Right create dcdcvert
 #dcdcvert print $modelFP
 
-LCDMountingBracket create left -side L -origin {0 0 0}
-LCDMountingBracket create right -side R -origin [list 344 0 0]
-LCDScreen create screen -origin [list 0 0 [expr {-((6.5/2.0)+(((1.0/2.0)*25.4)/2.0))}]]
+#LCDMountingBracket create left -side L -origin {0 0 0}
+#LCDMountingBracket create right -side R -origin [list 344 0 0]
+#LCDScreen create screen -origin [list 0 0 [expr {-((6.5/2.0)+(((1.0/2.0)*25.4)/2.0))}]]
 
-left print $modelFP
-right print $modelFP
-screen print $modelFP
+#left print $modelFP
+#right print $modelFP
+#screen print $modelFP
 
 close $modelFP
 
