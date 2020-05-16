@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200515.1912>
+#  Last Modified : <200515.2126>
 #
 #  Description	
 #
@@ -50,7 +50,7 @@ package require HDMIConverter
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15 * 25.4}]
-    typevariable _Height [expr {10 * 25.4}]
+    typevariable _Height [expr {11 * 25.4}]
     typevariable _BottomDepth [expr {1.75 * 25.4}]
     typevariable _MiddleTotalDepth [expr {1.5 * 25.4}]
     typevariable _MiddleLowerDepth [expr {.5 * 25.4}]
@@ -350,7 +350,15 @@ snit::type PortableM64CaseBottomPanel {
         install hdmiconvertermainboard using HDMIConverterMainBoard %AUTO% \
               -origin [list [expr {$cx + 12.7}] \
                        [expr {$cy + $panelheight - (12.7+$_HDMIConv_mainboardHeight)}] \
-                       [expr {$cz + 6.35}]]
+                       [expr {$cz + 6.35 + [$panel PanelThickness]}]]
+        set hdmiconvertermainboard_mh1 [$hdmiconvertermainboard MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set hdmiconvertermainboard_mh2 [$hdmiconvertermainboard MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set hdmiconvertermainboard_mh3 [$hdmiconvertermainboard MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
+        set hdmiconvertermainboard_mh4 [$hdmiconvertermainboard MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
+        set hdmiconvertermainboard_standoff1 [$hdmiconvertermainboard Standoff %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] 6.35 6.35 {255 255 0}]
+        set hdmiconvertermainboard_standoff2 [$hdmiconvertermainboard Standoff %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] 6.35 6.35 {255 255 0}]
+        set hdmiconvertermainboard_standoff3 [$hdmiconvertermainboard Standoff %AUTO% 3 [expr {$cz + [$panel PanelThickness]}] 6.35 6.35 {255 255 0}]
+        set hdmiconvertermainboard_standoff4 [$hdmiconvertermainboard Standoff %AUTO% 4 [expr {$cz + [$panel PanelThickness]}] 6.35 6.35 {255 255 0}]
         set psurf [$panel cget -surface]
         set vec1  [$psurf cget -vec1]
         set w [lindex $vec1 0]
@@ -395,6 +403,14 @@ snit::type PortableM64CaseBottomPanel {
             $dcdc512_standoff4 print $fp
         }
         $hdmiconvertermainboard print $fp
+        $hdmiconvertermainboard_mh1 print $fp
+        $hdmiconvertermainboard_mh2 print $fp
+        $hdmiconvertermainboard_mh3 print $fp
+        $hdmiconvertermainboard_mh4 print $fp
+        $hdmiconvertermainboard_standoff1 print $fp
+        $hdmiconvertermainboard_standoff2 print $fp
+        $hdmiconvertermainboard_standoff3 print $fp
+        $hdmiconvertermainboard_standoff4 print $fp
         $widthdim print $fp
         $lengthdim print $fp
     }
@@ -737,6 +753,7 @@ snit::type PortableM64CaseMiddlePanel {
     Common
     LCDDims
     BracketAngleDims
+    HDMIConverterDims
     Common
     component panel
     delegate method * to panel except {print}
@@ -752,6 +769,16 @@ snit::type PortableM64CaseMiddlePanel {
     component rightbracket_m2
     component rightbracket_m3
     component rightbracket_m4
+    component hdmibuttonboard
+    component hdmibuttonboard_mh1
+    component hdmibuttonboard_mh2
+    component hdmibuttonboard_standoff1
+    component hdmibuttonboard_standoff2
+    component hdmihvpowerboard
+    component hdmihvpowerboard_mh1
+    component hdmihvpowerboard_mh2
+    component hdmihvpowerboard_standoff1
+    component hdmihvpowerboard_standoff2
     constructor {args} {
         install panel using PortableM64CasePanel %AUTO% \
               -origin [from args -origin]
@@ -764,14 +791,14 @@ snit::type PortableM64CaseMiddlePanel {
         set panelLength [lindex $vec2 1]
         set wOffset [expr {($panelWidth / 2.0)-($_LCDWidth/2.0)}]
         install leftbracket using LCDMountingBracket %AUTO% \
-              -origin [list [expr {$cx + $wOffset}] [expr {$cy + 12.7}] $cz] \
+              -origin [list [expr {$cx + $wOffset}] [expr {$cy + 25.4}] $cz] \
               -side L
         install rightbracket using LCDMountingBracket %AUTO% \
-              -origin [list [expr {$cx + $wOffset + $_LCDWidth}] [expr {$cy + 12.7}] $cz] \
+              -origin [list [expr {$cx + $wOffset + $_LCDWidth}] [expr {$cy + 25.4}] $cz] \
               -side R
         install screen using LCDScreen %AUTO% \
               -origin [list [expr {$cx + $wOffset}] \
-                       [expr {$cy + 12.7}] \
+                       [expr {$cy + 25.4}] \
                        [expr {$cz-((6.5/2.0)+(((1.0/2.0)*25.4)/2.0))}]]
         set leftbracket_m1 [$leftbracket MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
         set leftbracket_m2 [$leftbracket MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
@@ -781,6 +808,23 @@ snit::type PortableM64CaseMiddlePanel {
         set rightbracket_m2 [$rightbracket MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
         set rightbracket_m3 [$rightbracket MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
         set rightbracket_m4 [$rightbracket MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
+        install hdmibuttonboard using HDMIButtonBoard_Upsidedown %AUTO% \
+              -origin [list [expr {$cx + 12.7}] \
+                       [expr {($cy+$panelLength)-$_HDMIConv_buttonboardHeight}] \
+                       [expr {$cz - 6.35 - $_HDMIConv_boardthickness}]]
+        set hdmibuttonboard_mh1 [$hdmibuttonboard MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set hdmibuttonboard_mh2 [$hdmibuttonboard MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set hdmibuttonboard_standoff1 [$hdmibuttonboard Standoff %AUTO% 1 $cz -6.35 6.35 {255 255 0}]
+        set hdmibuttonboard_standoff2 [$hdmibuttonboard Standoff %AUTO% 2 $cz -6.35 6.35 {255 255 0}]
+        install hdmihvpowerboard using HDMIHVPowerBoard_Upsidedown %AUTO% \
+              -origin [list [expr {($cx+$panelWidth)-(12.7+$_HDMIConv_hvpowerboardWidth)}] \
+                       [expr {($cy+$panelLength)-$_HDMIConv_hvpowerboardHeight}] \
+                       [expr {$cz - 6.35 - $_HDMIConv_boardthickness}]]
+        set hdmihvpowerboard_mh1 [$hdmihvpowerboard MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set hdmihvpowerboard_mh2 [$hdmihvpowerboard MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set hdmihvpowerboard_standoff1 [$hdmihvpowerboard Standoff %AUTO% 1 $cz -6.35 6.35 {255 255 0}]
+        set hdmihvpowerboard_standoff2 [$hdmihvpowerboard Standoff %AUTO% 2 $cz -6.35 6.35 {255 255 0}]
+    
     }
     method print {{fp stdout}} {
         $panel print $fp
@@ -795,6 +839,16 @@ snit::type PortableM64CaseMiddlePanel {
         $rightbracket_m2 print $fp
         $rightbracket_m3 print $fp
         $rightbracket_m4 print $fp
+        $hdmibuttonboard print $fp
+        $hdmibuttonboard_mh1 print $fp
+        $hdmibuttonboard_mh2 print $fp
+        $hdmibuttonboard_standoff1 print $fp
+        $hdmibuttonboard_standoff2 print $fp
+        $hdmihvpowerboard print $fp
+        $hdmihvpowerboard_mh1 print $fp
+        $hdmihvpowerboard_mh2 print $fp
+        $hdmihvpowerboard_standoff1 print $fp
+        $hdmihvpowerboard_standoff2 print $fp
     }
 }
 

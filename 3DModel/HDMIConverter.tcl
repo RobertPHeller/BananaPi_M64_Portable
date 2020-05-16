@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri May 15 14:20:43 2020
-#  Last Modified : <200515.1852>
+#  Last Modified : <200515.2122>
 #
 #  Description	
 #
@@ -253,8 +253,8 @@ Common
         if {$i == 1} {
             set holesurf [$mh1 cget -surface]
             lassign [$holesurf cget -cornerpoint] cx cy cz
-            set bottom [list [expr {$ox + $_HDMIConv_hvpowerboardMH1_x1 + ($_HDMIConv_hvpowerboardMH1_wide / 2.0)}] \
-                        [expr {($cy + $_HDMIConv_hvpowerboardHeight) - ($_HDMIConv_hvpowerboardMHDia/2.a0)}] \
+            set bottom [list [expr {$cx +  ($_HDMIConv_hvpowerboardMH1_wide / 2.0)}] \
+                        [expr {$cy - ($_HDMIConv_hvpowerboardMHDia/2.0)}] \
                         $zBase]
             return [Cylinder create $name \
                     -bottom $bottom \
@@ -274,8 +274,8 @@ Common
         if {$i == 1} {
             set holesurf [$mh1 cget -surface]
             lassign [$holesurf cget -cornerpoint] cx cy cz
-            set bottom [list [expr {$ox + $_HDMIConv_hvpowerboardMH1_x1 + ($_HDMIConv_hvpowerboardMH1_wide / 2.0)}] \
-                        [expr {($cy + $_HDMIConv_hvpowerboardHeight) - ($_HDMIConv_hvpowerboardMHDia/2.a0)}] \
+            set bottom [list [expr {$cx + ($_HDMIConv_hvpowerboardMH1_wide / 2.0)}] \
+                        [expr {$cy - ($_HDMIConv_hvpowerboardMHDia/2.0)}] \
                         $zBase]
             return [Cylinder create $name \
                     -bottom $bottom \
