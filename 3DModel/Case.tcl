@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200515.2126>
+#  Last Modified : <200515.2240>
 #
 #  Description	
 #
@@ -289,6 +289,10 @@ snit::type PortableM64CaseBottomPanel {
     component hdmiconvertermainboard_standoff4
     component widthdim
     component lengthdim
+    component m64ydim
+    component hdmixdim
+    component hdmiydim
+    component m64tohtmiydim
     constructor {args} {
         install panel using PortableM64CasePanel %AUTO% \
               -origin [from args -origin]
@@ -363,11 +367,12 @@ snit::type PortableM64CaseBottomPanel {
         set vec1  [$psurf cget -vec1]
         set w [lindex $vec1 0]
         set mid [expr {$w / 2.0}]
-        set toffz -20
+        set toff -20
+        lassign [$panel PanelCornerPoint] pcx pcy pcz
         install widthdim using Dim3D %AUTO% \
               -point1 [$panel PanelCornerPoint] \
               -point2 [list [expr {$cx + $w}] $cy $cz] \
-              -textpoint [list [expr {$cx + $mid}] $cy [expr {$cz + $toffz}]] \
+              -textpoint [list [expr {$cx + $mid}] [expr {$cy + ($toff*2)}] [expr {$pcz+($_m64Standoff*3.5)}]] \
               -plane P \
               -additionaltext " mm"
         set vec2 [$psurf cget -vec2]
@@ -376,7 +381,32 @@ snit::type PortableM64CaseBottomPanel {
         install lengthdim using Dim3D %AUTO% \
               -point1 [$panel PanelCornerPoint] \
               -point2 [list $cx [expr {$cy + $l}] $cz] \
-              -textpoint [list $cx [expr {$cy + $mid}] [expr {$cz + $toffz}]] \
+              -textpoint [list [expr {$cx - $toff}] [expr {$cy + $mid}] [expr {$pcz+($_m64Standoff*3.5)}]] \
+              -plane P \
+              -additionaltext " mm"
+        install m64ydim using Dim3D %AUTO% \
+              -point1 [$panel PanelCornerPoint] \
+              -point2 [GeometryFunctions translate3D_point \
+                       [$panel PanelCornerPoint] \
+                       [list 0 $_m64YOff 0]] \
+              -textpoint [GeometryFunctions translate3D_point \
+                          [$panel PanelCornerPoint] \
+                          [list [expr {-4*$toff}] [expr {$_m64YOff / 2.0}] [expr {($_m64Standoff*3.5)}]]] \
+              -plane P \
+              -additionaltext " mm"
+        lassign [$hdmiconvertermainboard cget -origin] hcx hcy hcz
+        install hdmiydim using Dim3D %AUTO% \
+              -point1 [$panel PanelCornerPoint] \
+              -point2 [list $pcx $hcy $pcz] \
+              -textpoint [list [expr {-2*$toff}] [expr {($pcy+$hcy)/2.0}] [expr {$pcz+($_m64Standoff*3.5)}]] \
+              -plane P \
+              -additionaltext " mm"
+        install m64tohtmiydim using Dim3D %AUTO% \
+              -point2 [list $pcx $hcy $pcz] \
+              -point1 [list $pcx [expr {$pcy + $_m64YOff + $_m64Width}] $pcz] \
+              -textpoint [list [expr {-3*($toff)}] \
+                          [expr {($hcy + ($pcy + $_m64YOff + $_m64Width))/2.0}] \
+                          [expr {$pcz+($_m64Standoff*1.5)}]] \
               -plane P \
               -additionaltext " mm"
     }
@@ -413,6 +443,9 @@ snit::type PortableM64CaseBottomPanel {
         $hdmiconvertermainboard_standoff4 print $fp
         $widthdim print $fp
         $lengthdim print $fp
+        $m64ydim print $fp
+        $hdmiydim print $fp
+        $m64tohtmiydim print $fp
     }
     method printPS {} {
         set fp  [PostScriptFile fp]
