@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200518.1009>
+#  Last Modified : <200518.1046>
 #
 #  Description	
 #
@@ -1348,7 +1348,7 @@ snit::type PortableM64CaseKeyboardShelf {
               -color  {255 255 255}
         install teensythumbstick using TeensyThumbStick %AUTO% \
               -origin [list $teensythumbstickX $teensythumbstickY \
-                       [expr {$sz - $_TeensyThumbStickDrop}]]
+                       [expr {$sz - $_TeensyThumbStickDrop - $_TeensyThumbStick_BoardThick}]]
         set teensythumbstick_mh1 [$teensythumbstick MountingHole %AUTO% 1 $sz $_WallThickness]
         set teensythumbstick_mh2 [$teensythumbstick MountingHole %AUTO% 2 $sz $_WallThickness]
         set teensythumbstick_mh3 [$teensythumbstick MountingHole %AUTO% 3 $sz $_WallThickness]
@@ -1356,7 +1356,7 @@ snit::type PortableM64CaseKeyboardShelf {
         set teensythumbstick_standoff1 [$teensythumbstick Standoff %AUTO% 1 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
         set teensythumbstick_standoff2 [$teensythumbstick Standoff %AUTO% 2 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
         set teensythumbstick_standoff3 [$teensythumbstick Standoff %AUTO% 3 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
-        set teensythumbstick_standoff4 [$teensythumbstick Standoff %AUTO% 4 $sz [expr {-($_TeensyThumbStickDrop-$_TeensyThumbStick_BoardThick)}] [expr {.25*25.4}] {255 255 0}]
+        set teensythumbstick_standoff4 [$teensythumbstick Standoff %AUTO% 4 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
     }
     method print {{fp stdout}} {
         $shelf print $fp
