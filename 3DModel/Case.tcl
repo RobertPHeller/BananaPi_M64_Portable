@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200515.2240>
+#  Last Modified : <200518.1009>
 #
 #  Description	
 #
@@ -47,6 +47,8 @@ package require DCDC_5_12
 package require LCDScreen
 package require LCDMountingBracket
 package require HDMIConverter
+package require SVGOutput
+package require TeensyThumbStick
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15 * 25.4}]
@@ -56,6 +58,11 @@ snit::macro PortableM64CaseCommon {} {
     typevariable _MiddleLowerDepth [expr {.5 * 25.4}]
     typevariable _TopDepth [expr {(.5+.125) * 25.4}]
     typevariable _WallThickness [expr {.125 * 25.4}]
+    typevariable _ShelfHeight [expr {1.25 * 25.4}]
+    typevariable _ShelfLength [expr {6 * 25.4}]
+    typevariable _BlockThick [expr {.375*25.4}]
+    typevariable _BlockWidth [expr {.5*25.4}]
+    typevariable _TeensyThumbStickDrop [expr {.25*25.4}]
 }
 
 snit::type PortableM64CasePanel {
@@ -93,6 +100,13 @@ snit::type PortableM64CasePanel {
         set height [lindex [$panelsurf cget -vec2] 1]
         set thick [lindex [$panel cget -vector] 2]
         incr partListArray([$self _normPartSize $width $height $thick])
+    }
+    method svgout {svgout parent} {
+        set panelsurf [$panel cget -surface]
+        set width [lindex [$panelsurf cget -vec1] 0]
+        set height [lindex [$panelsurf cget -vec2] 1]
+        $svgout addrect 0 -$height $width $height $parent
+        #$svgout addcircle 0 -$height 5 $parent
     }
 }
 
@@ -132,6 +146,13 @@ snit::type PortableM64CaseLeftPanel {
         set height [lindex [$panelsurf cget -vec1] 1]
         set thick [lindex [$panel cget -vector] 0]
         incr partListArray([$self _normPartSize $width $height $thick])
+    }
+    method svgout {svgout parent} {
+        set panelsurf [$panel cget -surface]
+        set height [lindex [$panelsurf cget -vec2] 2]
+        set width [lindex [$panelsurf cget -vec1] 1]
+        $svgout addrect 0 -$height $width $height $parent
+        #$svgout addcircle 0 -$height 5 $parent
     }
 }
 
@@ -173,6 +194,12 @@ snit::type PortableM64CaseRightPanel {
         set thick [lindex [$panel cget -vector] 0]
         incr partListArray([$self _normPartSize $width $height $thick])
     }
+    method svgout {svgout parent} {
+        set panelsurf [$panel cget -surface]
+        set height [lindex [$panelsurf cget -vec2] 2]
+        set width [lindex [$panelsurf cget -vec1] 1]
+        $svgout addrect 0 -$height $width $height $parent
+    }
 }
 
 snit::type PortableM64CaseFrontPanel {
@@ -210,6 +237,12 @@ snit::type PortableM64CaseFrontPanel {
         set height [lindex [$panelsurf cget -vec1] 0]
         set thick [lindex [$panel cget -vector] 1]
         incr partListArray([$self _normPartSize $width $height $thick])
+    }
+    method svgout {svgout parent} {
+        set panelsurf [$panel cget -surface]
+        set height [lindex [$panelsurf cget -vec2] 2]
+        set width [lindex [$panelsurf cget -vec1] 0]
+        $svgout addrect 0 -$height $width $height $parent
     }
 }
 
@@ -251,6 +284,12 @@ snit::type PortableM64CaseBackPanel {
         set thick [lindex [$panel cget -vector] 1]
         incr partListArray([$self _normPartSize $width $height $thick])
     }
+    method svgout {svgout parent} {
+        set panelsurf [$panel cget -surface]
+        set height [lindex [$panelsurf cget -vec2] 2]
+        set width [lindex [$panelsurf cget -vec1] 0]
+        $svgout addrect 0 -$height $width $height $parent
+    }
 }
 
 snit::type PortableM64CaseBottomPanel {
@@ -290,6 +329,8 @@ snit::type PortableM64CaseBottomPanel {
     component widthdim
     component lengthdim
     component m64ydim
+    component psboxxdim
+    component psboxydim
     component hdmixdim
     component hdmiydim
     component m64tohtmiydim
@@ -298,6 +339,7 @@ snit::type PortableM64CaseBottomPanel {
               -origin [from args -origin]
         $self configurelist $args
         lassign [$panel PanelCornerPoint] cx cy cz
+        set dimz [expr {$cz + 12.7}]
         set radius [expr {2.5 / 2.0}]
         set m64X [expr {$cx + $_m64XOff}]
         set m64Y [expr {$cy  + $_m64YOff}]
@@ -338,6 +380,12 @@ snit::type PortableM64CaseBottomPanel {
             set psbox_m2 [$options(-psbox) MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
             set psbox_m3 [$options(-psbox) MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
             set psbox_m4 [$options(-psbox) MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
+            lassign [$options(-psbox) cget -origin] psx psy psz
+            install psboxydim using Dim3D %AUTO% \
+                  -point1 [list $psx $psy $dimz] \
+                  -point2 [list $psx $cy $dimz] \
+                  -textpoint [list [expr {$psx - 25}] [expr {($cy + $psy)/2}] $dimz] \
+                  -plane P -additionaltext " mm"
         }
         if {$options(-dcdc512) ne {}} {
             set dcdc512_m1 [$options(-dcdc512) MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
@@ -368,45 +416,40 @@ snit::type PortableM64CaseBottomPanel {
         set w [lindex $vec1 0]
         set mid [expr {$w / 2.0}]
         set toff -20
-        lassign [$panel PanelCornerPoint] pcx pcy pcz
         install widthdim using Dim3D %AUTO% \
-              -point1 [$panel PanelCornerPoint] \
-              -point2 [list [expr {$cx + $w}] $cy $cz] \
-              -textpoint [list [expr {$cx + $mid}] [expr {$cy + ($toff*2)}] [expr {$pcz+($_m64Standoff*3.5)}]] \
+              -point2 [list $cx $cy $dimz] \
+              -point1 [list [expr {$cx + $w}] $cy $dimz] \
+              -textpoint [list [expr {$cx + $mid}] [expr {$cy + ($toff*(-16))}] $dimz] \
               -plane P \
               -additionaltext " mm"
         set vec2 [$psurf cget -vec2]
         set l [lindex $vec2 1]
         set mid [expr {$l / 2.0}]
         install lengthdim using Dim3D %AUTO% \
-              -point1 [$panel PanelCornerPoint] \
-              -point2 [list $cx [expr {$cy + $l}] $cz] \
-              -textpoint [list [expr {$cx - $toff}] [expr {$cy + $mid}] [expr {$pcz+($_m64Standoff*3.5)}]] \
+              -point1 [list $cx $cy $dimz] \
+              -point2 [list $cx [expr {$cy + $l}] $dimz] \
+              -textpoint [list [expr {$cx - $toff}] [expr {$cy + $mid}] $dimz] \
               -plane P \
               -additionaltext " mm"
         install m64ydim using Dim3D %AUTO% \
-              -point1 [$panel PanelCornerPoint] \
-              -point2 [GeometryFunctions translate3D_point \
-                       [$panel PanelCornerPoint] \
-                       [list 0 $_m64YOff 0]] \
-              -textpoint [GeometryFunctions translate3D_point \
-                          [$panel PanelCornerPoint] \
-                          [list [expr {-4*$toff}] [expr {$_m64YOff / 2.0}] [expr {($_m64Standoff*3.5)}]]] \
+              -point1 [list $cx $cy $dimz] \
+              -point2 [list $cx [expr {$cy + $_m64YOff}] $dimz] \
+              -textpoint [list [expr {$cx + (2*$toff)}] [expr {$cy + ($_m64YOff/2.0)}] $dimz] \
               -plane P \
               -additionaltext " mm"
         lassign [$hdmiconvertermainboard cget -origin] hcx hcy hcz
         install hdmiydim using Dim3D %AUTO% \
-              -point1 [$panel PanelCornerPoint] \
-              -point2 [list $pcx $hcy $pcz] \
-              -textpoint [list [expr {-2*$toff}] [expr {($pcy+$hcy)/2.0}] [expr {$pcz+($_m64Standoff*3.5)}]] \
+              -point1 [list $cx $cy $dimz] \
+              -point2 [list $cx $hcy $dimz] \
+              -textpoint [list [expr {-2*$toff}] [expr {($cy+$hcy)/2.0}] $dimz] \
               -plane P \
               -additionaltext " mm"
         install m64tohtmiydim using Dim3D %AUTO% \
-              -point2 [list $pcx $hcy $pcz] \
-              -point1 [list $pcx [expr {$pcy + $_m64YOff + $_m64Width}] $pcz] \
+              -point2 [list $hcx $hcy $dimz] \
+              -point1 [list $hcx [expr {$cy + $_m64YOff + $_m64Width}] $dimz] \
               -textpoint [list [expr {-3*($toff)}] \
-                          [expr {($hcy + ($pcy + $_m64YOff + $_m64Width))/2.0}] \
-                          [expr {$pcz+($_m64Standoff*1.5)}]] \
+                          [expr {($hcy + ($cy + $_m64YOff + $_m64Width))/2.0}] \
+                          $dimz] \
               -plane P \
               -additionaltext " mm"
     }
@@ -421,6 +464,7 @@ snit::type PortableM64CaseBottomPanel {
             $psbox_m2 print $fp
             $psbox_m3 print $fp
             $psbox_m4 print $fp
+            $psboxydim print $fp
         }
         if {$options(-dcdc512) ne {}} {
             $dcdc512_m1 print $fp
@@ -468,6 +512,16 @@ snit::type PortableM64CaseBottomPanel {
             $psbox_m3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
             $psbox_m4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         }
+        if {$options(-dcdc512) ne {}} {
+            $dcdc512_m1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+            $dcdc512_m2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+            $dcdc512_m3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+            $dcdc512_m4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        }
+        $hdmiconvertermainboard_mh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmiconvertermainboard_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmiconvertermainboard_mh3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmiconvertermainboard_mh4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         PostScriptFile newPage {Bottom Panel Drill Report}
         lassign [$panel PanelCornerPoint] cx cy cz
         _hole $m64_m1 $cx $cy
@@ -480,12 +534,51 @@ snit::type PortableM64CaseBottomPanel {
             _hole $psbox_m3 $cx $cy
             _hole $psbox_m4 $cx $cy
         }
+        if {$options(-dcdc512) ne {}} {
+            _hole $dcdc512_m1 $cx $cy
+            _hole $dcdc512_m2 $cx $cy
+            _hole $dcdc512_m3 $cx $cy
+            _hole $dcdc512_m4 $cx $cy
+        }
+        _hole $hdmiconvertermainboard_mh1 $cx $cy
+        _hole $hdmiconvertermainboard_mh2 $cx $cy
+        _hole $hdmiconvertermainboard_mh3 $cx $cy
+        _hole $hdmiconvertermainboard_mh4 $cx $cy
     }
     proc _hole {holecyl cx cy} {
         lassign [$holecyl cget -bottom] hx hy hz
         PostScriptFile hole [expr {$hx - $cx}] [expr {$hy - $cy}] \
               [expr {[$holecyl cget -radius] * 2.0}]
     }
+    proc _svghole {svgout holecyl cx cy parent} {
+        lassign [$holecyl cget -bottom] hx hy hz
+        $svgout addcircle [expr {$hx - $cx}] [expr {-($hy - $cy)}] [$holecyl cget -radius] $parent
+    }
+    method svgout {svgout parent} {
+        $panel svgout $svgout $parent
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _svghole $svgout $m64_m1 $cx $cy $parent
+        _svghole $svgout $m64_m2 $cx $cy $parent
+        _svghole $svgout $m64_m3 $cx $cy $parent
+        _svghole $svgout $m64_m4 $cx $cy $parent
+        if {$options(-psbox) ne {}} {
+            _svghole $svgout $psbox_m1 $cx $cy $parent
+            _svghole $svgout $psbox_m2 $cx $cy $parent
+            _svghole $svgout $psbox_m3 $cx $cy $parent
+            _svghole $svgout $psbox_m4 $cx $cy $parent
+        }
+        if {$options(-dcdc512) ne {}} {
+            _svghole $svgout $dcdc512_m1 $cx $cy $parent
+            _svghole $svgout $dcdc512_m2 $cx $cy $parent
+            _svghole $svgout $dcdc512_m3 $cx $cy $parent
+            _svghole $svgout $dcdc512_m4 $cx $cy $parent
+        }
+        _svghole $svgout $hdmiconvertermainboard_mh1 $cx $cy $parent
+        _svghole $svgout $hdmiconvertermainboard_mh2 $cx $cy $parent
+        _svghole $svgout $hdmiconvertermainboard_mh3 $cx $cy $parent
+        _svghole $svgout $hdmiconvertermainboard_mh4 $cx $cy $parent
+    }
+    
 }
 
 
@@ -516,7 +609,7 @@ snit::type PortableM64CaseBottomLeftPanel {
         install dualUSBcutout using PrismSurfaceVector %AUTO% \
               -surface [PolySurface create %AUTO% \
                         -rectangle yes \
-                        -cornerpoint [list $cx [expr {$m64Y - $_DualUSBcutoutYMin}] $zbase] \
+                        -cornerpoint [list $cx [expr {$m64Y - $_DualUSBYMin}] $zbase] \
                         -vec1 [list 0 -$_DualUSBWidth 0] \
                         -vec2 [list 0 0 $_DualUSBHeight]] \
               -vector [list $panelThick 0 0] \
@@ -569,6 +662,24 @@ snit::type PortableM64CaseBottomLeftPanel {
         lassign [$cutoutSurf cget -vec2] dummy dummy h
         PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
     }
+    proc _svghole {svgout holecyl cx cy parent} {
+        lassign [$holecyl cget -bottom] dum hx hy
+        $svgout addcircle [expr {$hx - $cx}] [expr {-($hy - $cy)}] [$holecyl cget -radius] $parent
+    }
+    proc _svgcutout {svgout cutoutSurf cx cy parent} {
+        lassign [$cutoutSurf cget -cornerpoint] dummy cux cuy
+        lassign [$cutoutSurf cget -vec1] dummy w dummy
+        set w [expr {-($w)}]
+        lassign [$cutoutSurf cget -vec2] dummy dummy h
+        $svgout addrect [expr {($cux - $cx)-$w}] [expr {-($cuy - $cy)-$h}] $w $h $parent
+    }
+    method svgout {svgout parent} {
+        $panel svgout $svgout $parent
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _svghole $svgout $audiojackcutout $cy $cz $parent
+        _svgcutout $svgout [$rj45cutout cget -surface] $cy $cz $parent
+        _svgcutout $svgout [$dualUSBcutout cget -surface] $cy $cz $parent
+    }
 }
 
 snit::type PortableM64CaseBottomFrontPanel {
@@ -619,6 +730,17 @@ snit::type PortableM64CaseBottomFrontPanel {
         lassign [$cutoutSurf cget -vec2] dummy dummy h
         PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
     }
+    proc _svgcutout {svgout cutoutSurf cx cy parent} {
+        lassign [$cutoutSurf cget -cornerpoint] cux dummy cuy
+        lassign [$cutoutSurf cget -vec1] w dummy dummy
+        lassign [$cutoutSurf cget -vec2] dummy dummy h
+        $svgout addrect [expr {$cux - $cx}] [expr {-($cuy - $cy)-$h}] $w $h $parent
+    }
+    method svgout {svgout parent} {
+        $panel svgout $svgout $parent 
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _svgcutout $svgout [$gpiocutout cget -surface] $cx $cz $parent
+    }
 }
 
 
@@ -649,6 +771,40 @@ snit::type PortableM64CaseBottomRightPanel {
         }
     }
     method printPS {} {
+        set fp [PostScriptFile fp]
+        set xi 1
+        set yi 2
+        set xorg 0
+        set yorg 0
+        set xscale .01968
+        set yscale .01968
+        set surf [$panel cget -surface]
+        PostScriptFile newPage {Front bottom Cutouts}
+        $surf printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        [$fancutout1 cget -surface] printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        [$fancutout2 cget -surface] printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        PostScriptFile newPage {Left bottom Cutouts Report}
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _cutout [$fancutout1 cget -surface] $cy $cz
+        _cutout [$fancutout2 cget -surface] $cy $cz
+    }
+    proc _cutout {cutoutSurf cx cy} {
+        lassign [$cutoutSurf cget -cornerpoint] dummy cux cuy
+        lassign [$cutoutSurf cget -vec1] dummy w dummy
+        lassign [$cutoutSurf cget -vec2] dummy dummy h
+        PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
+    }
+    proc _svgcutout {svgout cutoutSurf cx cy parent} {
+        lassign [$cutoutSurf cget -cornerpoint] dummy cux cuy
+        lassign [$cutoutSurf cget -vec1] dummy w dummy
+        lassign [$cutoutSurf cget -vec2] dummy dummy h
+        $svgout addrect [expr {$cux - $cx}] [expr {-($cuy - $cy)-$h}] $w $h $parent
+    }
+    method svgout {svgout parent} {
+        $panel svgout $svgout $parent
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _svgcutout  $svgout [$fancutout1 cget -surface] $cy $cz $parent
+        _svgcutout  $svgout [$fancutout2 cget -surface] $cy $cz $parent
     }
 }
 
@@ -697,6 +853,17 @@ snit::type PortableM64CaseBottomBackPanel {
         lassign [$cutoutSurf cget -vec1] w dummy dummy
         lassign [$cutoutSurf cget -vec2] dummy dummy h
         PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
+    }
+    proc _svgcutout {svgout cutoutSurf cx cy parent} {
+        lassign [$cutoutSurf cget -cornerpoint] cux dummy cuy
+        lassign [$cutoutSurf cget -vec1] w dummy dummy
+        lassign [$cutoutSurf cget -vec2] dummy dummy h
+        $svgout addrect [expr {($cux - $cx)-$w}] [expr {-($cuy - $cy)-$h}] $w $h $parent
+    }
+    method svgout {svgout parent} {
+        $panel svgout $svgout $parent
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _svgcutout  $svgout [$inletcutout cget -surface] $cx $cz $parent
     }
 }
 
@@ -779,6 +946,25 @@ snit::type PortableM64CaseBottom {
         $front printPS
         $left printPS
         $back printPS
+    }
+    method svgout {svgout parent} {
+        set bottomgroup [$svgout newgroup bottom {} $parent]
+        set xoff 6.35
+        set yoff [expr {6.35 + (2*($_Width + 6.35))}]
+        set panelgroup [$svgout newgroup panel "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        $bottom svgout $svgout $panelgroup
+        set xoff [expr {$xoff + $_Height + 6.35}]
+        set leftgroup [$svgout newgroup left "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        $left svgout $svgout $leftgroup
+        set xoff [expr {$xoff + $_BottomDepth + 6.35}]
+        set rightgroup [$svgout newgroup right "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        $right svgout $svgout $rightgroup
+        set xoff [expr {$xoff + $_BottomDepth + 6.35}]
+        set frontgroup [$svgout newgroup front "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        $front svgout $svgout $frontgroup
+        set xoff [expr {$xoff + $_BottomDepth + 6.35}]
+        set backgroup [$svgout newgroup back "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        $back svgout $svgout $backgroup
     }
 }
 
@@ -883,6 +1069,69 @@ snit::type PortableM64CaseMiddlePanel {
         $hdmihvpowerboard_standoff1 print $fp
         $hdmihvpowerboard_standoff2 print $fp
     }
+    method printPS {} {
+                set fp  [PostScriptFile fp]
+        set xi 0
+        set yi 1
+        set xorg 0
+        set yorg 0
+        set xscale .01968
+        set yscale .01968
+        set surf [$panel cget -surface]
+        PostScriptFile newPage {Middle Panel Drill Pattern}
+        $surf printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $leftbracket_m1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $leftbracket_m2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $leftbracket_m3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $leftbracket_m4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $rightbracket_m1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $rightbracket_m2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $rightbracket_m3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $rightbracket_m4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmibuttonboard_mh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmibuttonboard_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmihvpowerboard_mh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmihvpowerboard_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        PostScriptFile newPage {Middle Panel Drill Report}
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _hole $leftbracket_m1 $cx $cy
+        _hole $leftbracket_m2 $cx $cy
+        _hole $leftbracket_m3 $cx $cy
+        _hole $leftbracket_m4 $cx $cy
+        _hole $rightbracket_m1 $cx $cy
+        _hole $rightbracket_m2 $cx $cy
+        _hole $rightbracket_m3 $cx $cy
+        _hole $rightbracket_m4 $cx $cy
+        _hole $hdmibuttonboard_mh1 $cx $cy
+        _hole $hdmibuttonboard_mh2 $cx $cy
+        _hole $hdmihvpowerboard_mh1 $cx $cy
+        _hole $hdmihvpowerboard_mh2 $cx $cy
+    }
+    proc _hole {holecyl cx cy} {
+        lassign [$holecyl cget -bottom] hx hy hz
+        PostScriptFile hole [expr {$hx - $cx}] [expr {$hy - $cy}] \
+              [expr {[$holecyl cget -radius] * 2.0}]
+    }
+    proc _svghole {svgout holecyl cx cy parent} {
+        lassign [$holecyl cget -bottom] hx hy hz
+        $svgout addcircle [expr {$hx - $cx}] [expr {-($hy - $cy)}] [$holecyl cget -radius] $parent
+    }
+    method svgout {svgout parent} {
+        $panel svgout $svgout $parent
+        lassign [$panel PanelCornerPoint] cx cy cz
+        _svghole $svgout $leftbracket_m1 $cx $cy $parent
+        _svghole $svgout $leftbracket_m2 $cx $cy $parent
+        _svghole $svgout $leftbracket_m3 $cx $cy $parent
+        _svghole $svgout $leftbracket_m4 $cx $cy $parent
+        _svghole $svgout $rightbracket_m1 $cx $cy $parent
+        _svghole $svgout $rightbracket_m2 $cx $cy $parent
+        _svghole $svgout $rightbracket_m3 $cx $cy $parent
+        _svghole $svgout $rightbracket_m4 $cx $cy $parent
+        _svghole $svgout $hdmibuttonboard_mh1 $cx $cy $parent
+        _svghole $svgout $hdmibuttonboard_mh2 $cx $cy $parent
+        _svghole $svgout $hdmihvpowerboard_mh1 $cx $cy $parent
+        _svghole $svgout $hdmihvpowerboard_mh2 $cx $cy $parent
+    }
 }
 
 
@@ -928,6 +1177,9 @@ snit::type PortableM64CaseMiddle {
         $front   print $fp
         $back   print $fp
     }
+    method printPS {} {
+        $middle printPS
+    }
     method addPart {partListArrayName} {
         upvar $partListArrayName partListArray
         $middle addPart partListArray
@@ -935,6 +1187,25 @@ snit::type PortableM64CaseMiddle {
         $right addPart partListArray
         $front addPart partListArray
         $back addPart partListArray
+    }
+    method svgout {svgout parent} {
+        set middlegroup [$svgout newgroup middle {} $parent]
+        set xoff 6.35
+        set yoff [expr {6.35 + $_Width + 6.35}]
+        set panelgroup [$svgout newgroup panel "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        $middle svgout $svgout $panelgroup
+        set xoff [expr {$xoff + $_Height + 6.35}]
+        set leftgroup [$svgout newgroup left "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        $left svgout $svgout $leftgroup
+        set xoff [expr {$xoff + $_MiddleTotalDepth + 6.35}]
+        set rightgroup [$svgout newgroup right "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        $right svgout $svgout $rightgroup
+        set xoff [expr {$xoff + $_MiddleTotalDepth + 6.35}]
+        set frontgroup [$svgout newgroup front "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        $front svgout $svgout $frontgroup
+        set xoff [expr {$xoff + $_MiddleTotalDepth + 6.35}]
+        set backgroup [$svgout newgroup back "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        $back svgout $svgout $backgroup
     }
 }
 
@@ -988,7 +1259,143 @@ snit::type PortableM64CaseTop {
         $front addPart partListArray
         $back addPart partListArray
     }
+    method svgout {svgout parent} {
+        set topgroup [$svgout newgroup top {} $parent]
+        set xoff 6.35
+        set yoff 6.35
+        set panelgroup [$svgout newgroup panel "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        $top svgout $svgout $panelgroup
+        set xoff [expr {$xoff + $_Height + 6.35}]
+        set leftgroup [$svgout newgroup left "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        $left svgout $svgout $leftgroup
+        set xoff [expr {$xoff + $_TopDepth + 6.35}]
+        set rightgroup [$svgout newgroup right "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        $right svgout $svgout $rightgroup
+        set xoff [expr {$xoff + $_TopDepth + 6.35}]
+        set frontgroup [$svgout newgroup front "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        $front svgout $svgout $frontgroup
+        set xoff [expr {$xoff + $_TopDepth + 6.35}]
+        set backgroup [$svgout newgroup back "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        $back svgout $svgout $backgroup
+    }
+    
 }
+
+snit::enum Section -values {Top Middle Bottom KeyboardShelf}
+snit::listtype _SectionList -type Section
+
+snit::type SectionList {
+    pragma -hastypeinfo no
+    pragma -hastypedestroy no
+    pragma -hasinstances no
+    typemethod validate {value} {
+        if {$value eq "all"} {
+            return $value
+        } elseif {[catch {_SectionList validate $value}]} {
+            return -errorcode INVALID
+        } else {
+            return $value
+        }
+    }
+}
+
+snit::type PortableM64CaseKeyboardShelf {
+    Common
+    PortableM64CaseCommon
+    TeensyThumbStickDims
+    component shelf
+    component hingeblock
+    component teensythumbstickcutout
+    component teensythumbstick
+    component teensythumbstick_mh1
+    component teensythumbstick_mh2
+    component teensythumbstick_mh3
+    component teensythumbstick_mh4
+    component teensythumbstick_standoff1
+    component teensythumbstick_standoff2
+    component teensythumbstick_standoff3
+    component teensythumbstick_standoff4
+    constructor {args} {
+        $self configurelist $args
+        install shelf using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
+                                      [list $_WallThickness $_WallThickness $_ShelfHeight]] \
+                        -vec1 [list [expr {$_Width - (2*$_WallThickness)}] 0 0] \
+                        -vec2 [list 0 $_ShelfLength 0]] \
+              -vector [list 0 0 $_WallThickness] \
+              -color  {255 0 0}
+        lassign [[$shelf cget -surface] cget -cornerpoint] sx sy sz
+        lassign [[$shelf cget -surface] cget -vec1] shelfwidth dummy dummy
+        install hingeblock using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [list $sx $sy [expr {$sz + $_WallThickness}]] \
+                        -vec1 [list $shelfwidth 0 0] \
+                        -vec2 [list 0 $_BlockWidth 0]] \
+              -vector [list 0 0 $_BlockThick] \
+              -color  {0 255 0}
+        set teensythumbstickX [expr {$sx + ($shelfwidth - ($_TeensyThumbStick_Width + 12.7))}]
+        set teensythumbstickY [expr {$sy + ($_ShelfLength - ($_TeensyThumbStick_Height + 12.7))}]
+        install teensythumbstickcutout using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [list $teensythumbstickX [expr {$teensythumbstickY + 6.35}] $sz] \
+                        -vec1 [list $_TeensyThumbStick_Width 0 0] \
+                        -vec2 [list 0 [expr {$_TeensyThumbStick_Height - 12.7}] 0]] \
+              -vector [list 0 0 $_WallThickness] \
+              -color  {255 255 255}
+        install teensythumbstick using TeensyThumbStick %AUTO% \
+              -origin [list $teensythumbstickX $teensythumbstickY \
+                       [expr {$sz - $_TeensyThumbStickDrop}]]
+        set teensythumbstick_mh1 [$teensythumbstick MountingHole %AUTO% 1 $sz $_WallThickness]
+        set teensythumbstick_mh2 [$teensythumbstick MountingHole %AUTO% 2 $sz $_WallThickness]
+        set teensythumbstick_mh3 [$teensythumbstick MountingHole %AUTO% 3 $sz $_WallThickness]
+        set teensythumbstick_mh4 [$teensythumbstick MountingHole %AUTO% 4 $sz $_WallThickness]
+        set teensythumbstick_standoff1 [$teensythumbstick Standoff %AUTO% 1 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
+        set teensythumbstick_standoff2 [$teensythumbstick Standoff %AUTO% 2 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
+        set teensythumbstick_standoff3 [$teensythumbstick Standoff %AUTO% 3 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
+        set teensythumbstick_standoff4 [$teensythumbstick Standoff %AUTO% 4 $sz [expr {-($_TeensyThumbStickDrop-$_TeensyThumbStick_BoardThick)}] [expr {.25*25.4}] {255 255 0}]
+    }
+    method print {{fp stdout}} {
+        $shelf print $fp
+        $hingeblock print $fp
+        $teensythumbstickcutout print $fp
+        $teensythumbstick print $fp
+        $teensythumbstick_mh1 print $fp
+        $teensythumbstick_mh2 print $fp
+        $teensythumbstick_mh3 print $fp
+        $teensythumbstick_mh4 print $fp
+        $teensythumbstick_standoff1 print $fp
+        $teensythumbstick_standoff2 print $fp
+        $teensythumbstick_standoff3 print $fp
+        $teensythumbstick_standoff4 print $fp
+    }
+    method addPart {partListArrayName} {
+        upvar $partListArrayName partListArray
+        set shelfsurf [$shelf cget -surface]
+        set width [lindex [$shelfsurf cget -vec1] 0]
+        set height [lindex [$shelfsurf cget -vec2] 1]
+        set thick [lindex [$shelf cget -vector] 2]
+        incr partListArray([$self _normPartSize $width $height $thick])
+        set hbsurf [$hingeblock cget -surface]
+        set width [lindex [$hbsurf cget -vec1] 0]
+        set height [lindex [$hbsurf cget -vec2] 1]
+        set thick [lindex [$hingeblock cget -vector] 2]
+        incr partListArray([$self _normPartSize $width $height $thick])
+    }
+    method svgout {svgout parent} {
+        set xoff [expr {6.35 + $_Height + 6.35 + 4*($_TopDepth + 6.35)}]
+        set yoff 6.35
+        set shelfsurf [$shelf cget -surface]
+        set width [lindex [$shelfsurf cget -vec1] 0]
+        set height [lindex [$shelfsurf cget -vec2] 1]
+        set keyboardshelfgroup [$svgout newgroup keyboardshelf "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $parent]
+        $svgout addrect 0 -$height $width $height $keyboardshelfgroup
+    }
+}
+
 
 snit::type PortableM64Case {
     Common
@@ -996,25 +1403,66 @@ snit::type PortableM64Case {
     component caseBottom
     component caseMiddle
     component caseTop
+    component keyboardShelf
+    option -sections -type SectionList -default all
     constructor {args} {
         $self configurelist $args
         install caseBottom using PortableM64CaseBottom %AUTO% -origin $options(-origin)
         install caseMiddle using PortableM64CaseMiddle %AUTO% -origin $options(-origin)
         install caseTop    using PortableM64CaseTop %AUTO%    -origin $options(-origin)
+        install keyboardShelf using PortableM64CaseKeyboardShelf %AUTO%    -origin $options(-origin)
     }
     method print {{fp stdout}} {
-        $caseBottom print $fp
-        #$caseMiddle print $fp
-        #$caseTop    print $fp
+        if {$options(-sections) eq "all" || "Bottom" in $options(-sections)} {
+            $caseBottom print $fp
+        }
+        if {$options(-sections) eq "all" || "Middle" in $options(-sections)} {
+            $caseMiddle print $fp
+        }
+        if {$options(-sections) eq "all" || "Top" in $options(-sections)} {
+            $caseTop    print $fp
+        }
+        if {$options(-sections) eq "all" || "KeyboardShelf" in $options(-sections)} {
+            $keyboardShelf print $fp
+        }
     }
     method addPart {partListArrayName} {
         upvar $partListArrayName partListArray
-        $caseBottom addPart partListArray
-        $caseMiddle addPart partListArray
-        $caseTop    addPart partListArray
+        if {$options(-sections) eq "all" || "Bottom" in $options(-sections)} {
+            $caseBottom addPart partListArray
+        }
+        if {$options(-sections) eq "all" || "Middle" in $options(-sections)} {
+            $caseMiddle addPart partListArray
+        }
+        if {$options(-sections) eq "all" || "Top" in $options(-sections)} {
+            $caseTop    addPart partListArray
+        }
+        if {$options(-sections) eq "all" || "KeyboardShelf" in $options(-sections)} {
+            $keyboardShelf addPart partListArray
+        }
     }
     method printPS {} {
-        $caseBottom printPS
+        if {$options(-sections) eq "all" || "Bottom" in $options(-sections)} {
+            $caseBottom printPS
+        }
+        if {$options(-sections) eq "all" || "Middle" in $options(-sections)} {
+            $caseMiddle printPS
+        }
+    }
+    method svgout {svgout parent} {
+        set casegroup [$svgout newgroup case]
+        if {$options(-sections) eq "all" || "Bottom" in $options(-sections)} {
+            $caseBottom svgout $svgout $casegroup
+        }
+        if {$options(-sections) eq "all" || "Middle" in $options(-sections)} {
+            $caseMiddle svgout $svgout $casegroup
+        }
+        if {$options(-sections) eq "all" || "Top" in $options(-sections)} {
+            $caseTop    svgout $svgout $casegroup
+        }
+        if {$options(-sections) eq "all" || "KeyboardShelf" in $options(-sections)} {
+            $keyboardShelf svgout $svgout $casegroup
+        }
     }
 }
 

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:36:05 2020
-#  Last Modified : <200515.1626>
+#  Last Modified : <200518.0916>
 #
 #  Description	
 #
@@ -45,7 +45,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = BuildScripts
-EXTRA_DIST = bootstrap BananaPiM64Model.tcl
+EXTRA_DIST = bootstrap BananaPiM64Model.tcl Tclxml3.1-GenericPureTcl.zip
 
 bin_SCRIPTS = BananaPiM64Model.kit
 
@@ -57,12 +57,12 @@ BananaPiM64ModelLibScripts = Common.tcl M64.tcl PSBox.tcl Case.tcl \
 	PowerSupply.tcl Diode.tcl MOV.tcl TerminalBlocks.tcl \
 	FuseHolder.tcl PSPCB.tcl Electromech.tcl Capacitors.tcl \
 	DCDC-5-12.tcl LCDMountingBracket.tcl LCDScreen.tcl \
-	HDMIConverter.tcl
+	HDMIConverter.tcl ParseXML.tcl SVGOutput.tcl TeensyThumbStick.tcl
 
 EXTRA_DIST += $(BananaPiM64ModelLibScripts)
 
 BananaPiM64Model.kit : BananaPiM64Model.tcl $(BananaPiM64ModelLibScripts) \
-			COPYING
+			COPYING Tclxml3.1-GenericPureTcl.zip
 	-rm -rf BananaPiM64Model.vfs BananaPiM64Model.kit
 	$(TCLKIT) $(SDX) qwrap $(srcdir)/BananaPiM64Model.tcl
 	$(TCLKIT) $(SDX) unwrap BananaPiM64Model.kit
@@ -71,9 +71,12 @@ BananaPiM64Model.kit : BananaPiM64Model.tcl $(BananaPiM64ModelLibScripts) \
 	$(TCLKIT) $(AddKitDir) BananaPiM64Model lib $(CSVLIB)
 	$(TCLKIT) $(AddKitDir) BananaPiM64Model lib $(CMDLINELIB)
 	$(TCLKIT) $(AddKitDir) BananaPiM64Model lib $(STRUCTLIB)
+	$(TCLKIT) $(AddKitDir) BananaPiM64Model lib $(URILIB)
 	$(TCLKIT) $(AddKitFile) -srcdir $(srcdir) BananaPiM64Model  \
 		lib/Scripts $(BananaPiM64ModelLibScripts)
 	$(TCLKIT) $(MakePkgIndex) BananaPiM64Model Scripts
+	$(UNZIP) -qq -d BananaPiM64Model.vfs/lib \
+		$(srcdir)/Tclxml3.1-GenericPureTcl.zip
 	$(TCLKIT) $(AddKitFile) BananaPiM64Model Copyright COPYING
 	$(TCLKIT) $(SDX) wrap BananaPiM64Model.kit
 	-rm -rf BananaPiM64Model.vfs

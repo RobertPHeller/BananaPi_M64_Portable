@@ -132,6 +132,26 @@ else
 fi
 AC_SUBST(STRUCTLIB)
 ])
+AC_DEFUN([AX_URI],[
+AC_MSG_CHECKING(uri dir)
+searchdirs=`echo 'puts $auto_path'|${TCLSH_PROG}`
+for dir in $searchdirs ; do
+  dirs="${dir}/uri* ${dir}/tcllib*/uri*"
+  for i in $dirs ; do
+    if test -d "$i" -a -f "$i/pkgIndex.tcl"; then
+      URILIB=`cd $i; pwd`
+    fi
+  done
+done
+AC_ARG_WITH(urilib, [  --with-urilib=DIR          use uri from DIR], URILIB=$withval,)
+if test x$URILIB != x -a -d $URILIB; then
+   AC_MSG_RESULT([using uri library in $URILIB])
+else
+   AC_MSG_ERROR(Uri library directory not found)
+fi
+AC_SUBST(URILIB)
+])
 
+                          
 
 

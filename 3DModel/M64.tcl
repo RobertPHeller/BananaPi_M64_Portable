@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 10:07:22 2020
-#  Last Modified : <200510.0938>
+#  Last Modified : <200517.0919>
 #
 #  Description	
 #
@@ -60,8 +60,6 @@ snit::macro M64Dims {} {
     typevariable _m64Standoff [expr {.25*25.4}]
     typevariable _m64StandoffDia 6
     typevariable _PlateHeight 16
-    typevariable _DualUSBcutoutYMin 30.83814
-    typevariable _DualUSBcutoutYMax 45.23994
     typevariable _DualUSBHeight 15.60
     typevariable _DualUSBWidth 14.40
     typevariable _DualUSBLength [expr {100.93452-79.34452}]
