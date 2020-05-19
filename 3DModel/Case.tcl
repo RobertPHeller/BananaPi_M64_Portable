@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200518.1046>
+#  Last Modified : <200519.1041>
 #
 #  Description	
 #
@@ -49,9 +49,10 @@ package require LCDMountingBracket
 package require HDMIConverter
 package require SVGOutput
 package require TeensyThumbStick
+package require Speaker
 
 snit::macro PortableM64CaseCommon {} {
-    typevariable _Width [expr {15 * 25.4}]
+    typevariable _Width [expr {15.5 * 25.4}]
     typevariable _Height [expr {11 * 25.4}]
     typevariable _BottomDepth [expr {1.75 * 25.4}]
     typevariable _MiddleTotalDepth [expr {1.5 * 25.4}]
@@ -973,6 +974,7 @@ snit::type PortableM64CaseMiddlePanel {
     LCDDims
     BracketAngleDims
     HDMIConverterDims
+    SpeakerDims
     Common
     component panel
     delegate method * to panel except {print}
@@ -998,6 +1000,16 @@ snit::type PortableM64CaseMiddlePanel {
     component hdmihvpowerboard_mh2
     component hdmihvpowerboard_standoff1
     component hdmihvpowerboard_standoff2
+    component leftspeaker
+    component leftspeaker_mhtop
+    component leftspeaker_mhbottom
+    component leftspeaker_standofftop
+    component leftspeaker_standoffbottom
+    component rightspeaker
+    component rightspeaker_mhtop
+    component rightspeaker_mhbottom
+    component rightspeaker_standofftop
+    component rightspeaker_standoffbottom
     constructor {args} {
         install panel using PortableM64CasePanel %AUTO% \
               -origin [from args -origin]
@@ -1043,7 +1055,22 @@ snit::type PortableM64CaseMiddlePanel {
         set hdmihvpowerboard_mh2 [$hdmihvpowerboard MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
         set hdmihvpowerboard_standoff1 [$hdmihvpowerboard Standoff %AUTO% 1 $cz -6.35 6.35 {255 255 0}]
         set hdmihvpowerboard_standoff2 [$hdmihvpowerboard Standoff %AUTO% 2 $cz -6.35 6.35 {255 255 0}]
-    
+        install leftspeaker using SpeakerLeft_UpsideDown %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + (($panelLength-$_Speaker_Length)/2.0)}] \
+                       [expr {$cz - (6.35-$_Speaker_StandoffRecessDepth)}]]
+        set leftspeaker_mhtop [$leftspeaker MountingHole %AUTO% top $cz [$panel PanelThickness]]
+        set leftspeaker_mhbottom [$leftspeaker MountingHole %AUTO% bottom $cz [$panel PanelThickness]]
+        set leftspeaker_standofftop [$leftspeaker Standoff %AUTO% top $cz -6.35 6 {255 255 0}]
+        set leftspeaker_standoffbottom [$leftspeaker Standoff %AUTO% bottom $cz -6.35 6 {255 255 0}]
+        install rightspeaker using SpeakerRight_UpsideDown %AUTO% \
+              -origin [list [expr {($cx + $panelWidth)-$_Speaker_Width}] \
+                       [expr {$cy + (($panelLength-$_Speaker_Length)/2.0)}] \
+                       [expr {$cz - (6.35-$_Speaker_StandoffRecessDepth)}]]
+        set rightspeaker_mhtop [$rightspeaker MountingHole %AUTO% top $cz [$panel PanelThickness]]
+        set rightspeaker_mhbottom [$rightspeaker MountingHole %AUTO% bottom $cz [$panel PanelThickness]]
+        set rightspeaker_standofftop [$rightspeaker Standoff %AUTO% top $cz -6.35 6 {255 255 0}]
+        set rightspeaker_standoffbottom [$rightspeaker Standoff %AUTO% bottom $cz -6.35 6 {255 255 0}]
     }
     method print {{fp stdout}} {
         $panel print $fp
@@ -1068,9 +1095,19 @@ snit::type PortableM64CaseMiddlePanel {
         $hdmihvpowerboard_mh2 print $fp
         $hdmihvpowerboard_standoff1 print $fp
         $hdmihvpowerboard_standoff2 print $fp
+        $leftspeaker print $fp
+        $leftspeaker_mhtop print $fp
+        $leftspeaker_mhbottom print $fp
+        $leftspeaker_standofftop print $fp
+        $leftspeaker_standoffbottom print $fp
+        $rightspeaker print $fp
+        $rightspeaker_mhtop print $fp        
+        $rightspeaker_mhbottom print $fp
+        $rightspeaker_standofftop print $fp
+        $rightspeaker_standoffbottom print $fp
     }
     method printPS {} {
-                set fp  [PostScriptFile fp]
+        set fp  [PostScriptFile fp]
         set xi 0
         set yi 1
         set xorg 0
@@ -1092,6 +1129,10 @@ snit::type PortableM64CaseMiddlePanel {
         $hdmibuttonboard_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         $hdmihvpowerboard_mh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         $hdmihvpowerboard_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $leftspeaker_mhtop printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $leftspeaker_mhbottom printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $rightspeaker_mhtop printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $rightspeaker_mhbottom printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         PostScriptFile newPage {Middle Panel Drill Report}
         lassign [$panel PanelCornerPoint] cx cy cz
         _hole $leftbracket_m1 $cx $cy
@@ -1106,6 +1147,10 @@ snit::type PortableM64CaseMiddlePanel {
         _hole $hdmibuttonboard_mh2 $cx $cy
         _hole $hdmihvpowerboard_mh1 $cx $cy
         _hole $hdmihvpowerboard_mh2 $cx $cy
+        _hole $leftspeaker_mhtop $cx $cy
+        _hole $leftspeaker_mhbottom $cx $cy
+        _hole $rightspeaker_mhtop $cx $cy
+        _hole $rightspeaker_mhbottom $cx $cy
     }
     proc _hole {holecyl cx cy} {
         lassign [$holecyl cget -bottom] hx hy hz
@@ -1131,6 +1176,10 @@ snit::type PortableM64CaseMiddlePanel {
         _svghole $svgout $hdmibuttonboard_mh2 $cx $cy $parent
         _svghole $svgout $hdmihvpowerboard_mh1 $cx $cy $parent
         _svghole $svgout $hdmihvpowerboard_mh2 $cx $cy $parent
+        _svghole $svgout $leftspeaker_mhtop $cx $cy $parent
+        _svghole $svgout $leftspeaker_mhbottom $cx $cy $parent
+        _svghole $svgout $rightspeaker_mhtop $cx $cy $parent
+        _svghole $svgout $rightspeaker_mhbottom $cx $cy $parent
     }
 }
 
@@ -1315,6 +1364,7 @@ snit::type PortableM64CaseKeyboardShelf {
     component teensythumbstick_standoff2
     component teensythumbstick_standoff3
     component teensythumbstick_standoff4
+    component teensythumbstickcover
     constructor {args} {
         $self configurelist $args
         install shelf using PrismSurfaceVector %AUTO% \
@@ -1357,6 +1407,8 @@ snit::type PortableM64CaseKeyboardShelf {
         set teensythumbstick_standoff2 [$teensythumbstick Standoff %AUTO% 2 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
         set teensythumbstick_standoff3 [$teensythumbstick Standoff %AUTO% 3 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
         set teensythumbstick_standoff4 [$teensythumbstick Standoff %AUTO% 4 $sz -$_TeensyThumbStickDrop [expr {.25*25.4}] {255 255 0}]
+        install teensythumbstickcover using TeensyThumbStickCover %AUTO% \
+              -origin [list $teensythumbstickX $teensythumbstickY [expr {$sz + $_WallThickness}]]
     }
     method print {{fp stdout}} {
         $shelf print $fp
@@ -1371,6 +1423,7 @@ snit::type PortableM64CaseKeyboardShelf {
         $teensythumbstick_standoff2 print $fp
         $teensythumbstick_standoff3 print $fp
         $teensythumbstick_standoff4 print $fp
+        $teensythumbstickcover print $fp
     }
     method addPart {partListArrayName} {
         upvar $partListArrayName partListArray
@@ -1385,6 +1438,53 @@ snit::type PortableM64CaseKeyboardShelf {
         set thick [lindex [$hingeblock cget -vector] 2]
         incr partListArray([$self _normPartSize $width $height $thick])
     }
+    method printPS {} {
+        set fp  [PostScriptFile fp]
+        set xi 0
+        set yi 1
+        set xorg 0
+        set yorg 0
+        set xscale .01968
+        set yscale .01968
+        set surf [$shelf cget -surface]
+        PostScriptFile newPage {Keyboard Shelf Drill and Cutout Pattern}
+        $surf printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $teensythumbstick_mh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $teensythumbstick_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $teensythumbstick_mh3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $teensythumbstick_mh4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        [$teensythumbstickcutout cget -surface] printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        PostScriptFile newPage {Keyboard Shelf Drill and Cutouts Report}
+        lassign [[$shelf cget -surface] cget -cornerpoint] cx cy cz
+        _hole $teensythumbstick_mh1 $cx $cy
+        _hole $teensythumbstick_mh2 $cx $cy
+        _hole $teensythumbstick_mh3 $cx $cy
+        _hole $teensythumbstick_mh4 $cx $cy
+        _cutout [$teensythumbstickcutout cget -surface] $cx $cx
+    }
+    proc _cutout {cutoutSurf cx cy} {
+        lassign [$cutoutSurf cget -cornerpoint] cux cuy dummy
+        lassign [$cutoutSurf cget -vec1] w dummy dummy
+        lassign [$cutoutSurf cget -vec2] dummy h dummy
+        PostScriptFile cutout [expr {$cux - $cx}] [expr {$cuy - $cy}] $w $h
+    }
+    proc _hole {holecyl cx cy} {
+        lassign [$holecyl cget -bottom] hx hy hz
+        PostScriptFile hole [expr {$hx - $cx}] [expr {$hy - $cy}] \
+              [expr {[$holecyl cget -radius] * 2.0}]
+    }
+    proc _svghole {svgout holecyl cx cy parent} {
+        lassign [$holecyl cget -bottom] hx hy hz
+        $svgout addcircle [expr {$hx - $cx}] [expr {-($hy - $cy)}] [$holecyl cget -radius] $parent
+    }
+    proc _svgcutout {svgout cutoutSurf cx cy parent} {
+        lassign [$cutoutSurf cget -cornerpoint] cux cuy dummy
+        lassign [$cutoutSurf cget -vec1] w dummy dummy
+        #set w [expr {-($w)}]
+        lassign [$cutoutSurf cget -vec2] dummy h dummy
+        $svgout addrect [expr {($cux - $cx)}] [expr {-($cuy - $cy)-$h}] $w $h $parent
+    }
+    
     method svgout {svgout parent} {
         set xoff [expr {6.35 + $_Height + 6.35 + 4*($_TopDepth + 6.35)}]
         set yoff 6.35
@@ -1393,6 +1493,12 @@ snit::type PortableM64CaseKeyboardShelf {
         set height [lindex [$shelfsurf cget -vec2] 1]
         set keyboardshelfgroup [$svgout newgroup keyboardshelf "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $parent]
         $svgout addrect 0 -$height $width $height $keyboardshelfgroup
+        lassign [[$shelf cget -surface] cget -cornerpoint] cx cy cz
+        _svghole $svgout $teensythumbstick_mh1 $cx $cy $keyboardshelfgroup
+        _svghole $svgout $teensythumbstick_mh2 $cx $cy $keyboardshelfgroup
+        _svghole $svgout $teensythumbstick_mh3 $cx $cy $keyboardshelfgroup
+        _svghole $svgout $teensythumbstick_mh4 $cx $cy $keyboardshelfgroup
+        _svgcutout $svgout [$teensythumbstickcutout cget -surface] $cx $cx $keyboardshelfgroup
     }
 }
 
@@ -1447,6 +1553,9 @@ snit::type PortableM64Case {
         }
         if {$options(-sections) eq "all" || "Middle" in $options(-sections)} {
             $caseMiddle printPS
+        }
+        if {$options(-sections) eq "all" || "KeyboardShelf" in $options(-sections)} {
+            $keyboardShelf printPS
         }
     }
     method svgout {svgout parent} {

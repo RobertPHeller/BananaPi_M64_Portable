@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:36:05 2020
-#  Last Modified : <200518.0916>
+#  Last Modified : <200519.0938>
 #
 #  Description	
 #
@@ -57,7 +57,8 @@ BananaPiM64ModelLibScripts = Common.tcl M64.tcl PSBox.tcl Case.tcl \
 	PowerSupply.tcl Diode.tcl MOV.tcl TerminalBlocks.tcl \
 	FuseHolder.tcl PSPCB.tcl Electromech.tcl Capacitors.tcl \
 	DCDC-5-12.tcl LCDMountingBracket.tcl LCDScreen.tcl \
-	HDMIConverter.tcl ParseXML.tcl SVGOutput.tcl TeensyThumbStick.tcl
+	HDMIConverter.tcl ParseXML.tcl SVGOutput.tcl TeensyThumbStick.tcl \
+	Speaker.tcl
 
 EXTRA_DIST += $(BananaPiM64ModelLibScripts)
 

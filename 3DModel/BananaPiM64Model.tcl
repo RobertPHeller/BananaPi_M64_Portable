@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200517.1443>
+#  Last Modified : <200518.1248>
 #
 #  Description	
 #
@@ -77,17 +77,28 @@ snit::type BananaPiM64Model {
     typemethod Main {argv} {
         set m64case [PortableM64Case create %AUTO% \
                      -sections [from argv -sections all]]
-        if {[from argv -generategcad no]} {
+        if {[from argv -generateall no]} {
+            set generategcad yes
+            set generatesvg yes
+            set generateparts yes
+            set generatepostscript yes
+        } else {
+            set generategcad  [from argv -generategcad no]
+            set generatesvg   [from argv -generatesvg no]
+            set generateparts [from argv -generateparts no]
+            set generatepostscript [from argv -generatepostscript no]
+        }
+        if {$generategcad} {
             set modelFP [open [from argv -gcadfile $_default_gcadfile] w]
             $m64case print $modelFP
             close $modelFP
         }
-        if {[from argv -generatesvg no]} {
+        if {$generatesvg} {
             set svg [SVGOutput create %AUTO%]
             $m64case svgout $svg {}
             $svg write [from argv -svgfile $_default_svgfile]
         }
-        if {[from argv -generateparts no]} {
+        if {$generateparts} {
             $m64case addPart parts
             set partsFP [open [from argv -partsfile $_default_partsfile] w]
             puts $partsFP [::csv::join [list "Panel Size" "Panel Count"]]
@@ -96,7 +107,7 @@ snit::type BananaPiM64Model {
             }
             close $partsFP
         }
-        if {[from argv -generatepostscript no]} {
+        if {$generatepostscript} {
             PostScriptFile open -filename [from argv -postscriptfile $_default_postscriptfile]
             $m64case printPS
             PostScriptFile close
