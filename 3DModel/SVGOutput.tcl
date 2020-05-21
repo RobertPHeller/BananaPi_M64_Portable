@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 16 13:36:56 2020
-#  Last Modified : <200521.1417>
+#  Last Modified : <200521.1840>
 #
 #  Description	
 #
@@ -123,7 +123,7 @@ snit::type SVGOutput {
         set space ""
         foreach p $pointlist {
             lassign $p x y
-            append points [format {%c$g,%g} $space $x $y]
+            append points [format {%s%g,%g} $space $x $y]
             set space " "
         }
         lappend attributes points $points

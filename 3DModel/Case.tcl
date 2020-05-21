@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200521.1350>
+#  Last Modified : <200521.1813>
 #
 #  Description	
 #
@@ -1164,7 +1164,9 @@ snit::type PortableM64CaseMiddlePanel {
     delegate method * to panel except {print addPart}
     delegate option * to panel
     component leftbracket
+    delegate method {leftbracket SVG3View} to leftbracket as SVG3View
     component rightbracket
+    delegate method {rightbracket SVG3View} to rightbracket as SVG3View
     component screen
     component leftbracket_m1
     component leftbracket_m2
@@ -1487,9 +1489,10 @@ snit::type PortableM64CaseMiddle {
     Common
     PortableM64CaseCommon
     component middle
-    component left                                                              
-    component right                                                             
-    component front                                                             
+    delegate method * to middle
+    component left                                                
+    component right
+    component front
     component back
     constructor {args} {
         $self configurelist $args
@@ -1834,6 +1837,7 @@ snit::type PortableM64Case {
     PortableM64CaseCommon
     component caseBottom
     component caseMiddle
+    delegate method * to caseMiddle
     component caseTop
     component keyboardShelf
     option -sections -type SectionList -default all

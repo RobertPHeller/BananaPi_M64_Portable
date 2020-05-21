@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri May 15 07:49:02 2020
-#  Last Modified : <200521.1452>
+#  Last Modified : <200521.1912>
 #
 #  Description	
 #
@@ -320,7 +320,7 @@ snit::type LCDMountingBracket {
         
     }
     method SVG3View {} {
-        lassign $options(origin) ox oy oz
+        lassign $options(-origin) ox oy oz
         set svgpage [SVGOutput create %AUTO% -width 8.5 -height 11]
         set topview [$svgpage newgroup topview "[$svgpage translateTransform 12.7 12.7]"]
         $svgpage addrect 0 0 $_AngleHeight $_AngleThickness $topview
@@ -330,21 +330,29 @@ snit::type LCDMountingBracket {
         for {set i 1} {$i <= 4} {incr i} {
             lassign [[set lcdm$i] cget -bottom] dummy by bx
             set r [[set lcdm$i] cget -radius]
-            set x [expr {$bx-$oz}]
+            set x [expr {$oz-$bx}]
             set y [expr {$by-$oy}]
             $svgpage addcircle $x $y $r $frontview
         }
-        set sideview [$svgpage newgroup sideview "[$svgpage translateTransform [expr {12.7+25.4}] [expr {12.7+25.4}]]"]
+        set sideview [$svgpage newgroup sideview "[$svgpage translateTransform [expr {12.7+50.8}] [expr {12.7+25.4}]]"]
         set points2d [list]
         foreach p [[$angle_a cget -surface] cget -polypoints] {
             lassign $p x y z
-            lappend points2d [list [expr {$x-$ox}] [expr {$y-$oy}]]
+            if {$options(-side) eq "L"} {
+                lappend points2d [list [expr {$ox-$x}] [expr {$y-$oy}]]
+            } else {
+                lappend points2d [list [expr {$x-$ox}] [expr {$y-$oy}]]
+            }
         }
         $svgpage addpoly $points2d $sideview
         for {set i 1} {$i <= 4} {incr i} {
             lassign [[set bracketm$i] cget -bottom] bx by dummy
             set r [[set bracketm$i] cget -radius]
-            set x [expr {$bx-$ox}]
+            if {$options(-side) eq "L"} {
+                set x [expr {$ox-$bx}]
+            } else {
+                set x [expr {$bx-$ox}]
+            }
             set y [expr {$by-$oy}]
             $svgpage addcircle $x $y $r $sideview
         }

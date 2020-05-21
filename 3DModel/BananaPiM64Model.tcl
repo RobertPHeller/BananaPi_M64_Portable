@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200518.1248>
+#  Last Modified : <200521.1837>
 #
 #  Description	
 #
@@ -63,6 +63,8 @@ snit::type BananaPiM64Model {
     typevariable _default_svgfile
     typevariable _default_partsfile
     typevariable _default_postscriptfile
+    typevariable _default_leftbracketsvgfile
+    typevariable _default_rightbracketsvgfile
     typeconstructor {
         set _scriptroot [file rootname [file tail [info script]]]
         set _dirname [file dirname [file dirname [file dirname \
@@ -71,23 +73,36 @@ snit::type BananaPiM64Model {
         set _default_svgfile [file join $_dirname ${_scriptroot}.svg]
         set _default_partsfile [file join $_dirname ${_scriptroot}_parts.csv]
         set _default_postscriptfile [file join $_dirname ${_scriptroot}.ps]
+        set _default_leftbracketsvgfile [file join $_dirname ${_scriptroot}_leftbracket.svg]
+        set _default_rightbracketsvgfile [file join $_dirname ${_scriptroot}_rightbracket.svg]
     }
     typecomponent m64case
     typecomponent svg
     typemethod Main {argv} {
-        set m64case [PortableM64Case create %AUTO% \
-                     -sections [from argv -sections all]]
         if {[from argv -generateall no]} {
             set generategcad yes
             set generatesvg yes
             set generateparts yes
             set generatepostscript yes
+            set generateleftbracketsvg yes
+            set generaterightbracketsvg yes
         } else {
             set generategcad  [from argv -generategcad no]
             set generatesvg   [from argv -generatesvg no]
             set generateparts [from argv -generateparts no]
             set generatepostscript [from argv -generatepostscript no]
+            set generateleftbracketsvg [from argv -generateleftbracketsvg no]
+            set generaterightbracketsvg [from argv -generaterightbracketsvg no]
         }
+        set sections [from argv -sections all]
+        if {$generateleftbracketsvg || $generaterightbracketsvg} {
+            if {$sections ne "all" ||
+                "Middle" ni $sections} {
+                lappend sections Middle
+            }
+        }
+        set m64case [PortableM64Case create %AUTO% \
+                     -sections $sections]
         if {$generategcad} {
             set modelFP [open [from argv -gcadfile $_default_gcadfile] w]
             $m64case print $modelFP
@@ -111,6 +126,14 @@ snit::type BananaPiM64Model {
             PostScriptFile open -filename [from argv -postscriptfile $_default_postscriptfile]
             $m64case printPS
             PostScriptFile close
+        }
+        if {$generateleftbracketsvg} {
+            set leftbracketsvg [$m64case leftbracket SVG3View]
+            $leftbracketsvg write [from argv -leftbracketsvgfile $_default_leftbracketsvgfile]
+        }
+        if {$generaterightbracketsvg} {
+            set rightbracketsvg [$m64case rightbracket SVG3View]
+            $rightbracketsvg write [from argv -rightbracketsvgfile $_default_rightbracketsvgfile]
         }
     }
 }        
