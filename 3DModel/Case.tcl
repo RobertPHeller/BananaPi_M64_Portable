@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200519.1041>
+#  Last Modified : <200520.1911>
 #
 #  Description	
 #
@@ -50,6 +50,7 @@ package require HDMIConverter
 package require SVGOutput
 package require TeensyThumbStick
 package require Speaker
+package require Battery
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15.5 * 25.4}]
@@ -65,6 +66,116 @@ snit::macro PortableM64CaseCommon {} {
     typevariable _BlockWidth [expr {.5*25.4}]
     typevariable _TeensyThumbStickDrop [expr {.25*25.4}]
 }
+
+snit::type BlockX {
+    Common
+    option -length -readonly yes -type snit::double -default 0
+    PortableM64CaseCommon
+    component block
+    delegate method * to block
+    constructor {args} {
+        $self configurelist $args
+        install block using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint $options(-origin) \
+                        -vec1 [list 0 0 $_BlockThick] \
+                        -vec2 [list 0 $_BlockWidth 0]] \
+              -vector [list $options(-length) 0 0] \
+              -color  {0 255 0}
+    }
+    method addPart {partListArrayName} {
+        upvar $partListArrayName partListArray
+        set bsurf [$block cget -surface]
+        set thick [lindex [$bsurf cget -vec1] 2]
+        set width [lindex [$bsurf cget -vec2] 1]
+        set length [expr {abs([lindex [$block cget -vector] 0])}]
+        incr partListArray([$self _normPartSize $width $thick $length])
+    }
+}
+
+snit::type BlockY {
+    Common
+    option -length -readonly yes -type snit::double -default 0
+    PortableM64CaseCommon
+    component block
+    delegate method * to block
+    constructor {args} {
+        $self configurelist $args
+        install block using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint $options(-origin) \
+                        -vec1 [list $_BlockWidth 0 0] \
+                        -vec2 [list 0 0 $_BlockThick]] \
+              -vector [list 0 $options(-length) 0] \
+              -color  {0 255 0}
+    }
+    method addPart {partListArrayName} {
+        upvar $partListArrayName partListArray
+        set bsurf [$block cget -surface]
+        set thick [lindex [$bsurf cget -vec2] 2]
+        set width [lindex [$bsurf cget -vec1] 0]
+        set length [expr {abs([lindex [$block cget -vector] 1])}]
+        incr partListArray([$self _normPartSize $width $thick $length])
+    }
+}
+
+snit::type BlockZa {
+    Common
+    option -length -readonly yes -type snit::double -default 0
+    PortableM64CaseCommon
+    component block
+    delegate method * to block
+    constructor {args} {
+        $self configurelist $args
+        install block using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint $options(-origin) \
+                        -vec1 [list $_BlockThick 0 0] \
+                        -vec2 [list 0 $_BlockWidth 0]] \
+              -vector [list 0 0 $options(-length)] \
+              -color  {0 255 0}
+    }
+    method addPart {partListArrayName} {
+        upvar $partListArrayName partListArray
+        set bsurf [$block cget -surface]
+        set thick [lindex [$bsurf cget -vec1] 0]
+        set width [lindex [$bsurf cget -vec2] 1]
+        set length [expr {abs([lindex [$block cget -vector] 2])}]
+        incr partListArray([$self _normPartSize $width $thick $length])
+    }
+}
+
+snit::type BlockZb {
+    Common
+    option -length -readonly yes -type snit::double -default 0
+    PortableM64CaseCommon
+    component block
+    delegate method * to block
+    constructor {args} {
+        $self configurelist $args
+        install block using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint $options(-origin) \
+                        -vec1 [list 0 $_BlockThick 0] \
+                        -vec2 [list $_BlockWidth 0 0]] \
+              -vector [list 0 0 $options(-length)] \
+              -color  {0 255 0}
+    }
+    method addPart {partListArrayName} {
+        upvar $partListArrayName partListArray
+        set bsurf [$block cget -surface]
+        set thick [lindex [$bsurf cget -vec1] 1]
+        set width [lindex [$bsurf cget -vec2] 0]
+        set length [expr {abs([lindex [$block cget -vector] 2])}]
+        incr partListArray([$self _normPartSize $width $thick $length])
+    }
+}
+
+    
 
 snit::type PortableM64CasePanel {
     Common
@@ -295,12 +406,14 @@ snit::type PortableM64CaseBackPanel {
 
 snit::type PortableM64CaseBottomPanel {
     Common
+    PortableM64CaseCommon
     M64Dims
     HDMIConverterDims
+    BatteryDims
     option -psbox -default {} -readonly yes
     option -dcdc512 -default {} -readonly yes
     component panel
-    delegate method * to panel except {print}
+    #delegate method * to panel except {print addPart}
     delegate option * to panel
     component m64_m1
     component m64_m2
@@ -327,6 +440,15 @@ snit::type PortableM64CaseBottomPanel {
     component hdmiconvertermainboard_standoff2
     component hdmiconvertermainboard_standoff3
     component hdmiconvertermainboard_standoff4
+    component battery
+    component frontblock
+    component backblock
+    component leftblock
+    component rightblock
+    component leftfrontcorner
+    component rightfrontcorner
+    component leftbackcorner
+    component rightbackcorner
     component widthdim
     component lengthdim
     component m64ydim
@@ -415,6 +537,44 @@ snit::type PortableM64CaseBottomPanel {
         set psurf [$panel cget -surface]
         set vec1  [$psurf cget -vec1]
         set w [lindex $vec1 0]
+        install battery using Battery %AUTO% \
+              -origin [list [expr {$cx + ($w - $_Battery_Length)}] $cy [expr {$cz + [$panel PanelThickness]}]]
+        install frontblock using BlockX %AUTO% \
+              -origin [list $cx $cy [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {6*25.4}]
+        set vec2  [$psurf cget -vec2]
+        install backblock using BlockX %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + [lindex $vec2 1] - $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {12*25.4}]
+        install leftblock using BlockY %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + $_m64YOff + $_m64YMax}] \
+                       [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {[lindex $vec2 1] - ($_m64YOff + $_m64YMax + $_BlockWidth)}]
+        install rightblock using BlockY %AUTO% \
+              -origin [list [expr {$cx + $w - $_BlockWidth}] \
+                       [expr {$cy + $_Battery_Width}] \
+                       [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {170 - $_Battery_Width}]
+        install leftfrontcorner using BlockZa %AUTO% \
+              -origin [list $cx $cy [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
+              -length [expr {$_ShelfHeight - ([$panel PanelThickness]+$_BlockThick)}]
+        install rightfrontcorner using BlockZa %AUTO% \
+              -origin [list [expr {$cx + $w - $_BlockThick}] \
+                       $cy [expr {$cz + [$panel PanelThickness] + $_Battery_Height}]] \
+              -length [expr {$_ShelfHeight - ([$panel PanelThickness]+$_Battery_Height)}]
+        install leftbackcorner using BlockZa %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + [lindex $vec2 1] - $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
+              -length [expr {$_BottomDepth - ([$panel PanelThickness]+$_BlockThick)}]
+        install rightbackcorner using BlockZa %AUTO% \
+              -origin [list [expr {$cx + $w - $_BlockThick}] \
+                       [expr {$cy + [lindex $vec2 1] - $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {$_BottomDepth - [$panel PanelThickness]}]
         set mid [expr {$w / 2.0}]
         set toff -20
         install widthdim using Dim3D %AUTO% \
@@ -486,11 +646,34 @@ snit::type PortableM64CaseBottomPanel {
         $hdmiconvertermainboard_standoff2 print $fp
         $hdmiconvertermainboard_standoff3 print $fp
         $hdmiconvertermainboard_standoff4 print $fp
+        $battery print $fp
+        $frontblock print $fp
+        $backblock print $fp
+        $leftblock print $fp
+        $rightblock print $fp
+        $leftfrontcorner print $fp
+        $rightfrontcorner print $fp
+        $leftbackcorner print $fp
+        $rightbackcorner print $fp
         $widthdim print $fp
         $lengthdim print $fp
         $m64ydim print $fp
         $hdmiydim print $fp
         $m64tohtmiydim print $fp
+    }
+    method addPart {partListArrayName} {
+        #puts stderr "*** $self addPart $partListArrayName"
+        upvar $partListArrayName partListArray
+        $panel addPart partListArray
+        $frontblock addPart partListArray
+        $backblock addPart partListArray
+        $leftblock addPart partListArray
+        $rightblock addPart partListArray
+        $leftfrontcorner addPart partListArray
+        $rightfrontcorner addPart partListArray
+        $leftbackcorner addPart partListArray
+        $rightbackcorner addPart partListArray
+        
     }
     method printPS {} {
         set fp  [PostScriptFile fp]
@@ -1378,14 +1561,9 @@ snit::type PortableM64CaseKeyboardShelf {
               -color  {255 0 0}
         lassign [[$shelf cget -surface] cget -cornerpoint] sx sy sz
         lassign [[$shelf cget -surface] cget -vec1] shelfwidth dummy dummy
-        install hingeblock using PrismSurfaceVector %AUTO% \
-              -surface [PolySurface  create %AUTO% \
-                        -rectangle yes \
-                        -cornerpoint [list $sx $sy [expr {$sz + $_WallThickness}]] \
-                        -vec1 [list $shelfwidth 0 0] \
-                        -vec2 [list 0 $_BlockWidth 0]] \
-              -vector [list 0 0 $_BlockThick] \
-              -color  {0 255 0}
+        install hingeblock using BlockX %AUTO% \
+              -origin [list $sx $sy [expr {$sz + $_WallThickness}]] \
+              -length $shelfwidth
         set teensythumbstickX [expr {$sx + ($shelfwidth - ($_TeensyThumbStick_Width + 12.7))}]
         set teensythumbstickY [expr {$sy + ($_ShelfLength - ($_TeensyThumbStick_Height + 12.7))}]
         install teensythumbstickcutout using PrismSurfaceVector %AUTO% \
@@ -1432,11 +1610,7 @@ snit::type PortableM64CaseKeyboardShelf {
         set height [lindex [$shelfsurf cget -vec2] 1]
         set thick [lindex [$shelf cget -vector] 2]
         incr partListArray([$self _normPartSize $width $height $thick])
-        set hbsurf [$hingeblock cget -surface]
-        set width [lindex [$hbsurf cget -vec1] 0]
-        set height [lindex [$hbsurf cget -vec2] 1]
-        set thick [lindex [$hingeblock cget -vector] 2]
-        incr partListArray([$self _normPartSize $width $height $thick])
+        $hingeblock addPart partListArray
     }
     method printPS {} {
         set fp  [PostScriptFile fp]

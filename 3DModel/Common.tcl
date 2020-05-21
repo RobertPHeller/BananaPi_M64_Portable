@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 09:45:23 2020
-#  Last Modified : <200515.0910>
+#  Last Modified : <200520.1615>
 #
 #  Description	
 #
@@ -611,6 +611,7 @@ snit::macro Common {} {
         return [format {%.4fx%.4fx%.4f} [_inch $X] [_inch $Y] [_inch $Z]]
     }
     method _normPartSize {X Y Z} {
+        #puts stderr "*** $self _normPartSize $X $Y $Z"
         switch $options(-partunits) {
             in {
                 return [_normPartSizeIN $X $Y $Z]
