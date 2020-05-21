@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200520.1911>
+#  Last Modified : <200521.0845>
 #
 #  Description	
 #
@@ -1154,13 +1154,14 @@ snit::type PortableM64CaseBottom {
 
 snit::type PortableM64CaseMiddlePanel {
     Common
+    PortableM64CaseCommon
     LCDDims
     BracketAngleDims
     HDMIConverterDims
     SpeakerDims
     Common
     component panel
-    delegate method * to panel except {print}
+    delegate method * to panel except {print addPart}
     delegate option * to panel
     component leftbracket
     component rightbracket
@@ -1178,21 +1179,37 @@ snit::type PortableM64CaseMiddlePanel {
     component hdmibuttonboard_mh2
     component hdmibuttonboard_standoff1
     component hdmibuttonboard_standoff2
+    component hdmibuttonboard_blockhole1
+    component hdmibuttonboard_blockhole2
     component hdmihvpowerboard
     component hdmihvpowerboard_mh1
     component hdmihvpowerboard_mh2
     component hdmihvpowerboard_standoff1
     component hdmihvpowerboard_standoff2
+    component hdmihvpowerboard_blockhole1
+    component hdmihvpowerboard_blockhole2
     component leftspeaker
     component leftspeaker_mhtop
     component leftspeaker_mhbottom
     component leftspeaker_standofftop
     component leftspeaker_standoffbottom
+    component leftspeaker_blockholetop
+    component leftspeaker_blockholebottom
     component rightspeaker
     component rightspeaker_mhtop
     component rightspeaker_mhbottom
     component rightspeaker_standofftop
     component rightspeaker_standoffbottom
+    component rightspeaker_blockholetop
+    component rightspeaker_blockholebottom
+    component frontblock
+    component backblock
+    component leftblock
+    component rightblock
+    component leftfrontcorner
+    component rightfrontcorner
+    component leftbackcorner
+    component rightbackcorner
     constructor {args} {
         install panel using PortableM64CasePanel %AUTO% \
               -origin [from args -origin]
@@ -1254,6 +1271,53 @@ snit::type PortableM64CaseMiddlePanel {
         set rightspeaker_mhbottom [$rightspeaker MountingHole %AUTO% bottom $cz [$panel PanelThickness]]
         set rightspeaker_standofftop [$rightspeaker Standoff %AUTO% top $cz -6.35 6 {255 255 0}]
         set rightspeaker_standoffbottom [$rightspeaker Standoff %AUTO% bottom $cz -6.35 6 {255 255 0}]
+        set psurf [$panel cget -surface]
+        set vec1  [$psurf cget -vec1]
+        set w [lindex $vec1 0]
+        set vec2  [$psurf cget -vec2]
+        set h [lindex $vec2 1]
+        install frontblock using BlockX %AUTO% \
+              -origin [list $cx $cy [expr {$cz + [$panel PanelThickness]}]] \
+              -length $w
+        install backblock  using BlockX %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + $h - $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness]}]] \
+              -length $w
+        install leftblock using BlockY %AUTO% \
+              -origin [list $cx [expr {$cy + $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {$h - (2*$_BlockWidth)}]
+        install rightblock using BlockY %AUTO% \
+              -origin [list [expr {$cx + $w - $_BlockWidth}] \
+                       [expr {$cy + $_BlockWidth}] [expr {$cz + [$panel PanelThickness]}]] \
+              -length [expr {$h - (2*$_BlockWidth)}]
+        install leftfrontcorner using BlockZa %AUTO% \
+              -origin [list $cx $cy [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
+              -length [expr {$_MiddleTotalDepth - ($_MiddleLowerDepth + [$panel PanelThickness] + $_BlockThick)}]
+        install rightfrontcorner using BlockZa %AUTO% \
+              -origin [list [expr {$cx + $w - $_BlockThick}] \
+                       $cy [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
+              -length [expr {$_MiddleTotalDepth - ($_MiddleLowerDepth + [$panel PanelThickness] + $_BlockThick)}]
+        install leftbackcorner using BlockZa %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + $h - $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
+              -length [expr {$_MiddleTotalDepth - ($_MiddleLowerDepth + [$panel PanelThickness] + $_BlockThick)}]
+        install rightbackcorner using BlockZa %AUTO% \
+              -origin [list [expr {$cx + $w - $_BlockThick}] \
+                       [expr {$cy + $h - $_BlockWidth}] \
+                       [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
+              -length [expr {$_MiddleTotalDepth - ($_MiddleLowerDepth + [$panel PanelThickness] + $_BlockThick)}]
+        set hdmibuttonboard_blockhole1 [$hdmibuttonboard Standoff %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
+        set hdmibuttonboard_blockhole2 [$hdmibuttonboard Standoff %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
+        set hdmihvpowerboard_blockhole1 [$hdmihvpowerboard Standoff %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
+        set hdmihvpowerboard_blockhole2 [$hdmihvpowerboard Standoff %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
+        set leftspeaker_blockholetop [$leftspeaker Standoff %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
+        set leftspeaker_blockholebottom [$leftspeaker Standoff %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
+        set rightspeaker_blockholetop [$rightspeaker Standoff %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
+        set rightspeaker_blockholebottom [$rightspeaker Standoff %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
+        
     }
     method print {{fp stdout}} {
         $panel print $fp
@@ -1288,6 +1352,35 @@ snit::type PortableM64CaseMiddlePanel {
         $rightspeaker_mhbottom print $fp
         $rightspeaker_standofftop print $fp
         $rightspeaker_standoffbottom print $fp
+        $frontblock print $fp
+        $backblock  print $fp
+        $leftblock print $fp
+        $rightblock print $fp
+        $leftfrontcorner print $fp
+        $rightfrontcorner print $fp
+        $leftbackcorner print $fp
+        $rightbackcorner print $fp
+        $hdmibuttonboard_blockhole1 print $fp
+        $hdmibuttonboard_blockhole2 print $fp
+        $hdmihvpowerboard_blockhole1 print $fp
+        $hdmihvpowerboard_blockhole2 print $fp
+        $leftspeaker_blockholetop print $fp
+        $leftspeaker_blockholebottom print $fp
+        $rightspeaker_blockholetop print $fp
+        $rightspeaker_blockholebottom print $fp
+    }
+    method addPart {partListArrayName} {
+        #puts stderr "*** $self addPart $partListArrayName"
+        upvar $partListArrayName partListArray
+        $panel addPart partListArray
+        $frontblock addPart partListArray
+        $backblock addPart partListArray
+        $leftblock addPart partListArray
+        $rightblock addPart partListArray
+        $leftfrontcorner addPart partListArray
+        $rightfrontcorner addPart partListArray
+        $leftbackcorner addPart partListArray
+        $rightbackcorner addPart partListArray
     }
     method printPS {} {
         set fp  [PostScriptFile fp]
