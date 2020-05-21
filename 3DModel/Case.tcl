@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200521.0845>
+#  Last Modified : <200521.0947>
 #
 #  Description	
 #
@@ -1542,6 +1542,10 @@ snit::type PortableM64CaseTop {
     component right
     component front
     component back
+    component frontblock
+    component backblock
+    component leftblock
+    component rightblock
     constructor {args} {
         $self configurelist $args
         install top using PortableM64CasePanel %AUTO% \
@@ -1568,6 +1572,30 @@ snit::type PortableM64CaseTop {
                        $options(-origin) \
                        [list 0 0 [expr {$_MiddleTotalDepth+$_BottomDepth}]]] \
               -depth $_TopDepth
+        lassign [$top PanelCornerPoint] cx cy cz
+        set psurf [$top  cget -surface]
+        set vec1  [$psurf cget -vec1]
+        set panelWidth [lindex $vec1 0]
+        set vec2 [$psurf cget -vec2]
+        set panelLength [lindex $vec2 1]
+        set panelThick [$top PanelThickness]
+        install frontblock using BlockX %AUTO% \
+              -origin [list $cx $cy [expr {$cz - $_BlockThick}]] \
+              -length $panelWidth
+        install backblock  using BlockX %AUTO% \
+              -origin [list $cx \
+                       [expr {$cy + $panelLength - $_BlockWidth}] \
+                       [expr {$cz - $_BlockThick}]] \
+              -length $panelWidth
+        install leftblock using BlockY %AUTO% \
+              -origin [list $cx [expr {$cy + $_BlockWidth}] \
+                       [expr {$cz - $_BlockThick}]] \
+              -length [expr {$panelLength - (2*$_BlockWidth)}]
+        install rightblock using BlockY %AUTO% \
+              -origin [list [expr {$cx + $panelWidth - $_BlockWidth}] \
+                       [expr {$cy + $_BlockWidth}] [expr {$cz - $_BlockThick}]] \
+              -length [expr {$panelLength - (2*$_BlockWidth)}]
+                       
     }
     method print {{fp stdout}} {
         $top print $fp
@@ -1575,6 +1603,10 @@ snit::type PortableM64CaseTop {
         $right   print $fp
         $front   print $fp
         $back   print $fp
+        $frontblock print $fp
+        $backblock print $fp
+        $leftblock print $fp
+        $rightblock print $fp
     }
     method addPart {partListArrayName} {
         upvar $partListArrayName partListArray
@@ -1583,6 +1615,10 @@ snit::type PortableM64CaseTop {
         $right addPart partListArray
         $front addPart partListArray
         $back addPart partListArray
+        $frontblock addPart partListArray
+        $backblock addPart partListArray
+        $leftblock addPart partListArray
+        $rightblock addPart partListArray
     }
     method svgout {svgout parent} {
         set topgroup [$svgout newgroup top {} $parent]
