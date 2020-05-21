@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200521.0947>
+#  Last Modified : <200521.1350>
 #
 #  Description	
 #
@@ -1210,6 +1210,8 @@ snit::type PortableM64CaseMiddlePanel {
     component rightfrontcorner
     component leftbackcorner
     component rightbackcorner
+    component rightspeaker_mhtop_to_rightbracket_m2_dim
+    component rightspeaker_mhbottom_to_rightbracket_m3_dim
     constructor {args} {
         install panel using PortableM64CasePanel %AUTO% \
               -origin [from args -origin]
@@ -1317,7 +1319,26 @@ snit::type PortableM64CaseMiddlePanel {
         set leftspeaker_blockholebottom [$leftspeaker Standoff %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
         set rightspeaker_blockholetop [$rightspeaker Standoff %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
         set rightspeaker_blockholebottom [$rightspeaker Standoff %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
-        
+        set dimz [expr {$cz - 12.7}]
+        set dimx [expr {$cx + $w + 25.4}]
+        lassign [$rightspeaker_mhtop cget -bottom] x1 y1 dummy
+        lassign [$rightbracket_m2 cget -bottom] x2 y2 dummy
+        install rightspeaker_mhtop_to_rightbracket_m2_dim using Dim3D %AUTO% \
+              -point1 [list [expr {($x1 + $x2)/2.0}] $y2 $dimz] \
+              -point2 [list [expr {($x1 + $x2)/2.0}] $y1 $dimz] \
+              -textpoint [list $dimx [expr {($y1 + $y2)/2.0}] $dimz] \
+              -plane P \
+              -additionaltext " mm"
+        puts stderr [format {*** $type create $self: rightspeaker_mhtop_to_rightbracket_m2_dim is %g} [expr {abs($y2-$y1)}]]
+        lassign [$rightspeaker_mhbottom cget -bottom] x1 y1 dummy
+        lassign [$rightbracket_m3 cget -bottom] x2 y2 dummy
+        install rightspeaker_mhbottom_to_rightbracket_m3_dim using Dim3D %AUTO% \
+              -point1 [list [expr {($x1 + $x2)/2.0}] $y1 $dimz] \
+              -point2 [list [expr {($x1 + $x2)/2.0}] $y2 $dimz] \
+              -textpoint [list $dimx [expr {($y1 + $y2)/2.0}] $dimz] \
+              -plane P \
+              -additionaltext " mm"
+        puts stderr [format {*** $type create $self: rightspeaker_mhbottom_to_rightbracket_m3_dim is %g} [expr {abs($y2-$y1)}]]
     }
     method print {{fp stdout}} {
         $panel print $fp
@@ -1368,6 +1389,8 @@ snit::type PortableM64CaseMiddlePanel {
         $leftspeaker_blockholebottom print $fp
         $rightspeaker_blockholetop print $fp
         $rightspeaker_blockholebottom print $fp
+        #$rightspeaker_mhtop_to_rightbracket_m2_dim print $fp
+        #$rightspeaker_mhbottom_to_rightbracket_m3_dim print $fp
     }
     method addPart {partListArrayName} {
         #puts stderr "*** $self addPart $partListArrayName"

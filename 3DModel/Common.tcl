@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 09:45:23 2020
-#  Last Modified : <200520.1615>
+#  Last Modified : <200521.1347>
 #
 #  Description	
 #
@@ -128,6 +128,7 @@ snit::type Cylinder {
 snit::type PolySurface {
     typevariable _index 20
     option -rectangle -type snit::boolean -readonly yes -default no
+    option -closedpolygon -type snit::boolean -readonly yes -default yes
     option -cornerpoint -type point -readonly yes -default {0 0 0}
     option -vec1 -type point -readonly yes -default {0 0 0}
     option -vec2 -type point -readonly yes -default {0 0 0}
@@ -140,13 +141,21 @@ snit::type PolySurface {
         incr _index
     }
     method print {{fp stdout}} {
+        #puts stderr "*** $self print (-rectangle is $options(-rectangle), -closedpolygon is $options(-closedpolygon)"
         if {$options(-rectangle)} {
             set cpp [eval [list format {P(%f,%f,%f)}] $options(-cornerpoint)]
             set v1  [eval [list format {D(%f,%f,%f)}] $options(-vec1)]
             set v2  [eval [list format {D(%f,%f,%f)}] $options(-vec2)]
             puts $fp [format {S%d = REC %s %s %s} $index $cpp $v1 $v2]
-        } else {
+        } elseif {$options(-closedpolygon)} {
             puts -nonewline $fp [format {S%d = POL} $index]
+            foreach p $options(-polypoints) {
+                puts -nonewline $fp [eval [list format { P(%f,%f,%f)}] $p]
+            }
+            puts $fp {}
+        } else {
+            #puts stderr "*** $self print: CCV"
+            puts -nonewline $fp [format {S%d = CCV} $index]
             foreach p $options(-polypoints) {
                 puts -nonewline $fp [eval [list format { P(%f,%f,%f)}] $p]
             }

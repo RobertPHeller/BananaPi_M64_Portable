@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 16 13:36:56 2020
-#  Last Modified : <200517.1329>
+#  Last Modified : <200521.1417>
 #
 #  Description	
 #
@@ -108,13 +108,28 @@ snit::type SVGOutput {
     }
     method addrect {x y width height parent} {
         set newrect [SimpleDOMElement create %AUTO% -tag rect \
-                     -attributes [list x $x y $y width $width height $height fill none stroke black stroke-width 1]]
+                     -attributes [list x $x y $y width $width height $height \
+                                  fill none stroke black stroke-width 1]]
         $parent addchild $newrect
     }
     method addcircle {cx cy r parent} {
         set newcircle [SimpleDOMElement create %AUTO% -tag circle \
                        -attributes [list cx $cx cy $cy r $r fill black stroke none]]
         $parent addchild $newcircle
+    }
+    method addpoly {pointlist parent} {
+        set attributes [list fill none stroke black stroke-width 1]
+        set points ""
+        set space ""
+        foreach p $pointlist {
+            lassign $p x y
+            append points [format {%c$g,%g} $space $x $y]
+            set space " "
+        }
+        lappend attributes points $points
+        set newpoly [SimpleDOMElement create %AUTO% -tag polygon \
+                     -attributes $attributes]
+        $parent addchild $newpoly
     }
     method write {filename} {
         set fp [open $filename w]
