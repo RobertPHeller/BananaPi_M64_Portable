@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200521.1813>
+#  Last Modified : <200522.0859>
 #
 #  Description	
 #
@@ -1132,22 +1132,22 @@ snit::type PortableM64CaseBottom {
         $back printPS
     }
     method svgout {svgout parent} {
-        set bottomgroup [$svgout newgroup bottom {} $parent]
+        set bottomgroup [$svgout newgroup bottom -parent $parent]
         set xoff 6.35
         set yoff [expr {6.35 + (2*($_Width + 6.35))}]
-        set panelgroup [$svgout newgroup panel "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        set panelgroup [$svgout newgroup panel -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $bottomgroup]
         $bottom svgout $svgout $panelgroup
         set xoff [expr {$xoff + $_Height + 6.35}]
-        set leftgroup [$svgout newgroup left "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        set leftgroup [$svgout newgroup left -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $bottomgroup]
         $left svgout $svgout $leftgroup
         set xoff [expr {$xoff + $_BottomDepth + 6.35}]
-        set rightgroup [$svgout newgroup right "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        set rightgroup [$svgout newgroup right -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $bottomgroup]
         $right svgout $svgout $rightgroup
         set xoff [expr {$xoff + $_BottomDepth + 6.35}]
-        set frontgroup [$svgout newgroup front "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        set frontgroup [$svgout newgroup front -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $bottomgroup]
         $front svgout $svgout $frontgroup
         set xoff [expr {$xoff + $_BottomDepth + 6.35}]
-        set backgroup [$svgout newgroup back "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $bottomgroup]
+        set backgroup [$svgout newgroup back -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $bottomgroup]
         $back svgout $svgout $backgroup
     }
 }
@@ -1540,22 +1540,22 @@ snit::type PortableM64CaseMiddle {
         $back addPart partListArray
     }
     method svgout {svgout parent} {
-        set middlegroup [$svgout newgroup middle {} $parent]
+        set middlegroup [$svgout newgroup middle -parent $parent]
         set xoff 6.35
         set yoff [expr {6.35 + $_Width + 6.35}]
-        set panelgroup [$svgout newgroup panel "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        set panelgroup [$svgout newgroup panel -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $middlegroup]
         $middle svgout $svgout $panelgroup
         set xoff [expr {$xoff + $_Height + 6.35}]
-        set leftgroup [$svgout newgroup left "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        set leftgroup [$svgout newgroup left -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $middlegroup]
         $left svgout $svgout $leftgroup
         set xoff [expr {$xoff + $_MiddleTotalDepth + 6.35}]
-        set rightgroup [$svgout newgroup right "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        set rightgroup [$svgout newgroup right -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $middlegroup]
         $right svgout $svgout $rightgroup
         set xoff [expr {$xoff + $_MiddleTotalDepth + 6.35}]
-        set frontgroup [$svgout newgroup front "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        set frontgroup [$svgout newgroup front -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $middlegroup]
         $front svgout $svgout $frontgroup
         set xoff [expr {$xoff + $_MiddleTotalDepth + 6.35}]
-        set backgroup [$svgout newgroup back "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $middlegroup]
+        set backgroup [$svgout newgroup back -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $middlegroup]
         $back svgout $svgout $backgroup
     }
 }
@@ -1647,22 +1647,22 @@ snit::type PortableM64CaseTop {
         $rightblock addPart partListArray
     }
     method svgout {svgout parent} {
-        set topgroup [$svgout newgroup top {} $parent]
+        set topgroup [$svgout newgroup top -parent $parent]
         set xoff 6.35
         set yoff 6.35
-        set panelgroup [$svgout newgroup panel "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        set panelgroup [$svgout newgroup panel -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $topgroup]
         $top svgout $svgout $panelgroup
         set xoff [expr {$xoff + $_Height + 6.35}]
-        set leftgroup [$svgout newgroup left "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        set leftgroup [$svgout newgroup left -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $topgroup]
         $left svgout $svgout $leftgroup
         set xoff [expr {$xoff + $_TopDepth + 6.35}]
-        set rightgroup [$svgout newgroup right "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        set rightgroup [$svgout newgroup right -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $topgroup]
         $right svgout $svgout $rightgroup
         set xoff [expr {$xoff + $_TopDepth + 6.35}]
-        set frontgroup [$svgout newgroup front "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        set frontgroup [$svgout newgroup front -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $topgroup]
         $front svgout $svgout $frontgroup
         set xoff [expr {$xoff + $_TopDepth + 6.35}]
-        set backgroup [$svgout newgroup back "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $topgroup]
+        set backgroup [$svgout newgroup back -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $topgroup]
         $back svgout $svgout $backgroup
     }
     
@@ -1820,7 +1820,7 @@ snit::type PortableM64CaseKeyboardShelf {
         set shelfsurf [$shelf cget -surface]
         set width [lindex [$shelfsurf cget -vec1] 0]
         set height [lindex [$shelfsurf cget -vec2] 1]
-        set keyboardshelfgroup [$svgout newgroup keyboardshelf "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" $parent]
+        set keyboardshelfgroup [$svgout newgroup keyboardshelf -transform "[$svgout translateTransform $xoff $yoff] [$svgout rotateTransform 90]" -parent $parent]
         $svgout addrect 0 -$height $width $height $keyboardshelfgroup
         lassign [[$shelf cget -surface] cget -cornerpoint] cx cy cz
         _svghole $svgout $teensythumbstick_mh1 $cx $cy $keyboardshelfgroup

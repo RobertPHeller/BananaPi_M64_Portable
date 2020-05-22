@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri May 15 07:49:02 2020
-#  Last Modified : <200521.1912>
+#  Last Modified : <200522.1316>
 #
 #  Description	
 #
@@ -322,19 +322,39 @@ snit::type LCDMountingBracket {
     method SVG3View {} {
         lassign $options(-origin) ox oy oz
         set svgpage [SVGOutput create %AUTO% -width 8.5 -height 11]
-        set topview [$svgpage newgroup topview "[$svgpage translateTransform 12.7 12.7]"]
+        $svgpage defineArrowMarkers
+        set topview [$svgpage newgroup topview -transform "[$svgpage translateTransform 12.7 12.7]" -style {font-family:Monospace;font-size:4pt;}]
         $svgpage addrect 0 0 $_AngleHeight $_AngleThickness $topview
         $svgpage addrect 0 0 $_AngleThickness $_AngleWidth $topview
-        set frontview [$svgpage newgroup frontview "[$svgpage translateTransform 12.7 [expr {12.7+25.4}]]"]
+        $svgpage addXdimension angleHeight 0 $_AngleHeight 0 -5 "h" $topview
+        $svgpage addYdimension angleWidth 0 $_AngleWidth 0 -5 "w" $topview
+        set dims(h) $_AngleHeight
+        set dims(w) $_AngleWidth
+        $svgpage addYdimension angleAThickDim 0 $_AngleThickness 0 [expr {$_AngleHeight + 10}] "t" $topview true
+        $svgpage addXdimension angleBThickDim 0 $_AngleThickness 0 [expr {$_AngleWidth + 10}] " t" $topview true
+        set dims(t) $_AngleThickness
+        set frontview [$svgpage newgroup frontview -transform "[$svgpage translateTransform 12.7 [expr {25.4+25.4}]]" -style {font-family:Monospace;font-size:4pt;}]
         $svgpage addrect 0 0 $_AngleHeight $_AngleLength $frontview
+        $svgpage addYdimension angleLengthDim 0 $_AngleLength 0 [expr {$_AngleWidth + 20}] "L" $frontview
+        set dims(L) $_AngleLength
+        set yPrev 0
         for {set i 1} {$i <= 4} {incr i} {
             lassign [[set lcdm$i] cget -bottom] dummy by bx
             set r [[set lcdm$i] cget -radius]
+            set dims(LCDMdia) [expr {$r * 2.0}]
             set x [expr {$oz-$bx}]
             set y [expr {$by-$oy}]
             $svgpage addcircle $x $y $r $frontview
+            $svgpage addYdimension angleLCDM$i $yPrev $y $x [expr {$_AngleWidth + 7.5}] M$i $frontview
+            set dims(M$i) [expr {$y - $yPrev}]
+            set yPrev $y
         }
-        set sideview [$svgpage newgroup sideview "[$svgpage translateTransform [expr {12.7+50.8}] [expr {12.7+25.4}]]"]
+        lassign [[set lcdm1] cget -bottom] dummy by bx
+        set x [expr {$oz-$bx}]
+        set y [expr {$by-$oy}]
+        $svgpage addXdimension angleLCDMX 0 $x $y [expr {$y - 15}] MX $frontview
+        set dims(MX) $x
+        set sideview [$svgpage newgroup sideview -transform "[$svgpage translateTransform [expr {12.7+50.8}] [expr {25.4+25.4}]]" -style {font-family:Monospace;font-size:4pt;}]
         set points2d [list]
         foreach p [[$angle_a cget -surface] cget -polypoints] {
             lassign $p x y z
@@ -345,9 +365,22 @@ snit::type LCDMountingBracket {
             }
         }
         $svgpage addpoly $points2d $sideview
+        set ystart [lindex [lindex $points2d 2] 1]
+        set xedge [lindex [lindex $points2d 2] 0]
+        set ynotch1 [lindex [lindex $points2d 3] 1] 
+        $svgpage addYdimension notch1Y $ystart $ynotch1 $xedge [expr {$xedge + 20}] "A" $sideview 
+        set dims(A) [expr {$ystart - $ynotch1}]
+        set ystart $ynotch1
+        set ynotch2 [lindex [lindex $points2d 5] 1]
+        $svgpage addYdimension notch2Y $ystart $ynotch2 $xedge [expr {$xedge + 20}] "B" $sideview 
+        set dims(B) [expr {$ystart - $ynotch2}]
+        set xnotch [lindex [lindex $points2d 4] 0]
+        $svgpage addXdimension notchX $xedge $xnotch $ystart [expr {$ystart - 5}] "N" $sideview true
+        set dims(N) [expr {$xedge - $xnotch}]
         for {set i 1} {$i <= 4} {incr i} {
             lassign [[set bracketm$i] cget -bottom] bx by dummy
             set r [[set bracketm$i] cget -radius]
+            set dims(BracketMDia) [expr {$r * 2.0}]
             if {$options(-side) eq "L"} {
                 set x [expr {$ox-$bx}]
             } else {
@@ -356,8 +389,25 @@ snit::type LCDMountingBracket {
             set y [expr {$by-$oy}]
             $svgpage addcircle $x $y $r $sideview
         }
+        set dimensiongroup [$svgpage newgroup dimensions -transform "[$svgpage translateTransform [expr {12.7+92}] [expr {12.7+25.4}]]" -style {font-family:Monospace;font-size:5px;}]
+        set dimnames [lsort -dictionary [array names dims]]
+        set tline [string repeat "-" [string length $_dimtableHeading]]
+        $svgpage addtext 0 10 "$tline" $dimensiongroup
+        $svgpage addtext 0 15 $_dimtableHeading $dimensiongroup
+        $svgpage addtext 0 20 "$tline" $dimensiongroup
+        set y 25
+        foreach d $dimnames {
+            set dline [format $_dimtableFormat $d [expr {$dims($d) / 25.4}] $dims($d)]
+            $svgpage addtext 0 $y $dline $dimensiongroup
+            incr y 5
+        }
+        $svgpage addtext 0 $y $tline $dimensiongroup
         return $svgpage
     }
+    typevariable _dimtableFormat {|%-11.11s|%10.6f|%10.6f|}
+    typevariable _dimtableHeading [format {|%-11.11s|%10.10s|%10.10s|} \
+                                   Dim inch mm]
+    
 }
 
 package provide LCDMountingBracket 1.0
