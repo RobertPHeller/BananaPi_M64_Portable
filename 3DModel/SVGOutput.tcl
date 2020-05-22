@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 16 13:36:56 2020
-#  Last Modified : <200522.1217>
+#  Last Modified : <200522.1614>
 #
 #  Description	
 #
@@ -315,6 +315,12 @@ snit::type SVGOutput {
         }
         set midy [expr {($y1+$y2)/2.0}]
         $self addtext $dimx $midy $text $group;# -rotate 90
+    }
+    method addHoledimension {name hx hy dimy dimx1 dimx2 text parent} {
+        set group [$self newgroup $name -parent $parent]
+        $self addpolyline [list [list $dimx2 $dimy] [list $dimx1 $dimy] \
+                            [list $hx $hy]] $group -marker-end "url(#ArrowOutEnd)"  -stroke-width .5 
+        $self addtext $dimx2 $dimy $text $group
     }
     method write {filename} {
         set fp [open $filename w]

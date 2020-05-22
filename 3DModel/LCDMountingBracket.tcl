@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri May 15 07:49:02 2020
-#  Last Modified : <200522.1316>
+#  Last Modified : <200522.1616>
 #
 #  Description	
 #
@@ -341,7 +341,7 @@ snit::type LCDMountingBracket {
         for {set i 1} {$i <= 4} {incr i} {
             lassign [[set lcdm$i] cget -bottom] dummy by bx
             set r [[set lcdm$i] cget -radius]
-            set dims(LCDMdia) [expr {$r * 2.0}]
+            set dims(Mdia) [expr {$r * 2.0}]
             set x [expr {$oz-$bx}]
             set y [expr {$by-$oy}]
             $svgpage addcircle $x $y $r $frontview
@@ -354,6 +354,7 @@ snit::type LCDMountingBracket {
         set y [expr {$by-$oy}]
         $svgpage addXdimension angleLCDMX 0 $x $y [expr {$y - 15}] MX $frontview
         set dims(MX) $x
+        $svgpage addHoledimension LCDMdia $x $y [expr {$y - 15}] [expr {$x + 7}] [expr {$x + 15}] "Mdia (4x)" $frontview
         set sideview [$svgpage newgroup sideview -transform "[$svgpage translateTransform [expr {12.7+50.8}] [expr {25.4+25.4}]]" -style {font-family:Monospace;font-size:4pt;}]
         set points2d [list]
         foreach p [[$angle_a cget -surface] cget -polypoints] {
@@ -380,7 +381,7 @@ snit::type LCDMountingBracket {
         for {set i 1} {$i <= 4} {incr i} {
             lassign [[set bracketm$i] cget -bottom] bx by dummy
             set r [[set bracketm$i] cget -radius]
-            set dims(BracketMDia) [expr {$r * 2.0}]
+            set dims(BMDia) [expr {$r * 2.0}]
             if {$options(-side) eq "L"} {
                 set x [expr {$ox-$bx}]
             } else {
@@ -389,13 +390,21 @@ snit::type LCDMountingBracket {
             set y [expr {$by-$oy}]
             $svgpage addcircle $x $y $r $sideview
         }
+        lassign [[set bracketm1] cget -bottom] bx by dummy
+        if {$options(-side) eq "L"} {
+            set x [expr {$ox-$bx}]
+        } else {
+            set x [expr {$bx-$ox}]
+        }
+        set y [expr {$by-$oy}]
+        $svgpage addHoledimension BMDia $x $y [expr {$y - 15}] [expr {$x + 7}] [expr {$x + 15}] "BMDia (4x)" $sideview
         set dimensiongroup [$svgpage newgroup dimensions -transform "[$svgpage translateTransform [expr {12.7+92}] [expr {12.7+25.4}]]" -style {font-family:Monospace;font-size:5px;}]
         set dimnames [lsort -dictionary [array names dims]]
         set tline [string repeat "-" [string length $_dimtableHeading]]
-        $svgpage addtext 0 10 "$tline" $dimensiongroup
-        $svgpage addtext 0 15 $_dimtableHeading $dimensiongroup
         $svgpage addtext 0 20 "$tline" $dimensiongroup
-        set y 25
+        $svgpage addtext 0 25 $_dimtableHeading $dimensiongroup
+        $svgpage addtext 0 30 "$tline" $dimensiongroup
+        set y 35
         foreach d $dimnames {
             set dline [format $_dimtableFormat $d [expr {$dims($d) / 25.4}] $dims($d)]
             $svgpage addtext 0 $y $dline $dimensiongroup
