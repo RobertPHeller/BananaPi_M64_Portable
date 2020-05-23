@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri May 15 07:49:02 2020
-#  Last Modified : <200522.1616>
+#  Last Modified : <200523.1159>
 #
 #  Description	
 #
@@ -322,7 +322,6 @@ snit::type LCDMountingBracket {
     method SVG3View {} {
         lassign $options(-origin) ox oy oz
         set svgpage [SVGOutput create %AUTO% -width 8.5 -height 11]
-        $svgpage defineArrowMarkers
         set topview [$svgpage newgroup topview -transform "[$svgpage translateTransform 12.7 12.7]" -style {font-family:Monospace;font-size:4pt;}]
         $svgpage addrect 0 0 $_AngleHeight $_AngleThickness $topview
         $svgpage addrect 0 0 $_AngleThickness $_AngleWidth $topview

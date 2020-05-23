@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200522.0859>
+#  Last Modified : <200523.1251>
 #
 #  Description	
 #
@@ -73,6 +73,7 @@ snit::type BlockX {
     PortableM64CaseCommon
     component block
     delegate method * to block
+    delegate option * to block
     constructor {args} {
         $self configurelist $args
         install block using PrismSurfaceVector %AUTO% \
@@ -100,6 +101,7 @@ snit::type BlockY {
     PortableM64CaseCommon
     component block
     delegate method * to block
+    delegate option * to block
     constructor {args} {
         $self configurelist $args
         install block using PrismSurfaceVector %AUTO% \
@@ -127,6 +129,7 @@ snit::type BlockZa {
     PortableM64CaseCommon
     component block
     delegate method * to block
+    delegate option * to block
     constructor {args} {
         $self configurelist $args
         install block using PrismSurfaceVector %AUTO% \
@@ -154,6 +157,7 @@ snit::type BlockZb {
     PortableM64CaseCommon
     component block
     delegate method * to block
+    delegate option * to block
     constructor {args} {
         $self configurelist $args
         install block using PrismSurfaceVector %AUTO% \
@@ -1481,6 +1485,158 @@ snit::type PortableM64CaseMiddlePanel {
         _svghole $svgout $leftspeaker_mhbottom $cx $cy $parent
         _svghole $svgout $rightspeaker_mhtop $cx $cy $parent
         _svghole $svgout $rightspeaker_mhbottom $cx $cy $parent
+    }
+    method {backblock drillsheet} {} {
+        lassign [[$backblock cget -surface] cget -cornerpoint] bcx bcy dummy
+        lassign [[$backblock cget -surface] cget -vec2] dummy width dummy
+        lassign [$backblock cget -vector] length dummy dummy
+        set svgpage [SVGOutput create %AUTO% -width 8.5 -height 11]
+        set drillgroup [$svgpage newgroup drillgroup -transform "[$svgpage scaleTransform .5] [$svgpage translateTransform 76.2 25.4]" -style {font-family:Monospace;font-size:4pt;}]
+        $svgpage addrect 0 0 $width $length $drillgroup
+        set r [$hdmibuttonboard_blockhole1 cget -radius]
+        set dims(HoleDia) [expr {$r * 2.0}]
+        set yPrev 0
+        lassign [$hdmibuttonboard_blockhole1 cget -bottom] bx by dummy
+        set y [expr {$bx-$bcx}]
+        set x [expr {$by-$bcy}]
+        $svgpage addHoledimension HoleDia $x $y [expr {$y - 25}] [expr {$x + 7}] [expr {$x + 15}] "HoleDia (4x)" $drillgroup
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension hdmibuttonboardMY1 $yPrev $y $x [expr {$width + 7.5}] M1 $drillgroup
+        set dims(M1) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension hdmibuttonboardMX1 0 $x $y [expr {$y + 10}] N1 $drillgroup true
+        set dims(N1) $x
+        lassign [$hdmibuttonboard_blockhole2 cget -bottom] bx by dummy
+        set y [expr {$bx-$bcx}]
+        set x [expr {$by-$bcy}]
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension hdmibuttonboardMY2 $yPrev $y $x [expr {$width + 7.5}] M2 $drillgroup
+        set dims(M2) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension hdmibuttonboardMX2 0 $x $y [expr {$y - 10}] N2 $drillgroup true
+        set dims(N2) $x
+        lassign [$hdmihvpowerboard_blockhole1 cget -bottom] bx by dummy
+        set y [expr {$bx-$bcx}]
+        set x [expr {$by-$bcy}]
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension hdmihvpowerboardMY1 $yPrev $y $x [expr {$width + 7.5}] M3 $drillgroup
+        set dims(M3) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension hdmihvpowerboardMX1 0 $x $y [expr {$y + 10}] N3 $drillgroup true
+        set dims(N3) $x
+        lassign [$hdmihvpowerboard_blockhole2 cget -bottom] bx by dummy
+        set y [expr {$bx-$bcx}]
+        set x [expr {$by-$bcy}]
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension hdmihvpowerboardMY2 $yPrev $y $x [expr {$width + 7.5}] M4 $drillgroup
+        set dims(M4) [expr {$y - $yPrev}]
+        $svgpage addXdimension hdmihvpowerboardMX2 0 $x $y [expr {$y - 10}] N4 $drillgroup true
+        set dims(N4) $x
+        set dimensiongroup [$svgpage newgroup dimensions -transform "[$svgpage translateTransform [expr {12.7+92}] [expr {12.7+25.4}]]" -style {font-family:Monospace;font-size:5px;}]
+        set dimnames [lsort -dictionary [array names dims]]
+        set tline [string repeat "-" [string length $_dimtableHeading]]
+        $svgpage addtext 0 20 "$tline" $dimensiongroup
+        $svgpage addtext 0 25 $_dimtableHeading $dimensiongroup
+        $svgpage addtext 0 30 "$tline" $dimensiongroup
+        set y 35
+        foreach d $dimnames {
+            set dline [format $_dimtableFormat $d [expr {$dims($d) / 25.4}] $dims($d)]
+            $svgpage addtext 0 $y $dline $dimensiongroup
+            incr y 5
+        }
+        $svgpage addtext 0 $y $tline $dimensiongroup
+        return $svgpage
+    }
+    typevariable _dimtableFormat {|%-11.11s|%10.6f|%10.6f|}
+    typevariable _dimtableHeading [format {|%-11.11s|%10.10s|%10.10s|} \
+                                   Dim inch mm]
+    method {leftblock drillsheet} {} {
+        lassign [[$leftblock cget -surface] cget -cornerpoint] bcx bcy dummy
+        lassign [[$leftblock cget -surface] cget -vec1] width dummy dummy
+        lassign [$leftblock cget -vector] dummy length dummy
+        set svgpage [SVGOutput create %AUTO% -width 8.5 -height 11]
+        set drillgroup [$svgpage newgroup drillgroup -transform "[$svgpage scaleTransform .5] [$svgpage translateTransform 76.2 25.4]" -style {font-family:Monospace;font-size:4pt;}]
+        $svgpage addrect 0 0 $width $length $drillgroup
+        set r [$leftspeaker_blockholetop cget -radius]
+        set dims(HoleDia) [expr {$r * 2.0}]
+        set yPrev 0
+        lassign [$leftspeaker_blockholetop cget -bottom] bx by dummy
+        set x [expr {$bx-$bcx}]
+        set y [expr {$by-$bcy}]
+        $svgpage addHoledimension HoleDia $x $y [expr {$y - 25}] [expr {$x + 10}] [expr {$x + 20}] "HoleDia (2x)" $drillgroup
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension leftspeaker_topMY $yPrev $y $x [expr {$width + 7.5}] M1 $drillgroup
+        set dims(M1) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension leftspeaker_topMX 0 $x $y [expr {$y + 10}] N1 $drillgroup true
+        set dims(N1) $x
+        lassign [$leftspeaker_blockholebottom cget -bottom] bx by dummy
+        set x [expr {$bx-$bcx}]
+        set y [expr {$by-$bcy}]
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension leftspeaker_bottomMY $yPrev $y $x [expr {$width + 7.5}] M2 $drillgroup
+        set dims(M2) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension leftspeaker_bottomMX 0 $x $y [expr {$y - 10}] N2 $drillgroup true
+        set dims(N2) $x
+        set dimensiongroup [$svgpage newgroup dimensions -transform "[$svgpage translateTransform [expr {12.7+92}] [expr {12.7+25.4}]]" -style {font-family:Monospace;font-size:5px;}]
+        set dimnames [lsort -dictionary [array names dims]]
+        set tline [string repeat "-" [string length $_dimtableHeading]]
+        $svgpage addtext 0 20 "$tline" $dimensiongroup
+        $svgpage addtext 0 25 $_dimtableHeading $dimensiongroup
+        $svgpage addtext 0 30 "$tline" $dimensiongroup
+        set y 35
+        foreach d $dimnames {
+            set dline [format $_dimtableFormat $d [expr {$dims($d) / 25.4}] $dims($d)]
+            $svgpage addtext 0 $y $dline $dimensiongroup
+            incr y 5
+        }
+        $svgpage addtext 0 $y $tline $dimensiongroup
+        return $svgpage
+    }
+    method {rightblock drillsheet} {} {
+        lassign [[$rightblock cget -surface] cget -cornerpoint] bcx bcy dummy
+        lassign [[$rightblock cget -surface] cget -vec1] width dummy dummy
+        lassign [$rightblock cget -vector] dummy length dummy
+        set svgpage [SVGOutput create %AUTO% -width 8.5 -height 11]
+        set drillgroup [$svgpage newgroup drillgroup -transform "[$svgpage scaleTransform .5] [$svgpage translateTransform 76.2 25.4]" -style {font-family:Monospace;font-size:4pt;}]
+        $svgpage addrect 0 0 $width $length $drillgroup
+        set r [$rightspeaker_blockholetop cget -radius]
+        set dims(HoleDia) [expr {$r * 2.0}]
+        set yPrev 0
+        lassign [$rightspeaker_blockholetop cget -bottom] bx by dummy
+        set x [expr {$bx-$bcx}]
+        set y [expr {$by-$bcy}]
+        $svgpage addHoledimension HoleDia $x $y [expr {$y - 25}] [expr {$x + 10}] [expr {$x + 20}] "HoleDia (2x)" $drillgroup
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension rightspeaker_topMY $yPrev $y $x [expr {$width + 7.5}] M1 $drillgroup
+        set dims(M1) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension rightspeaker_topMX 0 $x $y [expr {$y + 10}] N1 $drillgroup true
+        set dims(N1) $x
+        lassign [$rightspeaker_blockholebottom cget -bottom] bx by dummy
+        set x [expr {$bx-$bcx}]
+        set y [expr {$by-$bcy}]
+        $svgpage addcircle $x $y $r $drillgroup
+        $svgpage addYdimension rightspeaker_bottomMY $yPrev $y $x [expr {$width + 7.5}] M2 $drillgroup
+        set dims(M2) [expr {$y - $yPrev}]
+        set yPrev $y
+        $svgpage addXdimension rightspeaker_bottomMX 0 $x $y [expr {$y - 10}] N2 $drillgroup true
+        set dims(N2) $x
+        set dimensiongroup [$svgpage newgroup dimensions -transform "[$svgpage translateTransform [expr {12.7+92}] [expr {12.7+25.4}]]" -style {font-family:Monospace;font-size:5px;}]
+        set dimnames [lsort -dictionary [array names dims]]
+        set tline [string repeat "-" [string length $_dimtableHeading]]
+        $svgpage addtext 0 20 "$tline" $dimensiongroup
+        $svgpage addtext 0 25 $_dimtableHeading $dimensiongroup
+        $svgpage addtext 0 30 "$tline" $dimensiongroup
+        set y 35
+        foreach d $dimnames {
+            set dline [format $_dimtableFormat $d [expr {$dims($d) / 25.4}] $dims($d)]
+            $svgpage addtext 0 $y $dline $dimensiongroup
+            incr y 5
+        }
+        $svgpage addtext 0 $y $tline $dimensiongroup
+        return $svgpage
     }
 }
 

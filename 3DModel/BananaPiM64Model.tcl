@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200521.1837>
+#  Last Modified : <200523.1239>
 #
 #  Description	
 #
@@ -65,6 +65,9 @@ snit::type BananaPiM64Model {
     typevariable _default_postscriptfile
     typevariable _default_leftbracketsvgfile
     typevariable _default_rightbracketsvgfile
+    typevariable _default_backblock_drillsheetsvgfile
+    typevariable _default_leftblock_drillsheetsvgfile
+    typevariable _default_rightblock_drillsheetsvgfile
     typeconstructor {
         set _scriptroot [file rootname [file tail [info script]]]
         set _dirname [file dirname [file dirname [file dirname \
@@ -75,6 +78,9 @@ snit::type BananaPiM64Model {
         set _default_postscriptfile [file join $_dirname ${_scriptroot}.ps]
         set _default_leftbracketsvgfile [file join $_dirname ${_scriptroot}_leftbracket.svg]
         set _default_rightbracketsvgfile [file join $_dirname ${_scriptroot}_rightbracket.svg]
+        set _default_backblock_drillsheetsvgfile [file join $_dirname ${_scriptroot}_backblockdrill.svg]
+        set _default_leftblock_drillsheetsvgfile [file join $_dirname ${_scriptroot}_leftblockdrill.svg]
+        set _default_rightblock_drillsheetsvgfile [file join $_dirname ${_scriptroot}_rightblockdrill.svg]
     }
     typecomponent m64case
     typecomponent svg
@@ -86,6 +92,9 @@ snit::type BananaPiM64Model {
             set generatepostscript yes
             set generateleftbracketsvg yes
             set generaterightbracketsvg yes
+            set generatebackblock_drillsheetsvg yes
+            set generateleftblock_drillsheetsvg yes
+            set generaterightblock_drillsheetsvg yes
         } else {
             set generategcad  [from argv -generategcad no]
             set generatesvg   [from argv -generatesvg no]
@@ -93,9 +102,16 @@ snit::type BananaPiM64Model {
             set generatepostscript [from argv -generatepostscript no]
             set generateleftbracketsvg [from argv -generateleftbracketsvg no]
             set generaterightbracketsvg [from argv -generaterightbracketsvg no]
+            set generatebackblock_drillsheetsvg \
+                  [from argv -generatebackblock_drillsheetsvg no]
+            set generateleftblock_drillsheetsvg [from argv -generateleftblock_drillsheetsvg no]
+            set generaterightblock_drillsheetsvg [from argv -generaterightblock_drillsheetsvg no]
         }
         set sections [from argv -sections all]
-        if {$generateleftbracketsvg || $generaterightbracketsvg} {
+        if {$generateleftbracketsvg || $generaterightbracketsvg ||
+            $generatebackblock_drillsheetsvg || 
+            $generateleftblock_drillsheetsvg ||
+            $generaterightblock_drillsheetsvg} {
             if {$sections ne "all" ||
                 "Middle" ni $sections} {
                 lappend sections Middle
@@ -134,6 +150,18 @@ snit::type BananaPiM64Model {
         if {$generaterightbracketsvg} {
             set rightbracketsvg [$m64case rightbracket SVG3View]
             $rightbracketsvg write [from argv -rightbracketsvgfile $_default_rightbracketsvgfile]
+        }
+        if {$generatebackblock_drillsheetsvg} {
+            set backblock_drillsheetsvg [$m64case backblock drillsheet]
+            $backblock_drillsheetsvg write [from argv -backblockdrillsheetsvgfile $_default_backblock_drillsheetsvgfile]
+        }
+        if {$generateleftblock_drillsheetsvg} {
+            set leftblock_drillsheetsvg [$m64case leftblock drillsheet]
+            $leftblock_drillsheetsvg write [from argv -leftblockdrillsheetsvgfile $_default_leftblock_drillsheetsvgfile]
+        }
+        if {$generaterightblock_drillsheetsvg} {
+            set rightblock_drillsheetsvg [$m64case rightblock drillsheet]
+            $rightblock_drillsheetsvg write [from argv -rightblockdrillsheetsvgfile $_default_rightblock_drillsheetsvgfile]
         }
     }
 }        

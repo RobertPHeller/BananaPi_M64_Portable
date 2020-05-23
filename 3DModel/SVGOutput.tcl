@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 16 13:36:56 2020
-#  Last Modified : <200522.1614>
+#  Last Modified : <200523.1101>
 #
 #  Description	
 #
@@ -116,7 +116,7 @@ snit::type SVGOutput {
         orient "auto"
     }
     typevariable _ArrowPathStartIn {M 0 0 L 10 5 L 0 10 z}
-    method defineArrowMarkers {} {
+    method _defineArrowMarkers {} {
         set svg [$xml getElementsByTagName svg -depth 1]
         set defs [$svg getElementsByTagName defs -depth 1]
         if {$defs eq {}} {
@@ -179,6 +179,9 @@ snit::type SVGOutput {
     }
     method rotateTransform {degrees} {
         return [format {rotate(%g)} $degrees]
+    }
+    method scaleTransform {scalefactor} {
+        return [format {scale(%g,%g)} $scalefactor $scalefactor]
     }
     method newgroup {name args} {
         set parent [from args -parent {}]
@@ -293,6 +296,7 @@ snit::type SVGOutput {
         $newtext setdata $text
     }
     method addXdimension {name x1 x2 y dimy text parent {in false}} {
+        $self _defineArrowMarkers
         set group [$self newgroup $name -parent $parent]
         $self addline $x1 $y $x1 $dimy $group -stroke-width .5
         $self addline $x2 $y $x2 $dimy $group -stroke-width .5
@@ -305,6 +309,7 @@ snit::type SVGOutput {
         $self addtext $midx $dimy $text $group
     }
     method addYdimension {name y1 y2 x dimx text parent {in false}} {
+        $self _defineArrowMarkers
         set group [$self newgroup $name -parent $parent]
         $self addline $x $y1 $dimx $y1 $group -stroke-width .5
         $self addline $x $y2 $dimx $y2 $group -stroke-width .5
@@ -317,6 +322,7 @@ snit::type SVGOutput {
         $self addtext $dimx $midy $text $group;# -rotate 90
     }
     method addHoledimension {name hx hy dimy dimx1 dimx2 text parent} {
+        $self _defineArrowMarkers
         set group [$self newgroup $name -parent $parent]
         $self addpolyline [list [list $dimx2 $dimy] [list $dimx1 $dimy] \
                             [list $hx $hy]] $group -marker-end "url(#ArrowOutEnd)"  -stroke-width .5 
