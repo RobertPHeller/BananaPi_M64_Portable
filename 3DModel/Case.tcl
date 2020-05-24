@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200523.1251>
+#  Last Modified : <200523.2037>
 #
 #  Description	
 #
@@ -51,6 +51,7 @@ package require SVGOutput
 package require TeensyThumbStick
 package require Speaker
 package require Battery
+package require USBHub
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15.5 * 25.4}]
@@ -414,6 +415,7 @@ snit::type PortableM64CaseBottomPanel {
     M64Dims
     HDMIConverterDims
     BatteryDims
+    USBHubDims
     option -psbox -default {} -readonly yes
     option -dcdc512 -default {} -readonly yes
     component panel
@@ -445,6 +447,7 @@ snit::type PortableM64CaseBottomPanel {
     component hdmiconvertermainboard_standoff3
     component hdmiconvertermainboard_standoff4
     component battery
+    component usbhub
     component frontblock
     component backblock
     component leftblock
@@ -543,9 +546,12 @@ snit::type PortableM64CaseBottomPanel {
         set w [lindex $vec1 0]
         install battery using Battery %AUTO% \
               -origin [list [expr {$cx + ($w - $_Battery_Length)}] $cy [expr {$cz + [$panel PanelThickness]}]]
+        install usbhub usinf USBHub %AUTO% \
+              -origin [list [expr {$cx + (5*25.4)}] $cy \
+                       [expr {$cz + [$panel PanelThickness]}]]
         install frontblock using BlockX %AUTO% \
               -origin [list $cx $cy [expr {$cz + [$panel PanelThickness]}]] \
-              -length [expr {6*25.4}]
+              -length [expr {5*25.4}]
         set vec2  [$psurf cget -vec2]
         install backblock using BlockX %AUTO% \
               -origin [list $cx \
@@ -651,6 +657,7 @@ snit::type PortableM64CaseBottomPanel {
         $hdmiconvertermainboard_standoff3 print $fp
         $hdmiconvertermainboard_standoff4 print $fp
         $battery print $fp
+        $usbhub print $fp
         $frontblock print $fp
         $backblock print $fp
         $leftblock print $fp
@@ -1073,7 +1080,7 @@ snit::type PortableM64CaseBottom {
     component psbox
     component dcdc512
     typevariable _dcdc512Xoff 100
-    typevariable _dcdc512Yoff [expr {1*25.4}]
+    typevariable _dcdc512Yoff [expr {2*25.4}]
     typevariable _dcdc512StandoffHeight 6
     constructor {args} {
         $self configurelist $args
