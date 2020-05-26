@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200526.1016>
+#  Last Modified : <200526.1332>
 #
 #  Description	
 #
@@ -551,10 +551,10 @@ snit::type PortableM64CaseBottomPanel {
               -origin [list [expr {$cx + 12.7 + $_HDMIConv_mainboardWidth + 6.35}] \
                        [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length)}] \
                        [expr {$cz + [$panel PanelThickness]}]]
-        set usbsataadaptor_x [expr {$cx + 12.7 + $_HDMIConv_mainboardWidth + 6.35}]
-        set usbsataadaptor_y [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length + 50.8 + $_USB_SATA_Adapter_OverallLength)}]
-        set usbsataadaptor_z [expr {$cz + [$panel PanelThickness] + 6.35}]
-        install usbsataadaptor using USB_SATA_Adapter %AUTO% \
+        set usbsataadaptor_x [expr {$cx + 12.7 + 50.8}]
+        set usbsataadaptor_y [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length + 12.7)}]
+        set usbsataadaptor_z [expr {$cz + [$panel PanelThickness] + 2.54}]
+        install usbsataadaptor using USB_SATA_Adapter_Horiz %AUTO% \
               -origin [list $usbsataadaptor_x $usbsataadaptor_y \
                        $usbsataadaptor_z]
         install hdmiconvertermainboard using HDMIConverterMainBoard %AUTO% \

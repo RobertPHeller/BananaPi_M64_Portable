@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Mon May 25 16:59:46 2020
-#  Last Modified : <200525.2319>
+#  Last Modified : <200526.1150>
 #
 #  Description	
 #
@@ -48,6 +48,7 @@ snit::macro USB_SATA_AdapterDims {} {
     typevariable _USB_SATA_Adapter_BoardPolyH { 
         {9.44 15.94 0 1} {28.15 15.94 0 1} {28.15 62.85 0 1} {0 62.85 0 1} 
         {0 50.21 0 1} {9.44 28.12 0 1} {9.44 15.94 0 1}} 
+    typevariable _USB_SATA_Adapter_RotateOffset [expr {-(28.15+10)}]
     typevariable _USB_SATA_Adapter_BoardThick 1.73
     typevariable _USB_SATA_Adapter_USBPlug_XOff 14.85
     typevariable _USB_SATA_Adapter_USBPlug_YOff 0
@@ -83,6 +84,47 @@ snit::type USB_SATA_Adapter {
                                       $oz] \
                         -vec1 [list $_USB_SATA_Adapter_USBPlug_Width 0 0] \
                         -vec2 [list 0 $_USB_SATA_Adapter_USBPlug_Length 0]] \
+              -vector [list 0 0 $_USB_SATA_Adapter_USBPlug_Height] \
+              -color  {250 250 250}
+
+    }
+    method print {{fp stdout}} {
+        $board print $fp
+        $usbplug print $fp
+    }
+}
+
+snit::type USB_SATA_Adapter_Horiz {
+    Common
+    USB_SATA_AdapterDims
+    component board
+    component usbplug
+    constructor {args} {
+        $self configurelist $args
+        set boardpoly [GeometryFunctions StripHomogenous \
+                       [GeometryFunctions translate3D \
+                        [GeometryFunctions rotateZAxis \
+                         [GeometryFunctions translate3D \
+                          $_USB_SATA_Adapter_BoardPolyH \
+                          [list $_USB_SATA_Adapter_RotateOffset 0 0]] \
+                         [GeometryFunctions radians -90]] \
+                        $options(-origin)]]
+        install board using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface create %AUTO% \
+                        -closedpolygon yes \
+                        -polypoints $boardpoly] \
+              -vector [list 0 0 $_USB_SATA_Adapter_BoardThick] \
+              -color {128 0 0}
+
+        lassign $options(-origin) ox oy oz
+        install usbplug using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [list [expr {$ox + $_USB_SATA_Adapter_USBPlug_YOff}] \
+                                      [expr {$oy + $_USB_SATA_Adapter_USBPlug_XOff}] \
+                                      $oz] \
+                        -vec1 [list $_USB_SATA_Adapter_USBPlug_Length 0 0] \
+                        -vec2 [list 0 $_USB_SATA_Adapter_USBPlug_Width 0]] \
               -vector [list 0 0 $_USB_SATA_Adapter_USBPlug_Height] \
               -color  {250 250 250}
 
