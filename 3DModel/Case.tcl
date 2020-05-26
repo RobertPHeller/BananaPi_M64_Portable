@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200523.2037>
+#  Last Modified : <200526.1016>
 #
 #  Description	
 #
@@ -52,6 +52,9 @@ package require TeensyThumbStick
 package require Speaker
 package require Battery
 package require USBHub
+package require OTGAdaptor
+package require USB_SATA_Adapter
+package require harddisk
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15.5 * 25.4}]
@@ -416,8 +419,12 @@ snit::type PortableM64CaseBottomPanel {
     HDMIConverterDims
     BatteryDims
     USBHubDims
+    OTGAdaptorDims
+    USB_SATA_AdapterDims
+    Disk25_2HDims
     option -psbox -default {} -readonly yes
     option -dcdc512 -default {} -readonly yes
+    option -otg -default {} -readonly yes
     component panel
     #delegate method * to panel except {print addPart}
     delegate option * to panel
@@ -448,6 +455,9 @@ snit::type PortableM64CaseBottomPanel {
     component hdmiconvertermainboard_standoff4
     component battery
     component usbhub
+    component otgadaptor
+    component usbsataadaptor
+    component harddisk
     component frontblock
     component backblock
     component leftblock
@@ -527,8 +537,26 @@ snit::type PortableM64CaseBottomPanel {
             set dcdc512_standoff3 [$options(-dcdc512) Standoff %AUTO% 3 [expr {$cz + [$panel PanelThickness]}] 6]
             set dcdc512_standoff4 [$options(-dcdc512) Standoff %AUTO% 4 [expr {$cz + [$panel PanelThickness]}] 6]
         }
+        if {$options(-otg) ne {}} {
+            lassign [[$options(-otg) cget -surface] cget -cornerpoint] otg_x otg_y otg_z
+            set otgadaptor_x [expr {$otg_x + (($_OTG_Width - $_OTGAdaptor_MicroB_Width)/2.0) - $_OTGAdaptor_MicroB_XOff}]
+            set otgadaptor_y [expr {$otg_y + $_OTGAdaptor_MicroB_Length}]
+            set otgadaptor_z [expr {$otg_z + (($_OTG_Thick - $_OTGAdaptor_MicroB_Thick)/2.0) - $_OTGAdaptor_MicroB_ZOff}]
+            install otgadaptor using OTGAdaptor %AUTO% \
+                  -origin [list $otgadaptor_x $otgadaptor_y $otgadaptor_z]
+        }
         set panelsurf [$panel cget -surface]
         lassign [$panelsurf cget -vec2] dummy panelheight dummy
+        install harddisk using Disk25_2H %AUTO% \
+              -origin [list [expr {$cx + 12.7 + $_HDMIConv_mainboardWidth + 6.35}] \
+                       [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length)}] \
+                       [expr {$cz + [$panel PanelThickness]}]]
+        set usbsataadaptor_x [expr {$cx + 12.7 + $_HDMIConv_mainboardWidth + 6.35}]
+        set usbsataadaptor_y [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length + 50.8 + $_USB_SATA_Adapter_OverallLength)}]
+        set usbsataadaptor_z [expr {$cz + [$panel PanelThickness] + 6.35}]
+        install usbsataadaptor using USB_SATA_Adapter %AUTO% \
+              -origin [list $usbsataadaptor_x $usbsataadaptor_y \
+                       $usbsataadaptor_z]
         install hdmiconvertermainboard using HDMIConverterMainBoard %AUTO% \
               -origin [list [expr {$cx + 12.7}] \
                        [expr {$cy + $panelheight - (12.7+$_HDMIConv_mainboardHeight)}] \
@@ -647,6 +675,11 @@ snit::type PortableM64CaseBottomPanel {
             $dcdc512_standoff3 print $fp
             $dcdc512_standoff4 print $fp
         }
+        if {$options(-otg) ne {}} {
+            $otgadaptor print $fp
+        }
+        $harddisk print $fp
+        $usbsataadaptor print $fp
         $hdmiconvertermainboard print $fp
         $hdmiconvertermainboard_mh1 print $fp
         $hdmiconvertermainboard_mh2 print $fp
@@ -1104,7 +1137,8 @@ snit::type PortableM64CaseBottom {
                       [expr {$_dcdc512Yoff + $_WallThickness}] \
                       [expr {$_dcdc512StandoffHeight + $_WallThickness}]]]
         install bottom using PortableM64CaseBottomPanel %AUTO% \
-              -origin $options(-origin) -psbox $psbox -dcdc512 $dcdc512
+            -origin $options(-origin) -psbox $psbox -dcdc512 $dcdc512 \
+            -otg [$m64 OTG]
         install left   using PortableM64CaseBottomLeftPanel %AUTO% \
               -origin $options(-origin) \
               -depth $_BottomDepth

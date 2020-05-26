@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 10:07:22 2020
-#  Last Modified : <200517.0919>
+#  Last Modified : <200525.2221>
 #
 #  Description	
 #
@@ -87,6 +87,13 @@ snit::macro M64Dims {} {
     typevariable _gpioHeaderXOffset [expr {26.16962-3.57}]
     typevariable _gpioHeaderLength 55.4
     typevariable _gpioHeaderHeight 16.1
+    typevariable _OTG_XMin 6.99516
+    typevariable _OTG_XMax 14.59484
+    typevariable _OTG_YMin -1.6891
+    typevariable _OTG_YMax 4.31038
+    typevariable _OTG_Width 7.57
+    typevariable _OTG_Length 5.59
+    typevariable _OTG_Thick 2.62
 }
 
 snit::type M64Board {
@@ -97,6 +104,7 @@ snit::type M64Board {
     component rj45
     component audiobody
     component audiobarrel
+    component otg
     component mh1
     component mh2
     component mh3
@@ -134,7 +142,11 @@ snit::type M64Board {
         install audiobody using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
-                        -cornerpoint [GeometryFunctions translate3D_point $options(-origin) [list [expr {$_m64XMax - $_AudioXMaxBody}] [expr {$_m64YMax - $_AudioYMaxBody}] $_m64Thickness]] \
+                        -cornerpoint [GeometryFunctions translate3D_point \
+                                      $options(-origin) \
+                                      [list [expr {$_m64XMax - $_AudioXMaxBody}] \
+                                       [expr {$_m64YMax - $_AudioYMaxBody}] \
+                                       $_m64Thickness]] \
                         -vec1 [list $_AudioBodyLength 0 0] \
                         -vec2 [list 0 $_AudioBodyWidth 0]] \
               -vector [list 0 0 $_AudioBodyHeight] \
@@ -145,6 +157,17 @@ snit::type M64Board {
               -direction X \
               -height [expr {$_AudioXMinBarrel - $_AudioXMaxBarrel}] \
               -color {0 0 0}
+        install otg using PrismSurfaceVector %AUTO% \
+              -surface [PolySurface  create %AUTO% \
+                        -rectangle yes \
+                        -cornerpoint [GeometryFunctions translate3D_point \
+                                      $options(-origin) \
+                                      [list [expr {$_m64XMax - $_OTG_XMax}] \
+                                       [expr {$_m64YMax - $_OTG_YMax}]  $_m64Thickness]] \
+                        -vec1 [list $_OTG_Width 0 0] \
+                        -vec2 [list 0 $_OTG_Length 0]] \
+              -vector [list 0 0 $_OTG_Thick] \
+              -color {250 250 250}
         install mh1 using Cylinder %AUTO% \
               -bottom [GeometryFunctions translate3D_point $options(-origin) [list [lindex $_m64_m1_relpos 0] [lindex $_m64_m1_relpos 1] 0]] \
               -radius [expr {$_m64_mh_dia / 2.0}] \
@@ -194,12 +217,14 @@ snit::type M64Board {
               -height -$_m64Standoff \
               -color {255 255 255}
     }
+    method OTG {} {return $otg}
     method print {{fp stdout}} {
         $board print $fp
         $dualusb print $fp
         $rj45 print $fp
         $audiobody print $fp
         $audiobarrel print $fp
+        $otg print $fp
         $mh1 print $fp
         $mh2 print $fp
         $mh3 print $fp

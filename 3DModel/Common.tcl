@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 09:45:23 2020
-#  Last Modified : <200521.1347>
+#  Last Modified : <200525.2328>
 #
 #  Description	
 #
@@ -636,7 +636,6 @@ proc GCadPrefix {{fp stdout}} {
     ## GCad prefix blather.
     puts $fp "# [clock format [clock seconds] -format {%Y/%m/%d-%M:%M:%S}]"
     puts $fp {DEFCOL 0 0 0}
-    puts $fp {DEFTX 12.7 12.7 1.0}
 }
 
 package provide Common 1.0
