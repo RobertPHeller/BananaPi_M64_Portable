@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200526.1332>
+#  Last Modified : <200527.0947>
 #
 #  Description	
 #
@@ -421,6 +421,7 @@ snit::type PortableM64CaseBottomPanel {
     USBHubDims
     OTGAdaptorDims
     USB_SATA_AdapterDims
+    BoardCradleDims
     Disk25_2HDims
     option -psbox -default {} -readonly yes
     option -dcdc512 -default {} -readonly yes
@@ -457,7 +458,15 @@ snit::type PortableM64CaseBottomPanel {
     component usbhub
     component otgadaptor
     component usbsataadaptor
+    component usbsataadaptorcradle
+    component usbsataadaptorcradle_mh1
+    component usbsataadaptorcradle_mh2
+    component usbsataadaptorcradle_mh3
     component harddisk
+    component hdmh1
+    component hdmh2
+    component hdmh3
+    component hdmh4
     component frontblock
     component backblock
     component leftblock
@@ -551,12 +560,20 @@ snit::type PortableM64CaseBottomPanel {
               -origin [list [expr {$cx + 12.7 + $_HDMIConv_mainboardWidth + 6.35}] \
                        [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length)}] \
                        [expr {$cz + [$panel PanelThickness]}]]
+        set hdmh1 [$harddisk MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set hdmh2 [$harddisk MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set hdmh3 [$harddisk MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
+        set hdmh4 [$harddisk MountingHole %AUTO% 4 $cz [$panel PanelThickness]]
         set usbsataadaptor_x [expr {$cx + 12.7 + 50.8}]
         set usbsataadaptor_y [expr {$cy + $panelheight - (12.7+$_Disk25_2H_Length + 12.7)}]
         set usbsataadaptor_z [expr {$cz + [$panel PanelThickness] + 2.54}]
         install usbsataadaptor using USB_SATA_Adapter_Horiz %AUTO% \
               -origin [list $usbsataadaptor_x $usbsataadaptor_y \
                        $usbsataadaptor_z]
+        install usbsataadaptorcradle using USB_SATA_Adapter_BoardCradleHoriz \
+              %AUTO% -origin [list [expr {$usbsataadaptor_x + $_USB_SATA_Adapter_USBPlug_XOff+1}] \
+                              [expr {$usbsataadaptor_y+3.5}] \
+                              [expr {$cz + [$panel PanelThickness]}]]
         install hdmiconvertermainboard using HDMIConverterMainBoard %AUTO% \
               -origin [list [expr {$cx + 12.7}] \
                        [expr {$cy + $panelheight - (12.7+$_HDMIConv_mainboardHeight)}] \
@@ -679,7 +696,12 @@ snit::type PortableM64CaseBottomPanel {
             $otgadaptor print $fp
         }
         $harddisk print $fp
+        $hdmh1 print $fp
+        $hdmh2 print $fp
+        $hdmh3 print $fp
+        $hdmh4 print $fp
         $usbsataadaptor print $fp
+        $usbsataadaptorcradle print $fp
         $hdmiconvertermainboard print $fp
         $hdmiconvertermainboard_mh1 print $fp
         $hdmiconvertermainboard_mh2 print $fp
@@ -1358,14 +1380,14 @@ snit::type PortableM64CaseMiddlePanel {
                        [expr {$cy + $h - $_BlockWidth}] \
                        [expr {$cz + [$panel PanelThickness] + $_BlockThick}]] \
               -length [expr {$_MiddleTotalDepth - ($_MiddleLowerDepth + [$panel PanelThickness] + $_BlockThick)}]
-        set hdmibuttonboard_blockhole1 [$hdmibuttonboard Standoff %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
-        set hdmibuttonboard_blockhole2 [$hdmibuttonboard Standoff %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
-        set hdmihvpowerboard_blockhole1 [$hdmihvpowerboard Standoff %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
-        set hdmihvpowerboard_blockhole2 [$hdmihvpowerboard Standoff %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6.35 {255 255 0}]
-        set leftspeaker_blockholetop [$leftspeaker Standoff %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
-        set leftspeaker_blockholebottom [$leftspeaker Standoff %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
-        set rightspeaker_blockholetop [$rightspeaker Standoff %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
-        set rightspeaker_blockholebottom [$rightspeaker Standoff %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick 6 {255 255 0}]
+        set hdmibuttonboard_blockhole1 [$hdmibuttonboard MountingHole %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set hdmibuttonboard_blockhole2 [$hdmibuttonboard MountingHole %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set hdmihvpowerboard_blockhole1 [$hdmihvpowerboard MountingHole %AUTO% 1 [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set hdmihvpowerboard_blockhole2 [$hdmihvpowerboard MountingHole %AUTO% 2 [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set leftspeaker_blockholetop [$leftspeaker MountingHole %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set leftspeaker_blockholebottom [$leftspeaker MountingHole %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set rightspeaker_blockholetop [$rightspeaker MountingHole %AUTO% top [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
+        set rightspeaker_blockholebottom [$rightspeaker MountingHole %AUTO% bottom [expr {$cz + [$panel PanelThickness]}] $_BlockThick]
         set dimz [expr {$cz - 12.7}]
         set dimx [expr {$cx + $w + 25.4}]
         lassign [$rightspeaker_mhtop cget -bottom] x1 y1 dummy
