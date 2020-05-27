@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200527.0947>
+#  Last Modified : <200527.1110>
 #
 #  Description	
 #
@@ -574,6 +574,9 @@ snit::type PortableM64CaseBottomPanel {
               %AUTO% -origin [list [expr {$usbsataadaptor_x + $_USB_SATA_Adapter_USBPlug_XOff+1}] \
                               [expr {$usbsataadaptor_y+3.5}] \
                               [expr {$cz + [$panel PanelThickness]}]]
+        set usbsataadaptorcradle_mh1 [$usbsataadaptorcradle MountingHole %AUTO% 1 $cz [$panel PanelThickness]]
+        set usbsataadaptorcradle_mh2 [$usbsataadaptorcradle MountingHole %AUTO% 2 $cz [$panel PanelThickness]]
+        set usbsataadaptorcradle_mh3 [$usbsataadaptorcradle MountingHole %AUTO% 3 $cz [$panel PanelThickness]]
         install hdmiconvertermainboard using HDMIConverterMainBoard %AUTO% \
               -origin [list [expr {$cx + 12.7}] \
                        [expr {$cy + $panelheight - (12.7+$_HDMIConv_mainboardHeight)}] \
@@ -702,6 +705,9 @@ snit::type PortableM64CaseBottomPanel {
         $hdmh4 print $fp
         $usbsataadaptor print $fp
         $usbsataadaptorcradle print $fp
+        $usbsataadaptorcradle_mh1 print $fp
+        $usbsataadaptorcradle_mh2 print $fp
+        $usbsataadaptorcradle_mh3 print $fp
         $hdmiconvertermainboard print $fp
         $hdmiconvertermainboard_mh1 print $fp
         $hdmiconvertermainboard_mh2 print $fp
@@ -772,6 +778,13 @@ snit::type PortableM64CaseBottomPanel {
         $hdmiconvertermainboard_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         $hdmiconvertermainboard_mh3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         $hdmiconvertermainboard_mh4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmh3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $hdmh4 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $usbsataadaptorcradle_mh1 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $usbsataadaptorcradle_mh2 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
+        $usbsataadaptorcradle_mh3 printPS $fp $xi $yi $xorg $yorg $xscale $yscale
         PostScriptFile newPage {Bottom Panel Drill Report}
         lassign [$panel PanelCornerPoint] cx cy cz
         _hole $m64_m1 $cx $cy
@@ -794,6 +807,13 @@ snit::type PortableM64CaseBottomPanel {
         _hole $hdmiconvertermainboard_mh2 $cx $cy
         _hole $hdmiconvertermainboard_mh3 $cx $cy
         _hole $hdmiconvertermainboard_mh4 $cx $cy
+        _hole $hdmh1 $cx $cy
+        _hole $hdmh2 $cx $cy
+        _hole $hdmh3 $cx $cy
+        _hole $hdmh4 $cx $cy
+        _hole $usbsataadaptorcradle_mh1 $cx $cy
+        _hole $usbsataadaptorcradle_mh2 $cx $cy
+        _hole $usbsataadaptorcradle_mh3 $cx $cy
     }
     proc _hole {holecyl cx cy} {
         lassign [$holecyl cget -bottom] hx hy hz
@@ -827,6 +847,13 @@ snit::type PortableM64CaseBottomPanel {
         _svghole $svgout $hdmiconvertermainboard_mh2 $cx $cy $parent
         _svghole $svgout $hdmiconvertermainboard_mh3 $cx $cy $parent
         _svghole $svgout $hdmiconvertermainboard_mh4 $cx $cy $parent
+        _svghole $svgout $hdmh1 $cx $cy $parent
+        _svghole $svgout $hdmh2 $cx $cy $parent
+        _svghole $svgout $hdmh3 $cx $cy $parent
+        _svghole $svgout $hdmh4 $cx $cy $parent
+        _svghole $svgout $usbsataadaptorcradle_mh1 $cx $cy $parent
+        _svghole $svgout $usbsataadaptorcradle_mh2 $cx $cy $parent
+        _svghole $svgout $usbsataadaptorcradle_mh3 $cx $cy $parent
     }
     
 }
