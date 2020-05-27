@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 08:43:51 2020
-#  Last Modified : <200523.1239>
+#  Last Modified : <200527.1317>
 #
 #  Description	
 #
@@ -50,6 +50,7 @@ package require DCDC_5_12
 package require LCDMountingBracket
 package require LCDScreen
 package require HDMIConverter
+package require USB_SATA_Adapter
 package require SVGOutput
 package require csv
 
@@ -68,6 +69,7 @@ snit::type BananaPiM64Model {
     typevariable _default_backblock_drillsheetsvgfile
     typevariable _default_leftblock_drillsheetsvgfile
     typevariable _default_rightblock_drillsheetsvgfile
+    typevariable _default_usbsataboardcradle_gcadfile
     typeconstructor {
         set _scriptroot [file rootname [file tail [info script]]]
         set _dirname [file dirname [file dirname [file dirname \
@@ -81,6 +83,7 @@ snit::type BananaPiM64Model {
         set _default_backblock_drillsheetsvgfile [file join $_dirname ${_scriptroot}_backblockdrill.svg]
         set _default_leftblock_drillsheetsvgfile [file join $_dirname ${_scriptroot}_leftblockdrill.svg]
         set _default_rightblock_drillsheetsvgfile [file join $_dirname ${_scriptroot}_rightblockdrill.svg]
+        set _default_usbsataboardcradle_gcadfile [file join $_dirname ${_scriptroot}_usbsataboardcradle.gcad]
     }
     typecomponent m64case
     typecomponent svg
@@ -116,6 +119,12 @@ snit::type BananaPiM64Model {
                 "Middle" ni $sections} {
                 lappend sections Middle
             }
+        }
+        if {[from argv -generateusbsataboardcradlegcad no]} {
+            set modelFP [open [from argv -usbsataboardcradlegcadfile $_default_usbsataboardcradle_gcadfile] w]
+            set usbcradle [USB_SATA_Adapter_BoardCradleHoriz create %AUTO%]
+            $usbcradle print $modelFP
+            close $modelFP
         }
         set m64case [PortableM64Case create %AUTO% \
                      -sections $sections]
