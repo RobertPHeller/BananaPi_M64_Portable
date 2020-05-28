@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200527.1110>
+#  Last Modified : <200528.1454>
 #
 #  Description	
 #
@@ -64,7 +64,8 @@ snit::macro PortableM64CaseCommon {} {
     typevariable _MiddleLowerDepth [expr {.5 * 25.4}]
     typevariable _TopDepth [expr {(.5+.125) * 25.4}]
     typevariable _WallThickness [expr {.125 * 25.4}]
-    typevariable _ShelfHeight [expr {1.25 * 25.4}]
+    typevariable _ShelfHeight [expr {((1.75-.125) * 25.4)-23}]
+    typevariable _ShelfBlockThick 23
     typevariable _ShelfLength [expr {6 * 25.4}]
     typevariable _BlockThick [expr {.375*25.4}]
     typevariable _BlockWidth [expr {.5*25.4}]
@@ -78,14 +79,26 @@ snit::type BlockX {
     component block
     delegate method * to block
     delegate option * to block
+    option -thickness -type snit::double -readonly yes -default 0
+    option -width     -type snit::double -readonly yes -default 0
     constructor {args} {
         $self configurelist $args
+        set blockthick $options(-thickness)
+        if {$blockthick == 0} {
+            set blockthick $_BlockThick
+            set options(-thickness) $blockthick
+        }
+        set blockwidth $options(-width)
+        if {$blockwidth == 0} {
+            set blockwidth $_BlockWidth
+            set options(-width) $blockwidth
+        }
         install block using PrismSurfaceVector %AUTO% \
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint $options(-origin) \
-                        -vec1 [list 0 0 $_BlockThick] \
-                        -vec2 [list 0 $_BlockWidth 0]] \
+                        -vec1 [list 0 0 $blockthick] \
+                        -vec2 [list 0 $blockwidth 0]] \
               -vector [list $options(-length) 0 0] \
               -color  {0 255 0}
     }
@@ -423,6 +436,8 @@ snit::type PortableM64CaseBottomPanel {
     USB_SATA_AdapterDims
     BoardCradleDims
     Disk25_2HDims
+    CU_3002ADims
+    Fan02510SS_05P_AT00Dims
     option -psbox -default {} -readonly yes
     option -dcdc512 -default {} -readonly yes
     option -otg -default {} -readonly yes
@@ -592,20 +607,22 @@ snit::type PortableM64CaseBottomPanel {
         set psurf [$panel cget -surface]
         set vec1  [$psurf cget -vec1]
         set w [lindex $vec1 0]
+        set vec2  [$psurf cget -vec2]
+        set h [lindex $vec2 1]
         install battery using Battery %AUTO% \
               -origin [list [expr {$cx + ($w - $_Battery_Length)}] $cy [expr {$cz + [$panel PanelThickness]}]]
-        install usbhub usinf USBHub %AUTO% \
-              -origin [list [expr {$cx + (5*25.4)}] $cy \
+        install usbhub usinf USBHub270 %AUTO% \
+              -origin [list [expr {$cx + 12.7 + $_HDMIConv_mainboardWidth + 6.35 + $_Disk25_2H_Width + 6.35}] \
+                       [expr {$cy + $h - $_USBHUB_Length}] \
                        [expr {$cz + [$panel PanelThickness]}]]
         install frontblock using BlockX %AUTO% \
               -origin [list $cx $cy [expr {$cz + [$panel PanelThickness]}]] \
-              -length [expr {5*25.4}]
-        set vec2  [$psurf cget -vec2]
+              -length [expr {$w - $_Battery_Length}]
         install backblock using BlockX %AUTO% \
-              -origin [list $cx \
-                       [expr {$cy + [lindex $vec2 1] - $_BlockWidth}] \
+              -origin [list $cx\
+                       [expr {$cy + $h - $_BlockWidth}] \
                        [expr {$cz + [$panel PanelThickness]}]] \
-              -length [expr {12*25.4}]
+              -length [expr {12.7 + $_HDMIConv_mainboardWidth + 6.35 + $_Disk25_2H_Width + 6.35}]
         install leftblock using BlockY %AUTO% \
               -origin [list $cx \
                        [expr {$cy + $_m64YOff + $_m64YMax}] \
@@ -1964,7 +1981,7 @@ snit::type PortableM64CaseKeyboardShelf {
         lassign [[$shelf cget -surface] cget -vec1] shelfwidth dummy dummy
         install hingeblock using BlockX %AUTO% \
               -origin [list $sx $sy [expr {$sz + $_WallThickness}]] \
-              -length $shelfwidth
+              -length $shelfwidth -thickness $_ShelfBlockThick
         set teensythumbstickX [expr {$sx + ($shelfwidth - ($_TeensyThumbStick_Width + 12.7))}]
         set teensythumbstickY [expr {$sy + ($_ShelfLength - ($_TeensyThumbStick_Height + 12.7))}]
         install teensythumbstickcutout using PrismSurfaceVector %AUTO% \
