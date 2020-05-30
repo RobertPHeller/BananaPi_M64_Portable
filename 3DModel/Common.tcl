@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 09:45:23 2020
-#  Last Modified : <200525.2328>
+#  Last Modified : <200529.2140>
 #
 #  Description	
 #
@@ -101,7 +101,7 @@ snit::type Cylinder {
     method print {{fp stdout}} {
         puts $fp [eval [list format {DEFCOL %d %d %d}] $options(-color)]
         $circle print $fp
-        puts $fp [format {b%d = PRISM C%d %f} $index [$circle Index] $options(-height)]
+        puts $fp [format {B%d = PRISM C%d %f} $index [$circle Index] $options(-height)]
     }
     method printPS {fp {xi 0} {yi 1} {xorg 0} {yorg 0} {xscale .01968} {yscale .01968}} {
         set b [$self cget -bottom]
@@ -207,7 +207,7 @@ snit::type PolySurface {
 ## PrismSurfaceVector -- a rect or polygon with depth/thickness
 ## (PolySurface + depth/thickness vector)
 snit::type PrismSurfaceVector {
-    typevariable _index 80
+    typevariable _index 100
     option -surface -type ::PolySurface -readonly yes -default {}
     component surface
     option -vector  -type point -readonly yes -default {0 0 0}

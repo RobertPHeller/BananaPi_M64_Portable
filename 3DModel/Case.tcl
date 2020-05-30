@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 9 11:54:16 2020
-#  Last Modified : <200528.1454>
+#  Last Modified : <200529.2151>
 #
 #  Description	
 #
@@ -55,6 +55,7 @@ package require USBHub
 package require OTGAdaptor
 package require USB_SATA_Adapter
 package require harddisk
+package require PianoHinge
 
 snit::macro PortableM64CaseCommon {} {
     typevariable _Width [expr {15.5 * 25.4}]
@@ -1953,6 +1954,7 @@ snit::type PortableM64CaseKeyboardShelf {
     Common
     PortableM64CaseCommon
     TeensyThumbStickDims
+    PianoHingeDims
     component shelf
     component hingeblock
     component teensythumbstickcutout
@@ -1972,7 +1974,7 @@ snit::type PortableM64CaseKeyboardShelf {
               -surface [PolySurface  create %AUTO% \
                         -rectangle yes \
                         -cornerpoint [GeometryFunctions translate3D_point $options(-origin) \
-                                      [list $_WallThickness $_WallThickness $_ShelfHeight]] \
+                                      [list $_WallThickness [expr {$_WallThickness + $_PianoHinge_PinDia}] $_ShelfHeight]] \
                         -vec1 [list [expr {$_Width - (2*$_WallThickness)}] 0 0] \
                         -vec2 [list 0 $_ShelfLength 0]] \
               -vector [list 0 0 $_WallThickness] \
@@ -2098,15 +2100,29 @@ snit::type PortableM64CaseKeyboardShelf {
 snit::type PortableM64Case {
     Common
     PortableM64CaseCommon
+    PianoHingeDims
     component caseBottom
     component caseMiddle
     delegate method * to caseMiddle
     component caseTop
     component keyboardShelf
+    component keyboardshelfhinge
+    component bottommiddlehinge
+    component middletophinge
     option -sections -type SectionList -default all
     constructor {args} {
         $self configurelist $args
+        lassign $options(-origin) ox oy oz
+        install keyboardshelfhinge using PianoHingeFlatInsideClosedFront %AUTO% \
+              -origin [list [expr {($_Width - $_PianoHinge_Length)/2.0}] \
+                       $_WallThickness $_ShelfHeight]
+        install bottommiddlehinge using PianoHingeFlatOutsideBack %AUTO% \
+              -origin [list [expr {(($_Width - $_PianoHinge_Length)/2.0)-25.4}] \
+                       $_Height [expr {$_BottomDepth - ($_PianoHinge_FlangeWidth + $_PianoHinge_PinOff + ($_PianoHinge_PinDia / 2.0))}]]
         install caseBottom using PortableM64CaseBottom %AUTO% -origin $options(-origin)
+        install middletophinge using PianoHingeFlatOutsideBack %AUTO% \
+              -origin [list [expr {($_Width - $_PianoHinge_Length)/2.0}] \
+                       $_Height [expr {($_BottomDepth + $_MiddleTotalDepth) - ($_PianoHinge_FlangeWidth + $_PianoHinge_PinOff + ($_PianoHinge_PinDia / 2.0))}]]
         install caseMiddle using PortableM64CaseMiddle %AUTO% -origin $options(-origin)
         install caseTop    using PortableM64CaseTop %AUTO%    -origin $options(-origin)
         install keyboardShelf using PortableM64CaseKeyboardShelf %AUTO%    -origin $options(-origin)
@@ -2123,6 +2139,15 @@ snit::type PortableM64Case {
         }
         if {$options(-sections) eq "all" || "KeyboardShelf" in $options(-sections)} {
             $keyboardShelf print $fp
+        }
+        if {$options(-sections) eq "all" || ("Bottom" in $options(-sections) && "KeyboardShelf" in $options(-sections))} {
+            $keyboardshelfhinge print $fp
+        }
+        if {$options(-sections) eq "all" || ("Bottom" in $options(-sections) && "Middle" in $options(-sections))} {
+            $bottommiddlehinge print $fp
+        }
+        if {$options(-sections) eq "all" || ("Middle" in $options(-sections) && "Top" in $options(-sections))} {
+            $middletophinge print $fp
         }
     }
     method addPart {partListArrayName} {
