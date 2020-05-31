@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 08:03:12 2020
-#  Last Modified : <200531.0806>
+#  Last Modified : <200531.1150>
 #
 #  Description	
 #
@@ -70,4 +70,33 @@ class PSK_S15C(object):
         ox = origin.x
         oy = origin.y
         oz = origin.z
-
+        bodysurf = Part.makePlane(PSK_S15C._pswidth,
+                                  PSK_S15C._pslength,
+                                  origin)
+        self.body = bodysurf.extrude(Base.Vector(0,0,PSK_S15C._psheight))
+        Part.show(self.body)
+        doc = App.activeDocument()
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=name+':Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        self.pin1 = Part.Face(Part.Wire(Part.makeCircle(PSK_S15C._pspindia/2.0,Base.Vector(ox+PSK_S15C._pspin1Yoff,oy+PSK_S15C._pspin1Xoff,oz)))).extrude(Base.Vector(0,0,-PSK_S15C._pspinlength))
+        Part.show(self.pin1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=name+':Pin1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        self.pin2 = Part.Face(Part.Wire(Part.makeCircle(PSK_S15C._pspindia/2.0,Base.Vector(ox+PSK_S15C._pspin2Yoff,oy+PSK_S15C._pspin2Xoff,oz)))).extrude(Base.Vector(0,0,-PSK_S15C._pspinlength))
+        Part.show(self.pin2)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=name+':Pin2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        self.pin3 = Part.Face(Part.Wire(Part.makeCircle(PSK_S15C._pspindia/2.0,Base.Vector(ox+PSK_S15C._pspin3Yoff,oy+PSK_S15C._pspin3Xoff,oz)))).extrude(Base.Vector(0,0,-PSK_S15C._pspinlength))
+        Part.show(self.pin3)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=name+':Pin3'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        self.pin4 = Part.Face(Part.Wire(Part.makeCircle(PSK_S15C._pspindia/2.0,Base.Vector(ox+PSK_S15C._pspin4Yoff,oy+PSK_S15C._pspin4Xoff,oz)))).extrude(Base.Vector(0,0,-PSK_S15C._pspinlength))
+        Part.show(self.pin4)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=name+':Pin4'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        

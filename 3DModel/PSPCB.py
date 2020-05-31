@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 22:46:38 2020
-#  Last Modified : <200531.0940>
+#  Last Modified : <200531.1833>
 #
 #  Description	
 #
@@ -46,8 +46,8 @@ from FreeCAD import Base
 import FreeCAD as App
 
 from PowerSupply import *
-#import TerminalBlocks
-#import Capacitors
+from TerminalBlocks import *
+from Capacitors import *
 #import Diode
 #import FuseHolder
 #import MOV
@@ -65,6 +65,7 @@ class PCBwithStrips(object):
     _stripThickness = .1
     _stripExtra = 7.62
     _mhdia = 3.5
+    _leadhole_r = (0.037/2.0)*25.4
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -76,6 +77,13 @@ class PCBwithStrips(object):
         boardsurf = Part.makePlane(PCBwithStrips._psPCBwidth,
                                    PCBwithStrips._psPCBlength,
                                    origin)
+        xh = (ox+PCBwithStrips._stripIncr)
+        while xh < ox+PCBwithStrips._psPCBwidth-PCBwithStrips._stripIncr:
+            yh = oy+PCBwithStrips._stripIncr
+            while yh <= oy+PCBwithStrips._psPCBlength:
+                boardsurf = self._drill_leadhole(boardsurf,xh,yh,oz)
+                yh += PCBwithStrips._stripIncr
+            xh += PCBwithStrips._stripIncr
         self.mhvector = {
              1 : Base.Vector(ox+PCBwithStrips._stripIncr,
                              oy+(PCBwithStrips._stripIncr+5*2.54),
@@ -131,11 +139,16 @@ class PCBwithStrips(object):
                                        oy+PCBwithStrips._stripOffset,
                                        oz-PCBwithStrips._stripThickness)
                 stripCP2 = Base.Vector(ox+(sx - (PCBwithStrips._stripWidth / 2.0)),
-                                       oy+(PCBwithStrips._stripOffset + xoff + PSK_S15C._pspin1Xoff - PCBwithStrips._stripExtra),
+                                       oy+(PCBwithStrips._stripOffset + yoff + PSK_S15C._pspin1Xoff - PCBwithStrips._stripExtra-2.54),
                                        oz-PCBwithStrips._stripThickness)
                 striplen = yoff+PSK_S15C._pspin4Xoff+PCBwithStrips._stripExtra
                 stripsurf = Part.makePlane(PCBwithStrips._stripWidth,
                                            striplen,stripCP1)
+                xh = stripCP1.x + (PCBwithStrips._stripWidth/2.0)
+                yh = stripCP1.y + PCBwithStrips._stripOffset
+                while yh < stripCP1.y+striplen:
+                    stripsurf = self._drill_leadhole(stripsurf,xh,yh,stripCP1.z)
+                    yh += PCBwithStrips._stripIncr
                 strip = stripsurf.extrude(Base.Vector(0,0,PCBwithStrips._stripThickness))
                 self.strips.append(strip)
                 Part.show(strip)
@@ -145,6 +158,11 @@ class PCBwithStrips(object):
                 doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
                 stripsurf = Part.makePlane(PCBwithStrips._stripWidth,
                                            striplen,stripCP2)
+                xh = stripCP2.x + (PCBwithStrips._stripWidth/2.0)
+                yh = stripCP2.y + PCBwithStrips._stripOffset
+                while yh < stripCP2.y+striplen:
+                    stripsurf = self._drill_leadhole(stripsurf,xh,yh,stripCP2.z)
+                    yh += PCBwithStrips._stripIncr
                 strip = stripsurf.extrude(Base.Vector(0,0,PCBwithStrips._stripThickness))
                 self.strips.append(strip)
                 Part.show(strip)
@@ -158,6 +176,11 @@ class PCBwithStrips(object):
                                        oz-PCBwithStrips._stripThickness)
                 stripsurf = Part.makePlane(PCBwithStrips._stripWidth,
                                            PCBwithStrips._psPCBlength - (PCBwithStrips._stripOffset*2),stripCP)
+                xh = stripCP.x + (PCBwithStrips._stripWidth/2.0)
+                yh = stripCP.y + PCBwithStrips._stripOffset
+                while yh < stripCP.y+PCBwithStrips._psPCBlength - (PCBwithStrips._stripOffset*2):
+                    stripsurf = self._drill_leadhole(stripsurf,xh,yh,stripCP.z)
+                    yh += PCBwithStrips._stripIncr
                 i = 1
                 while i <= 4:
                     h = self.mhvector[i]
@@ -171,7 +194,8 @@ class PCBwithStrips(object):
                 stripno += 1
                 doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
             sx += PCBwithStrips._stripIncr
-        
+    def _drill_leadhole(self,surf,x,y,z):
+        return(surf.cut(Part.Face(Part.Wire(Part.makeCircle(PCBwithStrips._leadhole_r,Base.Vector(x,y,z))))))
     def MountingHole(self,name,i,zBase):
         mhv = self.mhvector[i]
         mhz = Base.Vector(mhv.x,mhv.y,zBase);
@@ -189,3 +213,39 @@ class PCBwithStrips(object):
         
 
                     
+class PSOnPCB(PCBwithStrips):
+    _fuseholderX = 76.2-6.35
+    _fuseholderY = 45.72-25.40
+    _bypassX = 25.40
+    _bypassY = 45.72-15.24
+    _filterX = 5.08 #76.2-5.08
+    _filterY = 45.72-27.94
+    _esdX = 17.78 #76.2-17.78
+    _esdY = 45.72-17.78
+    _wiredia = 1.5
+    def __init__(self,name,origin):
+        self.name = name
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector")
+        self.origin = origin
+        ox = origin.x
+        oy = origin.y
+        oz = origin.z
+        PCBwithStrips.__init__(self,name+":pcb",origin)
+        yoff = (PCBwithStrips._psPCBlength - PSK_S15C._pslength)/2.0
+        xoff = (PCBwithStrips._psPCBwidth - PSK_S15C._pswidth)/2.0
+        psorigin = Base.Vector(ox+xoff,oy+yoff,oz+PCBwithStrips._psPCBThickness)
+        self.powersupply = PSK_S15C(name+":powersupply",psorigin)
+        actermorigin = Base.Vector(ox+(PCBwithStrips._psPCBwidth - PCBwithStrips._psactermyoff - TB007_508_03BE.Length()),
+                                   oy+(PCBwithStrips._psPCBlength - PCBwithStrips._pstermxoff - TB007_508_xxBE._termwidth),
+                                   oz+PCBwithStrips._psPCBThickness)
+        self.acterm = TB007_508_03BE(name+":acterm",actermorigin)
+        dctermorigin = Base.Vector(ox+(PCBwithStrips._psPCBwidth - PCBwithStrips._psdctermyoff - TB007_508_02BE.Length()),
+                                   oy+(PCBwithStrips._pstermxoff),
+                                   oz+PCBwithStrips._psPCBThickness)
+        self.dcterm = TB007_508_02BE(name+":dcterm",dctermorigin)
+        self.bypasscap = C333(name+":bypasscap",Base.Vector(ox+PSOnPCB._bypassY,PSOnPCB._bypassX,0))
+        self.filtercap = AL_CAP_Radial_5mm10x12_5(name+":filtercap",
+                            Base.Vector(ox+PSOnPCB._filterY,
+                                        oy+PSOnPCB._filterX,
+                                        oz+PCBwithStrips._psPCBThickness))
