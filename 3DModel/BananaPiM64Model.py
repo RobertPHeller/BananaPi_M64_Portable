@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200530.1458>
+#  Last Modified : <200530.1955>
 #
 #  Description	
 #
@@ -43,8 +43,9 @@
 import Part
 from FreeCAD import Base
 
+import os
 import sys
-sys.path.append("/home/heller/BananaPi_M64_Portable/3DModel")
+sys.path.append(os.path.dirname(__file__))
 
 from M64 import *
 #from  PSBox import *
@@ -57,4 +58,8 @@ from M64 import *
 #from  SVGOutput import *
 
 if __name__ == '__main__':
+    if "BananaPiM64Model" in FreeCAD.listDocuments():
+        FreeCAD.closeDocument("BananaPiM64Model")
+    Gui.ActiveDocument=FreeCAD.newDocument("BananaPiM64Model")
     board = M64Board("board",Base.Vector(0,0,0)) 
+    Gui.SendMsgToActiveView("ViewFit")

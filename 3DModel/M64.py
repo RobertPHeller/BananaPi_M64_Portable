@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 11:16:52 2020
-#  Last Modified : <200530.1823>
+#  Last Modified : <200530.2121>
 #
 #  Description	
 #
@@ -42,7 +42,8 @@
 
 import Part
 from FreeCAD import Base
-
+import FreeCADGui
+import FreeCAD
 
 class M64Board(object):  
     _m64_m1_relpos = [ (96.4-93.64472), (59.9-57.15) ]
@@ -181,15 +182,46 @@ class M64Board(object):
         self.standoff3 = self.Standoff("stoff3",3,oz,-M64Board._m64Standoff,M64Board._m64StandoffDia,[255,244,0])
         self.standoff4 = self.Standoff("stoff4",4,oz,-M64Board._m64Standoff,M64Board._m64StandoffDia,[255,244,0])
         Part.show(self.board)
+        doc = FreeCAD.ActiveDocument
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='M64Board'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.0,1.0,0.0])        
         Part.show(self.dualusb)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='Dual USB'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
         Part.show(self.rj45)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='Ethernet Jack'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
         Part.show(self.audiobody)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='Audio Body'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
         Part.show(self.audiobarrel)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='Audio Barrel'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
         Part.show(self.otg)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='OTG Jack'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.9])
         Part.show(self.standoff1)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='StandOff 1'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
         Part.show(self.standoff2)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='StandOff 2'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
         Part.show(self.standoff3)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='StandOff 3'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
         Part.show(self.standoff4)
+        last = len(FreeCAD.ActiveDocument.Objects)-1
+        FreeCAD.ActiveDocument.Objects[last].Label='StandOff 4'
+        FreeCAD.ActiveDocument.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
     def MountingHole(self,name,i,zBase):
         mhv = self.mhvector[i]
         mhz = Base.Vector(mhv.x,mhv.y,zBase);
@@ -202,7 +234,8 @@ class M64Board(object):
         stofcirc = Part.makeCircle(diameter/2.0,stofv)
         stofwire = Part.Wire(stofcirc)
         stofface = Part.Face(stofwire)
-        return stofface.extrude(Base.Vector(0,0,height))
+        result = stofface.extrude(Base.Vector(0,0,height))
+        return result
         
 
 
