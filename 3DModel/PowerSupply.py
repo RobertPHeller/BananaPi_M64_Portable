@@ -1,4 +1,3 @@
-#!/usr/bin/FreeCAD
 #*****************************************************************************
 #
 #  System        : 
@@ -8,8 +7,8 @@
 #  Date          : $Date$
 #  Author        : $Author$
 #  Created By    : Robert Heller
-#  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200531.0835>
+#  Created       : Sun May 31 08:03:12 2020
+#  Last Modified : <200531.0806>
 #
 #  Description	
 #
@@ -41,32 +40,34 @@
 #
 #*****************************************************************************
 
-import FreeCAD as App
 
 import Part
 from FreeCAD import Base
+import FreeCAD as App
 
-import os
-import sys
-sys.path.append(os.path.dirname(__file__))
-from traceback import *
+## Power Supply: Mouser #490-PSK-S15C-5
+# PCB mount, 28.8mm wide 53.8mm long, 23.5mm high
 
-#from M64 import *
-from PSPCB import *
-#from  PSBox import *
-#from  Case import *
-#from  DCDC_5_12 import *
-#from  LCDMountingBracket import *
-#from  LCDScreen import *
-#from  HDMIConverter import *
-#from  USB_SATA_Adapter import *
-#from  SVGOutput import *
+class PSK_S15C(object):
+    _pswidth = 28.8
+    _pslength = 53.8
+    _psheight = 23.5
+    _pspindia = 1.0
+    _pspinlength = 6.0
+    _pspin1Xoff = ((53.8-45.72)/2.0)+45.72
+    _pspin1Yoff = ((28.8-20.32)/2.0)+20.32
+    _pspin2Xoff = ((53.8-45.72)/2.0)+45.72
+    _pspin2Yoff = (28.8-20.32)/2.0
+    _pspin3Xoff = (53.8-45.72)/2.0
+    _pspin3Yoff = ((28.8-20.32)/2.0)+10.16
+    _pspin4Xoff = (53.8-45.72)/2.0
+    _pspin4Yoff = ((28.8-20.32)/2.0)+20.32
+    def __init__(self,name,origin):
+        self.name = name
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector")
+        self.origin = origin
+        ox = origin.x
+        oy = origin.y
+        oz = origin.z
 
-if __name__ == '__main__':
-    doc = App.newDocument("BananaPiM64Model")
-    App.setActiveDocument ( "BananaPiM64Model" )
-    board = PCBwithStrips("pspcb",Base.Vector(0,0,0)) 
-    doc.FileName="BananaPiM64Model.fcstd"
-    doc.Label="BananaPiM64Model"
-    doc.save()
-    sys.exit(0)

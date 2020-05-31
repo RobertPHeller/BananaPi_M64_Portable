@@ -1,4 +1,3 @@
-#!/usr/bin/FreeCAD
 #*****************************************************************************
 #
 #  System        : 
@@ -8,8 +7,8 @@
 #  Date          : $Date$
 #  Author        : $Author$
 #  Created By    : Robert Heller
-#  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200531.0835>
+#  Created       : Sat May 30 19:30:31 2020
+#  Last Modified : <200531.0742>
 #
 #  Description	
 #
@@ -41,32 +40,5 @@
 #
 #*****************************************************************************
 
-import FreeCAD as App
 
-import Part
-from FreeCAD import Base
 
-import os
-import sys
-sys.path.append(os.path.dirname(__file__))
-from traceback import *
-
-#from M64 import *
-from PSPCB import *
-#from  PSBox import *
-#from  Case import *
-#from  DCDC_5_12 import *
-#from  LCDMountingBracket import *
-#from  LCDScreen import *
-#from  HDMIConverter import *
-#from  USB_SATA_Adapter import *
-#from  SVGOutput import *
-
-if __name__ == '__main__':
-    doc = App.newDocument("BananaPiM64Model")
-    App.setActiveDocument ( "BananaPiM64Model" )
-    board = PCBwithStrips("pspcb",Base.Vector(0,0,0)) 
-    doc.FileName="BananaPiM64Model.fcstd"
-    doc.Label="BananaPiM64Model"
-    doc.save()
-    sys.exit(0)
