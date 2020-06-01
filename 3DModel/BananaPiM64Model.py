@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200531.1137>
+#  Last Modified : <200601.0943>
 #
 #  Description	
 #
@@ -65,8 +65,9 @@ from PSPCB import *
 if __name__ == '__main__':
     doc = App.newDocument("BananaPiM64Model")
     App.setActiveDocument ( "BananaPiM64Model" )
-    board = PSOnPCB("pspcb",Base.Vector(0,0,0)) 
+    board = PSOnPCB("pspcb",Base.Vector(0,0,6.35)) 
     Gui.SendMsgToActiveView("ViewFit")
+    Gui.activeDocument().activeView().viewBottom()
     doc.FileName="BananaPiM64Model.fcstd"
     doc.Label="BananaPiM64Model"
     doc.save()
