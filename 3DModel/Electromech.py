@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Mon Jun 1 10:34:36 2020
-#  Last Modified : <200602.0537>
+#  Last Modified : <200602.1624>
 #
 #  Description	
 #
@@ -206,7 +206,7 @@ class Fan02510SS_05P_AT00(object):
                         ).extrude(extrude)
     def SquareFanHole(self,xBase,height):
         ox=xBase
-        oy=self.origin.y
+        oy=self.origin.y+Fan02510SS_05P_AT00._fanwidth_height
         oz=self.origin.z
         holeorig=Base.Vector(ox,oy,oz)
         holeside=Fan02510SS_05P_AT00._fanwidth_height

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200602.0523>
+#  Last Modified : <200602.1613>
 #
 #  Description	
 #
@@ -248,7 +248,7 @@ class PSBox(CU_3002A):
         return (self.coverLength()-(2*Fan02510SS_05P_AT00._fanwidth_height))/2.0
     def _fan2Yoff(self):
         return self._fan1Yoff()+Fan02510SS_05P_AT00._fanwidth_height
-    def InletFlangCutout(self,yBase,yThick):
+    def InletFlangeCutout(self,yBase,yThick):
         return self.inlet.Flange(yBase,yThick)
     def __init__(self,name,origin):
         CU_3002A.__init__(self,name,origin)
@@ -270,22 +270,22 @@ class PSBox(CU_3002A):
             mh = self.pspcb.MountingHole(i,oz).extrude(mhthick)
             b = b.cut(mh)
         self.base = b
-        self.inlet = Inlet("inlet",Base.Vector(ox+PSBox._inletXoff,
+        self.inlet = Inlet(self.name+":inlet",Base.Vector(ox+PSBox._inletXoff,
                                                         oy+self.baseLength(),
                                                         oz+PSBox._inletZoff))
         b = self.base.cut(self.inlet.bodyCutout(ox+self.baseLength(),-self.thickness()))
         self.base = b  
-        self.dcstrainrelief = DCStrainRelief("dcstrain",Base.Vector(ox+PSBox._dcstrainXoff,oy,oz+PSBox._dcstrainZoff))
+        self.dcstrainrelief = DCStrainRelief(self.name+":dcstrain",Base.Vector(ox+PSBox._dcstrainXoff,oy,oz+PSBox._dcstrainZoff))
         b = self.base.cut(self.dcstrainrelief.MountHole(oy,self.thickness()))
         self.base = b
         fx = ox+self._fanXoff()
         f1y = oy+self._fan1Yoff()
         fz = oz+self._fanZoff()
         f1origin = Base.Vector(fx,f1y,fz)
-        self.fan1 = Fan02510SS_05P_AT00("fan1",f1origin)
+        self.fan1 = Fan02510SS_05P_AT00(self.name+":fan1",f1origin)
         f2y = oy+self._fan2Yoff()
         f2origin = Base.Vector(fx,f2y,fz)
-        self.fan2 = Fan02510SS_05P_AT00("fan2",f2origin)
+        self.fan2 = Fan02510SS_05P_AT00(self.name+":fan2",f2origin)
         c = self.cover
         for i in [1,2,3,4]:
             c = c.cut(self.fan1.MountingHole(i,fx,-self.thickness()))
@@ -295,6 +295,8 @@ class PSBox(CU_3002A):
         c = self.fan1.DrillGrillHoles(ox+self.thickness(),-self.thickness(),2.5,3.5,c)
         c = self.fan2.DrillGrillHoles(ox+self.thickness(),-self.thickness(),2.5,3.5,c)
         self.cover = c
+    def MountingHole(self,i,zBase):
+        return self.pspcb.MountingHole(i,zBase)
     def RoundFanHole1(self,xBase,height):
         return self.fan1.RoundFanHole(xBase,height)
     def RoundFanHole2(self,xBase,height):
@@ -303,6 +305,10 @@ class PSBox(CU_3002A):
         return self.fan1.SquareFanHole(xBase,height)
     def SquareFanHole2(self,xBase,height):
         return self.fan2.SquareFanHole(xBase,height)
+    def DrillGrillHoles1(self,xBase,height,hdia,hspace,panel):
+        return self.fan1.DrillGrillHoles(xBase,height,hdia,hspace,panel)
+    def DrillGrillHoles2(self,xBase,height,hdia,hspace,panel):
+        return self.fan2.DrillGrillHoles(xBase,height,hdia,hspace,panel)
     def show(self):
         doc = App.activeDocument()
         CU_3002A.show(self)

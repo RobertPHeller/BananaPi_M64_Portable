@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 22:46:38 2020
-#  Last Modified : <200601.1852>
+#  Last Modified : <200602.1708>
 #
 #  Description	
 #
@@ -78,7 +78,7 @@ class PCBwithStrips(object):
                                    PCBwithStrips._psPCBlength,
                                    origin)
         xh = (ox+PCBwithStrips._stripIncr)
-        while xh < ox+PCBwithStrips._psPCBwidth-PCBwithStrips._stripIncr:
+        while xh <= ox+PCBwithStrips._psPCBwidth:
             yh = oy+PCBwithStrips._stripIncr
             while yh <= oy+PCBwithStrips._psPCBlength:
                 boardsurf = self._drill_leadhole(boardsurf,xh,yh,oz)

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 11:16:52 2020
-#  Last Modified : <200531.0048>
+#  Last Modified : <200602.1441>
 #
 #  Description	
 #
@@ -60,7 +60,7 @@ class M64Board(object):
     _m64Length = 96.40062-5.00126
     _m64Thickness = .06125*25.4
     _m64Standoff = .25*25.4
-    _m64StandoffDia = 6
+    _m64StandoffDia = 5
     _PlateHeight = 16
     _DualUSBHeight = 15.60
     _DualUSBWidth = 14.40
@@ -86,7 +86,7 @@ class M64Board(object):
     _AudioBodyHeight = 5.0
     _AudioXMinBarrel = 96.393
     _AudioXMaxBarrel = 98.39198
-    _gpioHeaderXOffset = 26.16962-3.57
+    _gpioHeaderXOffset = 26.16962
     _gpioHeaderLength = 55.4
     _gpioHeaderHeight = 16.1
     _OTG_XMin = 6.99516
@@ -134,7 +134,8 @@ class M64Board(object):
                                           Base.Vector(1,0,0))
         audiobarrelwire = Part.Wire(audiobarrelcirc)
         audiobarrelsurf = Part.Face(audiobarrelwire)
-        self.audiobarrel = audiobarrelsurf.extrude(Base.Vector(M64Board._AudioXMinBarrel-M64Board._AudioXMaxBarrel,0,0))
+        abextvect = Base.Vector(M64Board._AudioXMinBarrel-M64Board._AudioXMaxBarrel,0,0)
+        self.audiobody = self.audiobody.fuse(audiobarrelsurf.extrude(abextvect))
         otg_x = ox + (M64Board._m64XMax - M64Board._OTG_XMax)
         otg_y = oy + (M64Board._m64YMax - M64Board._OTG_YMax)
         otg_z = oz + M64Board._m64Thickness
@@ -176,58 +177,13 @@ class M64Board(object):
         mh4 = Part.Face(mh4wire)
         boardsurf = boardsurf.cut(mh4)
         self.board = boardsurf.extrude(Base.Vector(0,0,M64Board._m64Thickness))
-        self.standoff1 = self.Standoff("stoff1",1,oz,-M64Board._m64Standoff,M64Board._m64StandoffDia,[255,244,0])
-        self.standoff2 = self.Standoff("stoff2",2,oz,-M64Board._m64Standoff,M64Board._m64StandoffDia,[255,244,0])
-        self.standoff3 = self.Standoff("stoff3",3,oz,-M64Board._m64Standoff,M64Board._m64StandoffDia,[255,244,0])
-        self.standoff4 = self.Standoff("stoff4",4,oz,-M64Board._m64Standoff,M64Board._m64StandoffDia,[255,244,0])
-        Part.show(self.board)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':M64Board'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,1.0,0.0])        
-        Part.show(self.dualusb)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Dual USB'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
-        Part.show(self.rj45)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Ethernet Jack'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
-        Part.show(self.audiobody)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Audio Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
-        Part.show(self.audiobarrel)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Audio Barrel'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
-        Part.show(self.otg)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':OTG Jack'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.9])
-        Part.show(self.standoff1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':StandOff 1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
-        Part.show(self.standoff2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':StandOff 2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
-        Part.show(self.standoff3)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':StandOff 3'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
-        Part.show(self.standoff4)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':StandOff 4'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.0])
-    def MountingHole(self,name,i,zBase):
+    def MountingHole(self,i,zBase):
         mhv = self.mhvector[i]
         mhz = Base.Vector(mhv.x,mhv.y,zBase);
-        mhcirc = Part.makeCircle(M64Board._m64_mh_dia/2.0,mhv);
+        mhcirc = Part.makeCircle(M64Board._m64_mh_dia/2.0,mhz);
         mhwire = Part.Wire(mhcirc)
         return Part.Face(mhwire)
-    def Standoff(self,name,i,zBase,height,diameter,color):
+    def Standoff(self,i,zBase,height,diameter):
         stofv = self.mhvector[i]
         stofv = Base.Vector(stofv.x,stofv.y,zBase)
         stofcirc = Part.makeCircle(diameter/2.0,stofv)
@@ -235,14 +191,70 @@ class M64Board(object):
         stofface = Part.Face(stofwire)
         result = stofface.extrude(Base.Vector(0,0,height))
         return result
-        
-
-
-
-
-
-
-
-    
-if __name__ == '__main__':
-    board = M64Board("board",Base.Vector(0,0,0))
+    def show(self):
+        doc = App.activeDocument()
+        Part.show(self.board)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':M64Board'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,1.0,0.0])        
+        Part.show(self.dualusb)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Dual USB'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
+        Part.show(self.rj45)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Ethernet Jack'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
+        Part.show(self.audiobody)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Audio Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        Part.show(self.otg)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':OTG Jack'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.9])
+    def DualUSBCutout(self,xBase,panelThickness):
+        dualusb_h = M64Board._DualUSBWidth
+        dualusb_w = M64Board._DualUSBHeight
+        oy = self.origin.y
+        oz = self.origin.z
+        dualusb_y = oy + (M64Board._m64YMax - M64Board._DualUSBYMax) + dualusb_h
+        dualusb_z = oz + M64Board._m64Thickness
+        cutoutorigin = Base.Vector(xBase,dualusb_y,dualusb_z)
+        cutoutplane = Part.makePlane(dualusb_w,dualusb_h,cutoutorigin,
+                                     Base.Vector(1,0,0))
+        return cutoutplane.extrude(Base.Vector(panelThickness,0,0))
+    def RJ45Cutout(self,xBase,panelThickness):
+        rj45_h = M64Board._RJ45Width
+        rj45_w = M64Board._RJ45Height
+        oy = self.origin.y
+        oz = self.origin.z
+        rj45_y = oy + (M64Board._m64YMax - M64Board._RJ45YMax) + rj45_h
+        rj45_z = oz + M64Board._m64Thickness
+        cutoutorigin = Base.Vector(xBase,rj45_y,rj45_z)
+        cutoutplane = Part.makePlane(rj45_w,rj45_h,cutoutorigin,
+                                     Base.Vector(1,0,0))
+        return cutoutplane.extrude(Base.Vector(panelThickness,0,0))
+    def AudioCutout(self,xBase,panelThickness):
+        oy = self.origin.y
+        oz = self.origin.z
+        audiobarrel_y = oy + (M64Board._m64YMax - M64Board._AudioYMaxBody + (M64Board._AudioBodyWidth/2.0))
+        audiobarrel_z = oz + (M64Board._m64Thickness + (M64Board._AudioBodyHeight / 2.0))
+        audiobarrelcirc = Part.makeCircle((M64Board._AudioDiameter/2.0),
+                                          Base.Vector(xBase,audiobarrel_y,audiobarrel_z),
+                                          Base.Vector(1,0,0))
+        audiobarrelwire = Part.Wire(audiobarrelcirc)
+        audiobarrelsurf = Part.Face(audiobarrelwire)
+        abextvect = Base.Vector(panelThickness,0,0)
+        return audiobarrelsurf.extrude(abextvect)
+    def GPIOCutout(self,yBase,panelThickness):
+        ox = self.origin.x
+        oz = self.origin.z
+        gpio_x = ox+M64Board._gpioHeaderXOffset
+        gpio_z = oz+M64Board._m64Thickness
+        cutoutorigin = Base.Vector(gpio_x,yBase,gpio_z)
+        cutoutplane = Part.makePlane(M64Board._gpioHeaderHeight,
+                                     M64Board._gpioHeaderLength,
+                                     cutoutorigin,
+                                     Base.Vector(0,1,0))
+        return cutoutplane.extrude(Base.Vector(0,panelThickness,0))

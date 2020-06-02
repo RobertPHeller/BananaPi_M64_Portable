@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200602.0548>
+#  Last Modified : <200602.1416>
 #
 #  Description	
 #
@@ -52,8 +52,8 @@ from traceback import *
 
 #from M64 import *
 #from PSPCB import *
-from  PSBox import *
-#from  Case import *
+#from  PSBox import *
+from  Case import *
 #from  DCDC_5_12 import *
 #from  LCDMountingBracket import *
 #from  LCDScreen import *
@@ -64,9 +64,9 @@ from  PSBox import *
 if __name__ == '__main__':
     doc = App.newDocument("BananaPiM64Model")
     App.setActiveDocument ( "BananaPiM64Model" )
-    box = PSBox("psbox",Base.Vector(0,0,0)) 
-    box.show()
+    case = PortableM64Case("M64Case",Base.Vector(0,0,0))
+    case.show()
     doc.FileName="BananaPiM64Model.fcstd"
     doc.Label="BananaPiM64Model"
     doc.save()
-    sys.exit(1)
+    #sys.exit(1)
