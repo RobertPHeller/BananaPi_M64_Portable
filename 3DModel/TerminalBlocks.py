@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 14:49:02 2020
-#  Last Modified : <200531.1637>
+#  Last Modified : <200601.1459>
 #
 #  Description	
 #
@@ -71,34 +71,35 @@ class TB007_508_03BE(TB007_508_xxBE):
         self.body = Part.makePlane(TB007_508_xxBE._3belength,
                                    TB007_508_xxBE._termwidth,
                                    origin).extrude(Base.Vector(0,0,TB007_508_xxBE._termheight))
-        Part.show(self.body)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
         self.pin1 = Part.Face(Part.Wire(Part.makeCircle(TB007_508_xxBE._termpindia/2.0,
                                                         Base.Vector(ox+TB007_508_xxBE._termhyoff,
                                                                     oy+TB007_508_xxBE._termhxoff,
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
-        Part.show(self.pin1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         self.pin2 = Part.Face(Part.Wire(Part.makeCircle(TB007_508_xxBE._termpindia/2.0,
                                                         Base.Vector(ox+TB007_508_xxBE._termhyoff+TB007_508_xxBE._termpitch,
                                                                     oy+TB007_508_xxBE._termhxoff,
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
-        Part.show(self.pin2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         self.pin3 = Part.Face(Part.Wire(Part.makeCircle(TB007_508_xxBE._termpindia/2.0,
                                                         Base.Vector(ox+TB007_508_xxBE._termhyoff+(2*TB007_508_xxBE._termpitch),
                                                                     oy+TB007_508_xxBE._termhxoff,
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
+    def show(self):
+        doc = App.activeDocument()
+        Part.show(self.body)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
+        Part.show(self.pin1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Pin1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        Part.show(self.pin2)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Pin2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         Part.show(self.pin3)
         last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin3'
+        doc.Objects[last].Label=self.name+':Pin3'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         
 class TB007_508_02BE(TB007_508_xxBE):
@@ -116,25 +117,25 @@ class TB007_508_02BE(TB007_508_xxBE):
         self.body = Part.makePlane(TB007_508_xxBE._2belength,
                                    TB007_508_xxBE._termwidth,
                                    origin).extrude(Base.Vector(0,0,TB007_508_xxBE._termheight))
-        Part.show(self.body)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
         self.pin1 = Part.Face(Part.Wire(Part.makeCircle(TB007_508_xxBE._termpindia/2.0,
                                                         Base.Vector(ox+TB007_508_xxBE._termhyoff,
                                                                     oy+TB007_508_xxBE._termhxoff,
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
-        Part.show(self.pin1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         self.pin2 = Part.Face(Part.Wire(Part.makeCircle(TB007_508_xxBE._termpindia/2.0,
                                                         Base.Vector(ox+TB007_508_xxBE._termhyoff+TB007_508_xxBE._termpitch,
                                                                     oy+TB007_508_xxBE._termhxoff,
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
+    def show(self):        
+        doc = App.activeDocument()
+        Part.show(self.body)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
+        Part.show(self.pin1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Pin1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         Part.show(self.pin2)
         last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin2'
+        doc.Objects[last].Label=self.name+':Pin2'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        

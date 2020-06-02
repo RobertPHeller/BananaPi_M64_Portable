@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 20:52:40 2020
-#  Last Modified : <200531.2123>
+#  Last Modified : <200601.1454>
 #
 #  Description	
 #
@@ -68,27 +68,27 @@ class DO_15_bendedLeads_400_under(object):
             leadvlen = availleadvlen
         self.body = Part.Face(Part.Wire(Part.makeCircle(brad,Base.Vector(xc-l2,yc,zc-brad),Base.Vector(1.0,0,0)))
                              ).extrude(Base.Vector(DO_15_bendedLeads_400_under._bodylen,0,0))
-        Part.show(self.body)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.19607,.19607,.19607])
         leadrad = DO_15_bendedLeads_400_under._leaddia/2.0
         lead1 = Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(xc-l2,yc,zc - brad),Base.Vector(1.0,0,0)))
                          ).extrude(Base.Vector(-(leadhlen+leadrad),0,0))
         lead2 = Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(xc+l2,yc,zc-brad),Base.Vector(1.0,0,0)))
                          ).extrude(Base.Vector(leadhlen+leadrad,0,0))
         halfleadspacing = DO_15_bendedLeads_400_under._leadspacing/2.0
-        lead1 = lead1.fuse(Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(xc - halfleadspacing,yc,zc-brad)))
+        self.lead1 = lead1.fuse(Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(xc - halfleadspacing,yc,zc-brad)))
                                     ).extrude(Base.Vector(0,0,leadvlen)))
-        lead2 = lead2.fuse(Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(xc + halfleadspacing,yc,zc-brad)))
+        self.lead2 = lead2.fuse(Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(xc + halfleadspacing,yc,zc-brad)))
                                     ).extrude(Base.Vector(0,0,leadvlen)))
-        Part.show(lead1)
+    def show(self):
+        doc = App.activeDocument()
+        Part.show(self.body)
         last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':lead1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.98039,.98039,.98039])
-        Part.show(lead2)        
+        doc.Objects[last].Label=self.name+':Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([.19607,.19607,.19607])
+        Part.show(self.lead1)
         last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':lead2'
+        doc.Objects[last].Label=self.name+':lead1'
         doc.Objects[last].ViewObject.ShapeColor=tuple([.98039,.98039,.98039])
-        
+        Part.show(self.lead2)        
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':lead2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([.98039,.98039,.98039])

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 20:53:19 2020
-#  Last Modified : <200601.0831>
+#  Last Modified : <200601.1459>
 #
 #  Description	
 #
@@ -66,11 +66,6 @@ class B72220S2301K101(object):
         bodyradius = B72220S2301K101._W / 2.0
         self.body = Part.Face(Part.Wire(Part.makeCircle(bodyradius,Base.Vector(xc,yc-bodyradius,zc)))
                              ).extrude(Base.Vector(0,0,-B72220S2301K101._th))
-        Part.show(self.body)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
         d = B72220S2301K101._d
         e2 = B72220S2301K101._e/2.0
         yseat = yc+(B72220S2301K101._seatoffset/2.0)
@@ -79,16 +74,8 @@ class B72220S2301K101(object):
         a2  = B72220S2301K101._a/2.0
         self.seat1 = Part.Face(Part.Wire(Part.makeCircle(d,Base.Vector(xc-e2,yseat,zc-th2-a2),Base.Vector(0,1,0)))
                               ).extrude(seatlenVect)
-        Part.show(self.seat1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':seat1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
         self.seat2 = Part.Face(Part.Wire(Part.makeCircle(d,Base.Vector(xc+e2,yseat,zc-th2+a2),Base.Vector(0,1,0)))
                               ).extrude(seatlenVect)
-        Part.show(self.seat2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':seat2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
         leadhlen = (B72220S2301K101._leadspacing/2.0)-e2
         leadrad = B72220S2301K101._d/2.0
         XNorm = Base.Vector(1,0,0)
@@ -104,10 +91,6 @@ class B72220S2301K101(object):
         l1vx = l1x-leadhlen
         self.lead1 = self.lead1.fuse(Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(l1vx,l1y,l1z),ZNorm))
                                               ).extrude(Base.Vector(0,0,l1vheight)))
-        Part.show(self.lead1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':lead1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.98,0.98,0.98])
         lead2hb = Base.Vector(xc+e2,yseat,zc-th2+a2)
         l2x=lead2hb.x
         l2y=lead2hb.y
@@ -118,8 +101,25 @@ class B72220S2301K101(object):
         l2vx      = l2x + leadhlen
         self.lead2 = self.lead2.fuse(Part.Face(Part.Wire(Part.makeCircle(leadrad,Base.Vector(l2vx,l2y,l2z),ZNorm))
                                               ).extrude(Base.Vector(0,0,l2vheight)))
+    def show(self):
+        doc = App.activeDocument()
+        Part.show(self.body)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        Part.show(self.seat1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':seat1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        Part.show(self.seat2)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':seat2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        Part.show(self.lead1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':lead1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([0.98,0.98,0.98])
         Part.show(self.lead2)
         last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':lead2'
+        doc.Objects[last].Label=self.name+':lead2'
         doc.Objects[last].ViewObject.ShapeColor=tuple([0.98,0.98,0.98])
-

@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200601.0943>
+#  Last Modified : <200601.1959>
 #
 #  Description	
 #
@@ -52,8 +52,8 @@ sys.path.append(os.path.dirname(__file__))
 from traceback import *
 
 #from M64 import *
-from PSPCB import *
-#from  PSBox import *
+#from PSPCB import *
+from  PSBox import *
 #from  Case import *
 #from  DCDC_5_12 import *
 #from  LCDMountingBracket import *
@@ -65,9 +65,10 @@ from PSPCB import *
 if __name__ == '__main__':
     doc = App.newDocument("BananaPiM64Model")
     App.setActiveDocument ( "BananaPiM64Model" )
-    board = PSOnPCB("pspcb",Base.Vector(0,0,6.35)) 
-    Gui.SendMsgToActiveView("ViewFit")
-    Gui.activeDocument().activeView().viewBottom()
+    box = PSBox("psbox",Base.Vector(0,0,0)) 
+    box.show()
     doc.FileName="BananaPiM64Model.fcstd"
     doc.Label="BananaPiM64Model"
     doc.save()
+    Gui.SendMsgToActiveView("ViewFit")
+    Gui.activeDocument().activeView().viewAxometric()

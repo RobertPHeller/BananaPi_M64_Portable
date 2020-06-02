@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 22:46:38 2020
-#  Last Modified : <200601.0946>
+#  Last Modified : <200601.1852>
 #
 #  Description	
 #
@@ -115,11 +115,6 @@ class PCBwithStrips(object):
         mh4 = Part.Face(mh4wire)
         boardsurf = boardsurf.cut(mh4)
         self.board = boardsurf.extrude(Base.Vector(0,0,PCBwithStrips._psPCBThickness))
-        Part.show(self.board)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':PSPCB'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.8235,.7058,.5490])
         mh = {
             1 : Part.Face(Part.Wire(Part.makeCircle(PCBwithStrips._mhdia/2.0,Base.Vector(self.mhvector[1].x,self.mhvector[1].y,oz-PCBwithStrips._stripThickness)))),
             2 : Part.Face(Part.Wire(Part.makeCircle(PCBwithStrips._mhdia/2.0,Base.Vector(self.mhvector[2].x,self.mhvector[2].y,oz-PCBwithStrips._stripThickness)))), 
@@ -132,7 +127,6 @@ class PCBwithStrips(object):
         pin2X = PSK_S15C._pspin2Yoff+xoff
         sx = PCBwithStrips._stripIncr
         self.strips = list()
-        stripno = 1
         while (sx + PCBwithStrips._stripIncr) <= PCBwithStrips._psPCBwidth:
             if sx <= pin1X and sx >= pin2X:
                 stripCP1 = Base.Vector(ox+(sx - (PCBwithStrips._stripWidth / 2.0)),
@@ -151,11 +145,6 @@ class PCBwithStrips(object):
                     yh += PCBwithStrips._stripIncr
                 strip = stripsurf.extrude(Base.Vector(0,0,PCBwithStrips._stripThickness))
                 self.strips.append(strip)
-                Part.show(strip)
-                last = len(doc.Objects)-1
-                doc.Objects[last].Label=name+(":strip%d" % stripno)
-                stripno += 1
-                doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
                 stripsurf = Part.makePlane(PCBwithStrips._stripWidth,
                                            striplen,stripCP2)
                 xh = stripCP2.x + (PCBwithStrips._stripWidth/2.0)
@@ -165,11 +154,6 @@ class PCBwithStrips(object):
                     yh += PCBwithStrips._stripIncr
                 strip = stripsurf.extrude(Base.Vector(0,0,PCBwithStrips._stripThickness))
                 self.strips.append(strip)
-                Part.show(strip)
-                last = len(doc.Objects)-1
-                doc.Objects[last].Label=name+(":strip%d" % stripno)
-                stripno += 1
-                doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
             else:
                 stripCP = Base.Vector(ox+(sx - (PCBwithStrips._stripWidth / 2.0)),
                                        oy+PCBwithStrips._stripOffset,
@@ -188,21 +172,16 @@ class PCBwithStrips(object):
                     i += 1
                 strip = stripsurf.extrude(Base.Vector(0,0,PCBwithStrips._stripThickness))
                 self.strips.append(strip)
-                Part.show(strip)
-                last = len(doc.Objects)-1
-                doc.Objects[last].Label=name+(":strip%d" % stripno)
-                stripno += 1
-                doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
             sx += PCBwithStrips._stripIncr
     def _drill_leadhole(self,surf,x,y,z):
         return(surf.cut(Part.Face(Part.Wire(Part.makeCircle(PCBwithStrips._leadhole_r,Base.Vector(x,y,z))))))
-    def MountingHole(self,name,i,zBase):
+    def MountingHole(self,i,zBase):
         mhv = self.mhvector[i]
         mhz = Base.Vector(mhv.x,mhv.y,zBase);
-        mhcirc = Part.makeCircle(M64Board._m64_mh_dia/2.0,mhv);
+        mhcirc = Part.makeCircle(PCBwithStrips._mhdia/2.0,mhz);
         mhwire = Part.Wire(mhcirc)
         return Part.Face(mhwire)
-    def Standoff(self,name,i,zBase,height,diameter,color):
+    def Standoff(self,i,zBase,height,diameter):
         stofv = self.mhvector[i]
         stofv = Base.Vector(stofv.x,stofv.y,zBase)
         stofcirc = Part.makeCircle(diameter/2.0,stofv)
@@ -210,8 +189,19 @@ class PCBwithStrips(object):
         stofface = Part.Face(stofwire)
         result = stofface.extrude(Base.Vector(0,0,height))
         return result
-        
-
+    def show(self):
+        Part.show(self.board)
+        doc = App.activeDocument()
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':PSPCB'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([.8235,.7058,.5490])
+        stripno = 1
+        for strip in self.strips:
+            Part.show(strip)
+            last = len(doc.Objects)-1
+            doc.Objects[last].Label=self.name+(":strip%d" % stripno)        
+            doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+            stripno += 1
                     
 class PSOnPCB(PCBwithStrips):
     _fuseholderX = 76.2-6.35
@@ -224,15 +214,10 @@ class PSOnPCB(PCBwithStrips):
     _esdY = 45.72-17.78
     _wiredia = 1.5
     def __init__(self,name,origin):
-        self.name = name
-        if not isinstance(origin,Base.Vector):
-            raise RuntimeError("origin is not a Vector")
-        self.origin = origin
+        PCBwithStrips.__init__(self,name,origin)
         ox = origin.x
         oy = origin.y
         oz = origin.z
-        PCBwithStrips.__init__(self,name+":pcb",origin)
-        doc = App.activeDocument()
         yoff = (PCBwithStrips._psPCBlength - PSK_S15C._pslength)/2.0
         xoff = (PCBwithStrips._psPCBwidth - PSK_S15C._pswidth)/2.0
         psorigin = Base.Vector(ox+xoff,oy+yoff,oz+PCBwithStrips._psPCBThickness)
@@ -245,7 +230,7 @@ class PSOnPCB(PCBwithStrips):
                                    oy+(PCBwithStrips._pstermxoff),
                                    oz+PCBwithStrips._psPCBThickness)
         self.dcterm = TB007_508_02BE(name+":dcterm",dctermorigin)
-        self.bypasscap = C333(name+":bypasscap",Base.Vector(ox+PSOnPCB._bypassY,PSOnPCB._bypassX,oz))
+        self.bypasscap = C333(name+":bypasscap",Base.Vector(ox+PSOnPCB._bypassY,oy+PSOnPCB._bypassX,oz))
         self.filtercap = AL_CAP_Radial_5mm10x12_5(name+":filtercap",
                             Base.Vector(ox+PSOnPCB._filterY,
                                         oy+PSOnPCB._filterX,
@@ -262,21 +247,16 @@ class PSOnPCB(PCBwithStrips):
                             Base.Vector(ox+(PCBwithStrips._psPCBwidth / 2.0),
                                         oy+((PCBwithStrips._psPCBlength - (yoff+PSK_S15C._pspin3Xoff+3) +3.81)),
                                         oz))
-        groundj1X = ox+(PCBwithStrips._psPCBlength / 2.0)+1.27
-        groundj1Y = oy+(PSK_S15C._pspin1Yoff)+yoff
+        groundj1X = oy+((PCBwithStrips._psPCBlength / 2.0)+1.27)
+        groundj1Y = ox+((PSK_S15C._pspin1Yoff)+yoff)
         groundj1L = 20.32+5.08
         wireradius = PSOnPCB._wiredia / 2.0
         XNorm=Base.Vector(1,0,0)
         YNorm=Base.Vector(0,1,0)
-        self.wires = list()
-        green = tuple([0.0,1.0,0.0])
+        self.groundwires = list()
         g1=Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(groundj1Y,groundj1X,oz-wireradius),XNorm))
                     ).extrude(Base.Vector(-groundj1L,0,0))
-        self.wires.append(g1)
-        Part.show(g1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':ground1'
-        doc.Objects[last].ViewObject.ShapeColor=green
+        self.groundwires.append(g1)
         for i in [1,2,3]:
             yy = i*2.54
             xx = (i&1)*2.54
@@ -287,65 +267,81 @@ class PSOnPCB(PCBwithStrips):
                     ).extrude(Base.Vector(-2.54,0,0))
             gB = Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(y2,x,oz-wireradius),XNorm))
                     ).extrude(Base.Vector(2.54,0,0))
-            self.wires.append(gA)
-            self.wires.append(gB)
-            Part.show(gA)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=name+(':groundA%d' % i)
-            doc.Objects[last].ViewObject.ShapeColor=green
-            Part.show(gB)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=name+(':groundB%d' % i)
-            doc.Objects[last].ViewObject.ShapeColor=green
+            self.groundwires.append(gA)
+            self.groundwires.append(gB)
+        self.linewires = list()
         l1Y = ox+PCBwithStrips._psactermyoff + (7*2.54)
         l1X = oy+PCBwithStrips._psPCBlength - (5.08 + 2.54)
         l1L = 5.08
-        black = tuple([0.0,0.0,0.0])
         l1 = Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(l1Y,l1X,oz-wireradius),XNorm))
                       ).extrude(Base.Vector(l1L,0,0))
-        self.wires.append(l1)
-        Part.show(l1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Line1'
-        doc.Objects[last].ViewObject.ShapeColor=black
+        self.linewires.append(l1)
         l2Y = l1Y - 5.08 - 5.08
         l2X = oy+PCBwithStrips._psPCBlength-5.08
         l2L = 5.08
         l2 = Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(l2Y,l2X,oz-wireradius),XNorm))
                       ).extrude(Base.Vector(l2L,0,0))
-        self.wires.append(l2)
-        Part.show(l2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Line2'
-        doc.Objects[last].ViewObject.ShapeColor=black
-        M1Y = PCBwithStrips._psdctermyoff + (5*2.54)
-        M1X = PCBwithStrips._pstermxoff + (TB007_508_xxBE._termwidth/2.0) + 2.54
+        self.linewires.append(l2)
+        self.minuswires = list()
+        M1Y = ox+PCBwithStrips._psdctermyoff + (5*2.54)
+        M1X = oy+PCBwithStrips._pstermxoff + (TB007_508_xxBE._termwidth/2.0) + 2.54
         M1L = 5.08
         m1 = Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(M1Y,M1X,oz-wireradius),XNorm))
                       ).extrude(Base.Vector(M1L,0,0))
-        self.wires.append(m1)
-        Part.show(m1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Minus1'
-        doc.Objects[last].ViewObject.ShapeColor=black
+        self.minuswires.append(m1)
         M2Y = M1Y-M1L-2.54
         M2X = M1X+2.54
         M2L = 7.62
         m2 = Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(M2Y,M2X,oz-wireradius),XNorm))
                       ).extrude(Base.Vector(M2L,0,0))
-        self.wires.append(m2)
-        Part.show(m2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Minus2'
-        doc.Objects[last].ViewObject.ShapeColor=black
-        red = tuple([1.0,0.0,0.0])
+        self.minuswires.append(m2)
+        self.pluswires = list()
         P1Y = ox+PCBwithStrips._psdctermyoff + 5.08 + 5.08
         P1X = M2X + 2.54
         P1L = 2.54*5
         p1 = Part.Face(Part.Wire(Part.makeCircle(wireradius,Base.Vector(P1Y,P1X,oz-wireradius),XNorm))
                       ).extrude(Base.Vector(P1L,0,0))
-        self.wires.append(p1)
-        Part.show(p1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Plus1'
-        doc.Objects[last].ViewObject.ShapeColor=red
+        self.pluswires.append(p1)
+    def show(self):
+        PCBwithStrips.show(self)
+        doc = App.activeDocument()
+        self.powersupply.show()
+        self.acterm.show()
+        self.dcterm.show()
+        self.bypasscap.show()
+        self.filtercap.show()
+        self.esd.show()
+        self.fuseholder.show()
+        self.mov.show()
+        green = tuple([0.0,1.0,0.0])
+        gnum = 1
+        for gw in self.groundwires:
+            Part.show(gw)
+            last = len(doc.Objects)-1
+            doc.Objects[last].Label=self.name+(':ground%d' % gnum)
+            doc.Objects[last].ViewObject.ShapeColor=green
+            gnum += 1
+        black = tuple([0.0,0.0,0.0])
+        lnum = 1
+        for lw in self.linewires:
+            Part.show(lw)
+            last = len(doc.Objects)-1
+            doc.Objects[last].Label=self.name+(':Line%d' % lnum)
+            doc.Objects[last].ViewObject.ShapeColor=black
+            lnum += 1
+        mnum = 1
+        for mw in self.minuswires:
+            Part.show(mw)
+            last = len(doc.Objects)-1
+            doc.Objects[last].Label=self.name+(':Minus%d' % mnum)
+            doc.Objects[last].ViewObject.ShapeColor=black
+            mnum += 1
+        red = tuple([1.0,0.0,0.0])
+        pnum = 1
+        for pl in self.pluswires:
+            Part.show(pl)
+            last = len(doc.Objects)-1
+            doc.Objects[last].Label=self.name+(':Plus%d' % pnum)
+            doc.Objects[last].ViewObject.ShapeColor=red
+            pnum += 1
+

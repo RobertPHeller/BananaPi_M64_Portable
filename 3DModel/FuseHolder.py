@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 20:53:10 2020
-#  Last Modified : <200531.2204>
+#  Last Modified : <200601.1458>
 #
 #  Description	
 #
@@ -70,26 +70,28 @@ class Littlefuse_FuseHolder_02810007H_02810010H(object):
         height = Littlefuse_FuseHolder_02810007H_02810010H._height
         self.body = Part.makePlane(length,width,Base.Vector(xc-l2,yc-w2,zc)
                                   ).extrude(Base.Vector(0,0,height))
-        Part.show(self.body)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         pinrad = Littlefuse_FuseHolder_02810007H_02810010H._pindia/2.0
         pinlen = -Littlefuse_FuseHolder_02810007H_02810010H._pinlen
         pin1x = xc-(Littlefuse_FuseHolder_02810007H_02810010H._pinYspace/2.0)
         pin1y = yc-(Littlefuse_FuseHolder_02810007H_02810010H._pinXspace/2.0)
         self.pin1 = Part.Face(Part.Wire(Part.makeCircle(pinrad,Base.Vector(pin1x,pin1y,zc)))
                              ).extrude(Base.Vector(0,0,pinlen))
-        Part.show(self.pin1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
         pin2x = xc+(Littlefuse_FuseHolder_02810007H_02810010H._pinYspace/2.0)
         pin2y = yc+(Littlefuse_FuseHolder_02810007H_02810010H._pinXspace/2.0)
         self.pin2 = Part.Face(Part.Wire(Part.makeCircle(pinrad,Base.Vector(pin2x,pin2y,zc)))
                              ).extrude(Base.Vector(0,0,pinlen))
+    def show(self):
+        doc = App.activeDocument()
+        Part.show(self.body)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Body'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        Part.show(self.pin1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':Pin1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
         Part.show(self.pin2)
         last = len(doc.Objects)-1
-        doc.Objects[last].Label=name+':Pin2'
+        doc.Objects[last].Label=self.name+':Pin2'
         doc.Objects[last].ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
+
