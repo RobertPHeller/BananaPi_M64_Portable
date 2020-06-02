@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200601.1959>
+#  Last Modified : <200602.0548>
 #
 #  Description	
 #
@@ -42,7 +42,6 @@
 #*****************************************************************************
 
 import FreeCAD as App
-
 import Part
 from FreeCAD import Base
 
@@ -70,5 +69,4 @@ if __name__ == '__main__':
     doc.FileName="BananaPiM64Model.fcstd"
     doc.Label="BananaPiM64Model"
     doc.save()
-    Gui.SendMsgToActiveView("ViewFit")
-    Gui.activeDocument().activeView().viewAxometric()
+    sys.exit(1)
