@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200602.1650>
+#  Last Modified : <200602.2011>
 #
 #  Description	
 #
@@ -48,7 +48,7 @@ import FreeCAD as App
 from M64 import *
 from PSBox import *
 from Electromech import *
-#package require DCDC_5_12
+from DCDC_5_12 import *
 #package require LCDScreen
 #package require LCDMountingBracket
 #package require HDMIConverter
@@ -397,6 +397,10 @@ class PortableM64CaseBackPanel(PortableM64CaseCommon):
         self.panel = self.panel.fuse(other)
 
 class PortableM64CaseBottom(PortableM64CaseCommon):
+    _dcdc512Xoff = 100
+    _dcdc512Yoff = 2*25.4
+    _dcdc512StandoffHeight = 6
+    _dcdc512StandoffDiameter = 6.35
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -415,16 +419,16 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.panel.cutfrom(self.m64.MountingHole(3,mholez).extrude(mholeext))
         self.panel.cutfrom(self.m64.MountingHole(4,mholez).extrude(mholeext))
         standoffZ = self.panel.corner.z+self.panel.PanelThickness()
-        self.standoff1 = self.m64.Standoff(1,standoffZ,
+        self.m64standoff1 = self.m64.Standoff(1,standoffZ,
                                            M64Board._m64Standoff,
                                            M64Board._m64StandoffDia)
-        self.standoff2 = self.m64.Standoff(2,standoffZ,
+        self.m64standoff2 = self.m64.Standoff(2,standoffZ,
                                            M64Board._m64Standoff,
                                            M64Board._m64StandoffDia)
-        self.standoff3 = self.m64.Standoff(3,standoffZ,
+        self.m64standoff3 = self.m64.Standoff(3,standoffZ,
                                            M64Board._m64Standoff,
                                            M64Board._m64StandoffDia)
-        self.standoff4 = self.m64.Standoff(4,standoffZ,
+        self.m64standoff4 = self.m64.Standoff(4,standoffZ,
                                            M64Board._m64Standoff,
                                            M64Board._m64StandoffDia)
         xoff = self.Width() - Fan02510SS_05P_AT00._fandepth - self.WallThickness() - CU_3002A_._basewidth
@@ -436,6 +440,19 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.panel.cutfrom(self.psbox.MountingHole(2,self.panel.corner.z).extrude(self.panel.thickness))
         self.panel.cutfrom(self.psbox.MountingHole(3,self.panel.corner.z).extrude(self.panel.thickness))
         self.panel.cutfrom(self.psbox.MountingHole(4,self.panel.corner.z).extrude(self.panel.thickness))
+        dcdc512_dx = PortableM64CaseBottom._dcdc512Xoff+self.WallThickness()
+        dcdc512_dy = PortableM64CaseBottom._dcdc512Yoff+self.WallThickness()
+        dcdc512_dz = PortableM64CaseBottom._dcdc512StandoffHeight+self.WallThickness()
+        dcdc512origin = origin.add(Base.Vector(dcdc512_dx,dcdc512_dy,dcdc512_dz))
+        self.dcdc512 = DCDC_5_12_Horiz12Right(name+":dcdc512",dcdc512origin)
+        self.dcdc512_standoff1 = self.dcdc512.Standoff(1,standoffZ,PortableM64CaseBottom._dcdc512StandoffHeight,PortableM64CaseBottom._dcdc512StandoffDiameter)
+        self.dcdc512_standoff2 = self.dcdc512.Standoff(2,standoffZ,PortableM64CaseBottom._dcdc512StandoffHeight,PortableM64CaseBottom._dcdc512StandoffDiameter)
+        self.dcdc512_standoff3 = self.dcdc512.Standoff(3,standoffZ,PortableM64CaseBottom._dcdc512StandoffHeight,PortableM64CaseBottom._dcdc512StandoffDiameter)
+        self.dcdc512_standoff4 = self.dcdc512.Standoff(4,standoffZ,PortableM64CaseBottom._dcdc512StandoffHeight,PortableM64CaseBottom._dcdc512StandoffDiameter)
+        self.panel.cutfrom(self.dcdc512.MountingHole(1,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.dcdc512.MountingHole(2,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.dcdc512.MountingHole(3,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.dcdc512.MountingHole(4,self.panel.corner.z,self.WallThickness()))
         self.left  = PortableM64CaseLeftPanel(name+":left",origin,
                                               self.BottomDepth())
         self.left.cutfrom(self.m64.DualUSBCutout(self.left.corner.x,self.left.PanelThickness()))
@@ -471,22 +488,39 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.back.show()
         self.m64.show()
         self.psbox.show()
+        self.dcdc512.show()
         doc = App.activeDocument()
-        Part.show(self.standoff1)
+        Part.show(self.m64standoff1)
         last = len(doc.Objects)-1
         doc.Objects[last].Label=self.name+':M64Standoff1'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.standoff2)
+        Part.show(self.m64standoff2)
         last = len(doc.Objects)-1
         doc.Objects[last].Label=self.name+':M64Standoff2'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.standoff3)
+        Part.show(self.m64standoff3)
         last = len(doc.Objects)-1
         doc.Objects[last].Label=self.name+':M64Standoff3'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.standoff4)
+        Part.show(self.m64standoff4)
         last = len(doc.Objects)-1
         doc.Objects[last].Label=self.name+':M64Standoff4'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        Part.show(self.dcdc512_standoff1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':dcdc512Standoff1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        Part.show(self.dcdc512_standoff2)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':dcdc512Standoff2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        Part.show(self.dcdc512_standoff3)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':dcdc512Standoff3'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        Part.show(self.dcdc512_standoff4)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':dcdc512Standoff4'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         Part.show(self.grillpanel)
         last = len(doc.Objects)-1
