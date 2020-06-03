@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200602.1416>
+#  Last Modified : <200603.1136>
 #
 #  Description	
 #
@@ -66,7 +66,10 @@ if __name__ == '__main__':
     App.setActiveDocument ( "BananaPiM64Model" )
     case = PortableM64Case("M64Case",Base.Vector(0,0,0))
     case.show()
+    Gui.SendMsgToActiveView("ViewFit")
+    Gui.activeDocument().activeView().viewBottom()
     doc.FileName="BananaPiM64Model.fcstd"
     doc.Label="BananaPiM64Model"
     doc.save()
+    CutList.ListCuts("BananaPiM64Model_parts.csv")
     #sys.exit(1)
