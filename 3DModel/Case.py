@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200602.2011>
+#  Last Modified : <200602.2346>
 #
 #  Description	
 #
@@ -49,10 +49,9 @@ from M64 import *
 from PSBox import *
 from Electromech import *
 from DCDC_5_12 import *
-#package require LCDScreen
-#package require LCDMountingBracket
-#package require HDMIConverter
-#package require SVGOutput
+from LCDScreen import *
+from LCDMountingBracket import * 
+from HDMIConverter import * 
 #package require TeensyThumbStick
 #package require Speaker
 #package require Battery
@@ -61,6 +60,7 @@ from DCDC_5_12 import *
 #package require USB_SATA_Adapter
 #package require harddisk
 #package require PianoHinge
+#package require SVGOutput
 
 class PortableM64CaseCommon(object):
     _Width = 15.5 * 25.4
@@ -537,6 +537,16 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
         morigin = origin.add(Base.Vector(0,0,self.BottomDepth()))
         mporigin = morigin.add(Base.Vector(0,0,self.MiddleLowerDepth()))
         self.panel = PortableM64CasePanel(name+":panel",mporigin)
+        cx = self.panel.corner.x
+        cy = self.panel.corner.y
+        cz = self.panel.corner.z
+        panelWidth = self.panel.pwidth
+        panelLength = self.panel.pheight
+        wOffset = (panelWidth/2.0)-(LCDDims._Width/2.0)
+        leftbracketorig = Base.Vector(cx+wOffset,cy + 25.4,cz)
+        self.leftbracket = LCDMountingBracket(name+":LCDLeftBracket",leftbracketorig,"L")
+        rightbracketorig = leftbracketorig.add(Base.Vector(LCDDims._Width,0,0))
+        self.rightbracket = LCDMountingBracket(name+":LCDRightBracket",rightbracketorig,"R")
         self.left  = PortableM64CaseLeftPanel(name+":left",morigin,
                                               self.MiddleTotalDepth())
         self.right = PortableM64CaseRightPanel(name+":right",morigin,
@@ -551,6 +561,8 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
         self.right.show()
         self.front.show()
         self.back.show()
+        self.leftbracket.show()
+        self.rightbracket.show()
 
 class PortableM64CaseTop(PortableM64CaseCommon):
     def __init__(self,name,origin):
