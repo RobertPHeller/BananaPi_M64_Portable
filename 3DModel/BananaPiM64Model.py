@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200604.2241>
+#  Last Modified : <200605.0057>
 #
 #  Description	
 #
@@ -56,12 +56,12 @@ if __name__ == '__main__':
     doc = App.newDocument("BananaPiM64Model")
     App.setActiveDocument ( "BananaPiM64Model" )
     o = Base.Vector(0,0,0)
-    case = PortableM64Case("M64Case",o,SectionList("Top"))
+    case = PortableM64Case("M64Case",o,SectionList("all"))
     case.show()
     Gui.SendMsgToActiveView("ViewFit")
     Gui.activeDocument().activeView().viewBottom()
-    #doc.FileName="BananaPiM64Model_bottom.fcstd"
-    #doc.Label="BananaPiM64Model"
-    #doc.save()
-    #CutList.ListCuts("BananaPiM64Model_bottom_parts.csv")
+    doc.FileName="BananaPiM64Model_bottom.fcstd"
+    doc.Label="BananaPiM64Model"
+    doc.save()
+    CutList.ListCuts("BananaPiM64Model_bottom_parts.csv")
     #sys.exit(1)

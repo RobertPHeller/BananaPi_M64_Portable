@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200604.2250>
+#  Last Modified : <200605.0053>
 #
 #  Description	
 #
@@ -463,7 +463,7 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
     _dcdc512Yoff = 2*25.4
     _dcdc512StandoffHeight = 6
     _dcdc512StandoffDiameter = 6.35
-    def __init__(self,name,origin):
+    def __init__(self,name,origin,backhinge=None,keyboardhinge=None):
         self.name = name
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
@@ -722,7 +722,7 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
                 
 
 class PortableM64CaseMiddle(PortableM64CaseCommon):
-    def __init__(self,name,origin):
+    def __init__(self,name,origin,bottombackhinge=None,topbackhinge=None):
         self.name = name
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
@@ -884,7 +884,7 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
         
 
 class PortableM64CaseTop(PortableM64CaseCommon):
-    def __init__(self,name,origin):
+    def __init__(self,name,origin,hinge=None):
         self.name = name
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
@@ -930,13 +930,13 @@ class PortableM64CaseTop(PortableM64CaseCommon):
         self.rightblock.show()
 
 class PortableM64CaseKeyboardShelf(PortableM64CaseCommon):
-    def __init__(self,name,origin):
+    def __init__(self,name,origin,hinge=None):
         self.name = name
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
         shelforig = origin.add(Base.Vector(self.WallThickness(),
-                                           self.WallThickness(),#+_PianoHinge_PinDia
+                                           self.WallThickness()+PianoHinge_._PinDia,
                                            self.ShelfHeight()))
         shelfthick = Base.Vector(0,0,self.WallThickness())
         shelfwidth = self.Width()-(self.WallThickness()*2)
@@ -965,10 +965,36 @@ class PortableM64Case(PortableM64CaseCommon):
         if not isinstance(sections,SectionList):
             raise RuntimeError("sections is not a SectionList!")
         self.sections = sections
-        self.bottom = PortableM64CaseBottom(name+":bottom",origin)
-        self.middle = PortableM64CaseMiddle(name+":middle",origin)
-        self.top    = PortableM64CaseTop(name+":top",origin)
-        self.keyboardshelf = PortableM64CaseKeyboardShelf(name+":keyboardshelf",origin)
+        self.keyboardshelfhinge = PianoHingeFlatInsideClosedFront(
+          name+":keyboardshelfhinge",
+          origin.add(Base.Vector(((self._Width - PianoHinge_._Length)/2.0),
+                 self._WallThickness,self._BottomDepth-PianoHinge_._FoldHeight)))
+        self.bottommiddlehinge = PianoHingeFlatOutsideBack(
+          name+":bottommiddlehinge",
+          origin.add(Base.Vector(
+                   ((self._Width - PianoHinge_._Length)/2.0)-25.4,
+                   self._Height,
+                   self._BottomDepth - (PianoHinge_._FlangeWidth + PianoHinge_._PinOff + (PianoHinge_._PinDia / 2.0)))))
+        self.middletophinge = PianoHingeFlatOutsideBack(
+          name+":middletophinge",
+          origin.add(Base.Vector(
+              ((self._Width - PianoHinge_._Length)/2.0),
+              self._Height,
+              (self._BottomDepth+self._MiddleTotalDepth) - (PianoHinge_._FlangeWidth + PianoHinge_._PinOff + (PianoHinge_._PinDia / 2.0)))))
+        self.bottom = PortableM64CaseBottom(name+":bottom",origin,
+                                            backhinge=self.bottommiddlehinge,
+                                            keyboardhinge=self.keyboardshelfhinge)
+        self.middle = PortableM64CaseMiddle(name+":middle",origin,
+                                       bottombackhinge=self.bottommiddlehinge,
+                                       topbackhinge=self.middletophinge)
+        self.top    = PortableM64CaseTop(name+":top",origin,
+                                       hinge=self.middletophinge)
+        self.keyboardshelf = PortableM64CaseKeyboardShelf(
+                    name+":keyboardshelf",
+                    origin,
+                    hinge=self.keyboardshelfhinge)
+
+
     def show(self):
         if self.sections.sectionP("Bottom"):
             self.bottom.show()
@@ -978,3 +1004,9 @@ class PortableM64Case(PortableM64CaseCommon):
             self.top.show()
         if self.sections.sectionP("KeyboardShelf"):
             self.keyboardshelf.show()
+        if self.sections.sectionP("KeyboardShelf") and self.sections.sectionP("Bottom"):
+            self.keyboardshelfhinge.show()
+        if self.sections.sectionP("Bottom") and self.sections.sectionP("Middle"):
+            self.bottommiddlehinge.show()
+        if self.sections.sectionP("Middle") and self.sections.sectionP("Top"):
+            self.middletophinge.show()
