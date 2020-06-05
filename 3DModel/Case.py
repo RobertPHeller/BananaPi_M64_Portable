@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200605.1222>
+#  Last Modified : <200605.1349>
 #
 #  Description	
 #
@@ -586,9 +586,15 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.front = PortableM64CaseFrontPanel(name+":front",origin,
                                               self.BottomDepth())
         self.front.cutfrom(self.m64.GPIOCutout(self.front.corner.y,self.front.PanelThickness()))
+        if keyboardhinge != None:
+            for i in range(1,7):
+                self.front.cutfrom(keyboardhinge.MountingHole(1,i,self.front.corner.y,self.front.PanelThickness()))
         self.back = PortableM64CaseBackPanel(name+":back",origin,
                                               self.BottomDepth())
         self.back.cutfrom(self.psbox.InletFlangeCutout(self.back.corner.y,self.back.PanelThickness()))
+        if backhinge != None:
+            for i in range(1,7):
+                self.back.cutfrom(backhinge.MountingHole(1,i,self.back.corner.y,self.back.PanelThickness()))
         blocko = self.panel.corner.add(Base.Vector(0,0,
                                                  self.panel.PanelThickness()))
         blockl = self.panel.pwidth
@@ -787,6 +793,12 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
                                               self.MiddleTotalDepth())
         self.back = PortableM64CaseBackPanel(name+":back",morigin,
                                               self.MiddleTotalDepth())
+        if bottombackhinge != None:
+            for i in range(1,7):
+                self.back.cutfrom(bottombackhinge.MountingHole(2,i,self.back.corner.y,self.back.PanelThickness()))
+        if topbackhinge != None:
+            for i in range(1,7):
+                self.back.cutfrom(topbackhinge.MountingHole(1,i,self.back.corner.y,self.back.PanelThickness()))
         w = self.panel.pwidth
         h = self.panel.pheight
         pcorner = self.panel.corner
@@ -910,6 +922,10 @@ class PortableM64CaseTop(PortableM64CaseCommon):
         blocko = corner.add(Base.Vector(0,panelLength-BlockX._BlockWidth,
                                         -BlockX._BlockThick))
         self.backblock = BlockX(name+":backblock",blocko,length=blockl)
+        if hinge != None:
+            for i in range(1,7):
+                self.back.cutfrom(hinge.MountingHole(2,i,self.back.corner.y,self.back.PanelThickness()))
+                self.backblock.cutfrom(hinge.MountingHole(2,i,blocko.y,BlockX._BlockWidth))
         blocko = corner.add(Base.Vector(0,BlockX._BlockWidth,
                                         -BlockX._BlockThick))
         blockl = panelLength - (2*BlockY._BlockWidth)
@@ -947,6 +963,9 @@ class PortableM64CaseKeyboardShelf(PortableM64CaseCommon):
                                  shelforig.add(shelfthick),
                                  thickness=self.ShelfBlockThick(),
                                  length=shelfwidth)
+        if hinge != None:
+            for i in range(1,7):
+                self.hingeblock.cutfrom(hinge.MountingHole(2,i,shelforig.y,self.ShelfBlockThick()))
         teensythumbstickO = shelforig.add(
                 Base.Vector(shelfwidth - (TeensyThumbStick_._Width + 12.7),
                             self._ShelfLength - (TeensyThumbStick_._Height + 12.7),
