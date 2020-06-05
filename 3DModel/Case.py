@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200605.0053>
+#  Last Modified : <200605.1222>
 #
 #  Description	
 #
@@ -553,8 +553,8 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.hdmiconvertermainboard_standoff2 = self.hdmiconvertermainboard.Standoff(2,self.panel.corner.z+self.panel.PanelThickness(),6.35,6.35)
         self.hdmiconvertermainboard_standoff3 = self.hdmiconvertermainboard.Standoff(3,self.panel.corner.z+self.panel.PanelThickness(),6.35,6.35)
         self.hdmiconvertermainboard_standoff4 = self.hdmiconvertermainboard.Standoff(4,self.panel.corner.z+self.panel.PanelThickness(),6.35,6.35)
-        borig = self.panel.corner.add(Base.Vector(self.panel.pwidth-Battery._Length,
-                                       0,self.panel.PanelThickness()))
+        borig = self.panel.corner.add(Base.Vector(self.panel.pwidth-Battery._Length-BlockY._BlockWidth,
+                                       BlockX._BlockWidth,self.panel.PanelThickness()))
         self.battery = Battery(name+":battery",borig)
         usbo_x = 12.7+HDMIConverterDims._mainboardWidth+6.35
         usbo_x += Disk25_2H._Width+6.35
@@ -591,7 +591,7 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.back.cutfrom(self.psbox.InletFlangeCutout(self.back.corner.y,self.back.PanelThickness()))
         blocko = self.panel.corner.add(Base.Vector(0,0,
                                                  self.panel.PanelThickness()))
-        blockl = self.panel.pwidth-Battery._Length
+        blockl = self.panel.pwidth
         self.frontblock = BlockX(name+":frontblock",blocko,length=blockl)
         blocko = self.panel.corner.add(Base.Vector(0,self.panel.pheight-BlockX._BlockWidth,self.panel.PanelThickness()))
         self.backblock = BlockX(name+":backblock",blocko,length=usbo_x)
@@ -602,18 +602,18 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.leftblock = BlockY(name+":leftblock",blocko,length=blockl) 
         blocko = self.panel.corner.add(Base.Vector(
                                           self.panel.pwidth-BlockY._BlockWidth,
-                                          Battery._Width,
+                                          BlockY._BlockWidth,
                                           self.panel.PanelThickness()))
         self.rightblock = BlockY(name+":rightblock",blocko,
-                                 length=170-Battery._Width)
+                                 length=self.panel.pheight-BlockY._BlockWidth-PSBox._baselength)
         blocko = self.panel.corner.add(Base.Vector(0,0,
                               self.panel.PanelThickness()+BlockZa._BlockThick))
         blockl = self._ShelfHeight-(self.panel.PanelThickness()+BlockZa._BlockThick)
         self.leftfrontcorner = BlockZa(name+":leftfrontcorner",blocko,
                                        length=blockl)
         blocko = self.panel.corner.add(Base.Vector(self.panel.pwidth-BlockY._BlockThick,0,self.panel.PanelThickness()+Battery._Height))
-        blockl = self._ShelfHeight-(self.panel.PanelThickness()+Battery._Height)
-        self.rightfrontcorner = BlockZa(name+":leftfrontcorner",blocko,
+        blockl = self._ShelfHeight-(self.panel.PanelThickness()+BlockZa._BlockWidth)
+        self.rightfrontcorner = BlockZa(name+":rightfrontcorner",blocko,
                                        length=blockl)
         blocko = self.panel.corner.add(Base.Vector(0,
                               self.panel.pheight-BlockZa._BlockWidth,
@@ -638,7 +638,7 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
                                          self.panel.pwidth-BlockZa._BlockThick,
                                          self.ShelfLength()-BlockZa._BlockWidth,
                               self.panel.PanelThickness()+BlockZa._BlockThick))
-        self.rightshelfsupport = BlockZa(name+":leftshelfsupport",blocko,
+        self.rightshelfsupport = BlockZa(name+":rightshelfsupport",blocko,
                                         length=blockl)
     def show(self):
         self.panel.show()
@@ -947,14 +947,57 @@ class PortableM64CaseKeyboardShelf(PortableM64CaseCommon):
                                  shelforig.add(shelfthick),
                                  thickness=self.ShelfBlockThick(),
                                  length=shelfwidth)
+        teensythumbstickO = shelforig.add(
+                Base.Vector(shelfwidth - (TeensyThumbStick_._Width + 12.7),
+                            self._ShelfLength - (TeensyThumbStick_._Height + 12.7),
+                            -(self._TeensyThumbStickDrop + TeensyThumbStick_._BoardThick)))
+        self.teensythumbstick = TeensyThumbStick(name+":teensythumbstick",
+                                                 teensythumbstickO)
+        self.shelf = self.shelf.cut(self.teensythumbstick.Cutout(shelforig.z,
+                                                        self.WallThickness()))
+        self.shelf = self.shelf.cut(self.teensythumbstick.MountingHole(1,shelforig.z,
+                                                        self.WallThickness()))
+        self.shelf = self.shelf.cut(self.teensythumbstick.MountingHole(2,shelforig.z,
+                                                        self.WallThickness()))
+        self.shelf = self.shelf.cut(self.teensythumbstick.MountingHole(3,shelforig.z,
+                                                        self.WallThickness()))
+        self.shelf = self.shelf.cut(self.teensythumbstick.MountingHole(4,shelforig.z,
+                                                        self.WallThickness()))
+        self.teensythumbstick_standoff1 = self.teensythumbstick.Standoff(1,shelforig.z,-self._TeensyThumbStickDrop,.25*25.4)
+        self.teensythumbstick_standoff2 = self.teensythumbstick.Standoff(2,shelforig.z,-self._TeensyThumbStickDrop,.25*25.4)
+        self.teensythumbstick_standoff3 = self.teensythumbstick.Standoff(3,shelforig.z,-self._TeensyThumbStickDrop,.25*25.4)
+        self.teensythumbstick_standoff4 = self.teensythumbstick.Standoff(4,shelforig.z,-self._TeensyThumbStickDrop,.25*25.4)
+        teensythumbstickcoverO = teensythumbstickO.add(
+                Base.Vector(0,0,
+                (self._TeensyThumbStickDrop + TeensyThumbStick_._BoardThick + self.WallThickness())))
+        self.teensythumbstickcover = TeensyThumbStickCover(name+":teensythumbstickcover",
+                                                       teensythumbstickcoverO)
     def show(self):
         self.hingeblock.show()
+        self.teensythumbstick.show()
+        self.teensythumbstickcover.show()
         doc = App.activeDocument()
         Part.show(self.shelf)
         last = len(doc.Objects)-1
         doc.Objects[last].Label=self.name+':shelf'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,0.0,0.0])
-        
+        Part.show(self.teensythumbstick_standoff1)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':teensythumbstick_standoff1'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.teensythumbstick_standoff2)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':teensythumbstick_standoff2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.teensythumbstick_standoff3)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':teensythumbstick_standoff3'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.teensythumbstick_standoff4)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':teensythumbstick_standoff4'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+                        
 
 class PortableM64Case(PortableM64CaseCommon):
     def __init__(self,name,origin,sections=SectionList("all")):

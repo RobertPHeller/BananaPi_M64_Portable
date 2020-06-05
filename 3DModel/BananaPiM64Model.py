@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200605.0057>
+#  Last Modified : <200605.1021>
 #
 #  Description	
 #
@@ -60,8 +60,8 @@ if __name__ == '__main__':
     case.show()
     Gui.SendMsgToActiveView("ViewFit")
     Gui.activeDocument().activeView().viewBottom()
-    doc.FileName="BananaPiM64Model_bottom.fcstd"
+    doc.FileName="BananaPiM64Model.fcstd"
     doc.Label="BananaPiM64Model"
     doc.save()
-    CutList.ListCuts("BananaPiM64Model_bottom_parts.csv")
-    #sys.exit(1)
+    CutList.ListCuts("BananaPiM64Model_parts.csv")
+    sys.exit(1)
