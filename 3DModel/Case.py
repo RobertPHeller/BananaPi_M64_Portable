@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200603.1156>
+#  Last Modified : <200604.2250>
 #
 #  Description	
 #
@@ -52,15 +52,16 @@ from DCDC_5_12 import *
 from LCDScreen import *
 from LCDMountingBracket import * 
 from HDMIConverter import * 
-#package require TeensyThumbStick
-#package require Speaker
-#package require Battery
-#package require USBHub
-#package require OTGAdaptor
-#package require USB_SATA_Adapter
-#package require harddisk
-#package require PianoHinge
-#package require SVGOutput
+from TeensyThumbStick import *
+from Speaker import *
+from Battery import *
+from USBHub import *
+from OTGAdaptor import *
+from USB_SATA_Adapter import *
+from harddisk import *
+from PianoHinge import *
+
+from SectionList import *
 
 import csv
 
@@ -121,7 +122,7 @@ class PortableM64CaseCommon(object):
     _Height = 11 * 25.4
     def Height(self):
         return PortableM64CaseCommon._Height
-    _BottomDepth = 1.75 * 25.4
+    _BottomDepth = 2.25 * 25.4
     def BottomDepth(self):
         return PortableM64CaseCommon._BottomDepth
     _MiddleTotalDepth = 1.5 * 25.4
@@ -136,7 +137,7 @@ class PortableM64CaseCommon(object):
     _WallThickness = .125 * 25.4
     def WallThickness(self):
         return PortableM64CaseCommon._WallThickness
-    _ShelfHeight = ((1.75-.125) * 25.4)-23
+    _ShelfHeight = ((2.25-.125) * 25.4)-23
     def ShelfHeight(self):
         return PortableM64CaseCommon._ShelfHeight
     _ShelfBlockThick = 23
@@ -514,6 +515,32 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.panel.cutfrom(self.dcdc512.MountingHole(2,self.panel.corner.z,self.WallThickness()))
         self.panel.cutfrom(self.dcdc512.MountingHole(3,self.panel.corner.z,self.WallThickness()))
         self.panel.cutfrom(self.dcdc512.MountingHole(4,self.panel.corner.z,self.WallThickness()))
+        hdorig = self.panel.corner.add(Base.Vector(12.7 + HDMIConverterDims._mainboardWidth + 6.35,
+                                                   self.panel.pheight-(12.7+Disk25_2H._Length),
+                                                   self.panel.PanelThickness()))
+        self.harddisk = Disk25_2H(name+":harddisk",hdorig)
+        self.panel.cutfrom(self.harddisk.MountingHole(1,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.harddisk.MountingHole(2,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.harddisk.MountingHole(3,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.harddisk.MountingHole(4,self.panel.corner.z,self.WallThickness()))
+        usbsataadaptordelta = Base.Vector(12.7 + 50.8,
+                                          self.panel.pheight-(12.7+Disk25_2H._Length + 12.7),
+                                          self.panel.PanelThickness()+2.54)
+        usbsataadaptororig = self.panel.corner.add(usbsataadaptordelta)
+        self.usbsataadaptor = USB_SATA_Adapter_Horiz(name+":usbsataadaptor",
+                                                     usbsataadaptororig)
+        cradleorig = usbsataadaptororig.add(Base.Vector(self.usbsataadaptor._USBPlug_XOff+1,
+                                                        3.5,-2.54))
+        self.usbsataadaptorcradle = USB_SATA_Adapter_BoardCradleHoriz(name+":cradle",cradleorig)
+        self.panel.cutfrom(self.usbsataadaptorcradle.MountingHole(1,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.usbsataadaptorcradle.MountingHole(2,self.panel.corner.z,self.WallThickness()))
+        self.panel.cutfrom(self.usbsataadaptorcradle.MountingHole(3,self.panel.corner.z,self.WallThickness()))
+        otgadaptor_dx = ((M64Board._OTG_Width - OTGAdaptor._MicroB_Width)/2.0) - OTGAdaptor._MicroB_XOff
+        otgadaptor_dy = OTGAdaptor._MicroB_Length
+        otgadaptor_dz = ((M64Board._OTG_Thick - OTGAdaptor._MicroB_Thick)/2.0) - OTGAdaptor._MicroB_ZOff
+        otgadaptor_delta = Base.Vector(otgadaptor_dx,otgadaptor_dy,otgadaptor_dz)
+        otgadaptororig = self.m64.otg_origin.add(otgadaptor_delta)
+        self.otgadaptor = OTGAdaptor(name+":otgadapter",otgadaptororig)
         hmiconvertermainboardorig=Base.Vector(self.panel.corner.x+12.7,
                                              self.panel.corner.y+self.panel.pheight-(12.7+HDMIConverterDims._mainboardHeight),
                                              self.panel.corner.z+6.35+self.panel.PanelThickness())
@@ -526,6 +553,15 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.hdmiconvertermainboard_standoff2 = self.hdmiconvertermainboard.Standoff(2,self.panel.corner.z+self.panel.PanelThickness(),6.35,6.35)
         self.hdmiconvertermainboard_standoff3 = self.hdmiconvertermainboard.Standoff(3,self.panel.corner.z+self.panel.PanelThickness(),6.35,6.35)
         self.hdmiconvertermainboard_standoff4 = self.hdmiconvertermainboard.Standoff(4,self.panel.corner.z+self.panel.PanelThickness(),6.35,6.35)
+        borig = self.panel.corner.add(Base.Vector(self.panel.pwidth-Battery._Length,
+                                       0,self.panel.PanelThickness()))
+        self.battery = Battery(name+":battery",borig)
+        usbo_x = 12.7+HDMIConverterDims._mainboardWidth+6.35
+        usbo_x += Disk25_2H._Width+6.35
+        usbo_y = self.panel.pheight - USBHub_._Length
+        usbo_z = self.panel.PanelThickness()
+        usbhorg = self.panel.corner.add(Base.Vector(usbo_x,usbo_y,usbo_z))
+        self.usbhub = USBHub270(name+":usbhub",usbhorg)
         self.left  = PortableM64CaseLeftPanel(name+":left",origin,
                                               self.BottomDepth())
         self.left.cutfrom(self.m64.DualUSBCutout(self.left.corner.x,self.left.PanelThickness()))
@@ -553,6 +589,57 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.back = PortableM64CaseBackPanel(name+":back",origin,
                                               self.BottomDepth())
         self.back.cutfrom(self.psbox.InletFlangeCutout(self.back.corner.y,self.back.PanelThickness()))
+        blocko = self.panel.corner.add(Base.Vector(0,0,
+                                                 self.panel.PanelThickness()))
+        blockl = self.panel.pwidth-Battery._Length
+        self.frontblock = BlockX(name+":frontblock",blocko,length=blockl)
+        blocko = self.panel.corner.add(Base.Vector(0,self.panel.pheight-BlockX._BlockWidth,self.panel.PanelThickness()))
+        self.backblock = BlockX(name+":backblock",blocko,length=usbo_x)
+        blocko = self.panel.corner.add(Base.Vector(0,
+                                           M64Board._m64YOff+M64Board._m64YMax,
+                                           self.panel.PanelThickness()))
+        blockl = self.panel.pheight-(M64Board._m64YOff+M64Board._m64YMax+BlockY._BlockWidth)
+        self.leftblock = BlockY(name+":leftblock",blocko,length=blockl) 
+        blocko = self.panel.corner.add(Base.Vector(
+                                          self.panel.pwidth-BlockY._BlockWidth,
+                                          Battery._Width,
+                                          self.panel.PanelThickness()))
+        self.rightblock = BlockY(name+":rightblock",blocko,
+                                 length=170-Battery._Width)
+        blocko = self.panel.corner.add(Base.Vector(0,0,
+                              self.panel.PanelThickness()+BlockZa._BlockThick))
+        blockl = self._ShelfHeight-(self.panel.PanelThickness()+BlockZa._BlockThick)
+        self.leftfrontcorner = BlockZa(name+":leftfrontcorner",blocko,
+                                       length=blockl)
+        blocko = self.panel.corner.add(Base.Vector(self.panel.pwidth-BlockY._BlockThick,0,self.panel.PanelThickness()+Battery._Height))
+        blockl = self._ShelfHeight-(self.panel.PanelThickness()+Battery._Height)
+        self.rightfrontcorner = BlockZa(name+":leftfrontcorner",blocko,
+                                       length=blockl)
+        blocko = self.panel.corner.add(Base.Vector(0,
+                              self.panel.pheight-BlockZa._BlockWidth,
+                              self.panel.PanelThickness()+BlockZa._BlockThick))
+        blockl = self._BottomDepth-(self.panel.PanelThickness()+BlockZa._BlockThick)
+        self.leftbackcorner = BlockZa(name+":leftbackcorner",blocko,
+                                      length=blockl)
+        blocko = self.panel.corner.add(Base.Vector(
+                              self.panel.pwidth-BlockZa._BlockThick,
+                              self.panel.pheight-BlockZa._BlockWidth,
+                              self.panel.PanelThickness()))
+        blockl = self._BottomDepth-self.panel.PanelThickness()
+        self.rightbackcorner=BlockZa(name+":rightbackcorner",blocko,
+                                     length=blockl)
+        blocko = self.panel.corner.add(Base.Vector(0,
+                              self.ShelfLength()-BlockZa._BlockWidth,
+                              self.panel.PanelThickness()+BlockZa._BlockThick))
+        blockl = self._ShelfHeight-(self.panel.PanelThickness()+BlockZa._BlockThick)
+        self.leftshelfsupport = BlockZa(name+":leftshelfsupport",blocko,
+                                        length=blockl)
+        blocko = self.panel.corner.add(Base.Vector(
+                                         self.panel.pwidth-BlockZa._BlockThick,
+                                         self.ShelfLength()-BlockZa._BlockWidth,
+                              self.panel.PanelThickness()+BlockZa._BlockThick))
+        self.rightshelfsupport = BlockZa(name+":leftshelfsupport",blocko,
+                                        length=blockl)
     def show(self):
         self.panel.show()
         self.left.show()
@@ -563,6 +650,22 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.psbox.show()
         self.dcdc512.show()
         self.hdmiconvertermainboard.show()
+        self.battery.show()
+        self.usbhub.show()
+        self.otgadaptor.show()
+        self.harddisk.show()
+        self.usbsataadaptor.show()
+        self.usbsataadaptorcradle.show()
+        self.frontblock.show()
+        self.backblock.show()
+        self.leftblock.show()
+        self.rightblock.show()
+        self.leftfrontcorner.show()
+        self.rightfrontcorner.show()
+        self.leftbackcorner.show()
+        self.rightbackcorner.show()
+        self.leftshelfsupport.show()
+        self.rightshelfsupport.show()
         doc = App.activeDocument()
         Part.show(self.m64standoff1)
         last = len(doc.Objects)-1
@@ -648,21 +751,34 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
         self.screen = LCDScreen(name+":screen",Base.Vector(cx+wOffset,cy + 25.4,cz-((6.5/2.0)+(((1.0/2.0)*25.4)/2.0))))
         hdmibuttonboardorig = Base.Vector(cx+12.7,
                                           (cy+panelLength)-HDMIConverterDims._buttonboardHeight,
-                                          cz - 6.35 - HDMIConverterDims._boardthickness)
+                                          cz - 6.35)
         
         self.hdmibuttonboard = HDMIButtonBoard_Upsidedown(name+":hdmibuttonboard",hdmibuttonboardorig)
         self.panel.cutfrom(self.hdmibuttonboard.MountingHole(1,cz,self.panel.PanelThickness()))
         self.panel.cutfrom(self.hdmibuttonboard.MountingHole(2,cz,self.panel.PanelThickness()))
         self.hdmibuttonboard_standoff1 = self.hdmibuttonboard.Standoff(1,cz,-6.35,6.35)
         self.hdmibuttonboard_standoff2 = self.hdmibuttonboard.Standoff(2,cz,-6.35,6.35)
-        hdmihvpowerboardorig = Base.Vector((cx+panelWidth)-HDMIConverterDims._hvpowerboardWidth,
+        hdmihvpowerboardorig = Base.Vector((cx+panelWidth)-(12.7+HDMIConverterDims._hvpowerboardWidth),
                                            (cy+panelLength)-HDMIConverterDims._hvpowerboardHeight,
-                                           cz - 6.35 - HDMIConverterDims._boardthickness)
+                                           cz - 6.35)
         self.hdmihvpowerboard = HDMIHVPowerBoard_Upsidedown(name+":hdmihvpowerboard",hdmihvpowerboardorig)
         self.panel.cutfrom(self.hdmihvpowerboard.MountingHole(1,cz,self.panel.PanelThickness()))
         self.panel.cutfrom(self.hdmihvpowerboard.MountingHole(2,cz,self.panel.PanelThickness()))
         self.hdmihvpowerboard_standoff1 = self.hdmihvpowerboard.Standoff(1,cz,-6.35,6.35)
         self.hdmihvpowerboard_standoff2 = self.hdmihvpowerboard.Standoff(2,cz,-6.35,6.35)
+        leftspeakerorig = self.panel.corner.add(Base.Vector(0,(panelLength-Speaker_._Length)/2.0,-(6.35-Speaker_._StandoffRecessDepth)))
+        self.leftspeaker = SpeakerLeft_UpsideDown(name+":leftspeaker",leftspeakerorig)
+        self.panel.cutfrom(self.leftspeaker.MountingHole("top",self.panel.corner.z,self.panel.PanelThickness()))
+        self.panel.cutfrom(self.leftspeaker.MountingHole("bottom",self.panel.corner.z,self.panel.PanelThickness()))
+        self.leftspeaker_standofftop = self.leftspeaker.Standoff("top",self.panel.corner.z,-6.35,6)
+        self.leftspeaker_standoffbottom = self.leftspeaker.Standoff("bottom",self.panel.corner.z,-6.35,6)
+        rightspeakerorig = self.panel.corner.add(Base.Vector(panelWidth-Speaker_._Width,(panelLength-Speaker_._Length)/2.0,-(6.35-Speaker_._StandoffRecessDepth)))
+        self.rightspeaker = SpeakerRight_UpsideDown(name+":rightspeaker",rightspeakerorig)
+        
+        self.panel.cutfrom(self.rightspeaker.MountingHole("top",self.panel.corner.z,self.panel.PanelThickness()))
+        self.panel.cutfrom(self.rightspeaker.MountingHole("bottom",self.panel.corner.z,self.panel.PanelThickness()))
+        self.rightspeaker_standofftop = self.rightspeaker.Standoff("top",self.panel.corner.z,-6.35,6)
+        self.rightspeaker_standoffbottom = self.rightspeaker.Standoff("bottom",self.panel.corner.z,-6.35,6)
         self.left  = PortableM64CaseLeftPanel(name+":left",morigin,
                                               self.MiddleTotalDepth())
         self.right = PortableM64CaseRightPanel(name+":right",morigin,
@@ -671,6 +787,46 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
                                               self.MiddleTotalDepth())
         self.back = PortableM64CaseBackPanel(name+":back",morigin,
                                               self.MiddleTotalDepth())
+        w = self.panel.pwidth
+        h = self.panel.pheight
+        pcorner = self.panel.corner
+        pthick = self.panel.PanelThickness()
+        blocko = pcorner.add(Base.Vector(0,0,pthick))
+        blockl = w
+        self.frontblock = BlockX(name+":frontblock",blocko,length=blockl)
+        blocko =  pcorner.add(Base.Vector(0,h-BlockX._BlockWidth,pthick))
+        self.backblock = BlockX(name+":backblock",blocko,length=blockl)
+        self.backblock.cutfrom(self.hdmibuttonboard.MountingHole(1,pcorner.z+pthick,BlockX._BlockThick))
+        self.backblock.cutfrom(self.hdmibuttonboard.MountingHole(2,pcorner.z+pthick,BlockX._BlockThick))
+        self.backblock.cutfrom(self.hdmihvpowerboard.MountingHole(1,pcorner.z+pthick,BlockX._BlockThick))
+        self.backblock.cutfrom(self.hdmihvpowerboard.MountingHole(2,pcorner.z+pthick,BlockX._BlockThick))
+        blocko = pcorner.add(Base.Vector(0,BlockY._BlockWidth,pthick))
+        blockl = h - (BlockY._BlockWidth*2)
+        self.leftblock = BlockY(name+":leftblock",blocko,length=blockl)
+        self.leftblock.cutfrom(self.leftspeaker.MountingHole("top",pcorner.z+pthick,BlockX._BlockThick))
+        self.leftblock.cutfrom(self.leftspeaker.MountingHole("bottom",pcorner.z+pthick,BlockX._BlockThick))
+        blocko = pcorner.add(Base.Vector(w-BlockY._BlockWidth,BlockY._BlockWidth,pthick))
+        self.rightblock = BlockY(name+":rightblock",blocko,length=blockl)
+        self.rightblock.cutfrom(self.rightspeaker.MountingHole("top",pcorner.z+pthick,BlockX._BlockThick))
+        self.rightblock.cutfrom(self.rightspeaker.MountingHole("bottom",pcorner.z+pthick,BlockX._BlockThick))
+        blocko = pcorner.add(Base.Vector(0,0,pthick+BlockZa._BlockThick))
+        blockl = self._MiddleTotalDepth - (self._MiddleLowerDepth + pthick + BlockZa._BlockThick)
+        self.leftfrontcorner = BlockZa(name+":leftfrontcorner",blocko,
+                                       length=blockl)
+        blocko = pcorner.add(Base.Vector(w-BlockZa._BlockThick,0,
+                                         pthick+BlockZa._BlockThick))
+        self.rightfrontcorner = BlockZa(name+":rightfrontcorner",blocko,
+                                       length=blockl)
+        blocko = pcorner.add(Base.Vector(0,h-BlockZa._BlockWidth,
+                                         pthick+BlockZa._BlockThick))
+        self.leftbackcorner = BlockZa(name+":rightbackcorner",blocko,
+                                       length=blockl)
+        blocko = pcorner.add(Base.Vector(w-BlockZa._BlockThick,
+                                         h-BlockZa._BlockWidth,
+                                         pthick+BlockZa._BlockThick))
+        self.rightbackcorner = BlockZa(name+":leftbackcorner",blocko,
+                                       length=blockl)
+
     def show(self):
         self.panel.show()
         self.left.show()
@@ -682,6 +838,16 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
         self.screen.show()
         self.hdmibuttonboard.show()
         self.hdmihvpowerboard.show()
+        self.leftspeaker.show()
+        self.rightspeaker.show()
+        self.frontblock.show()
+        self.backblock.show()
+        self.leftblock.show()
+        self.rightblock.show()
+        self.leftfrontcorner.show()
+        self.rightfrontcorner.show()
+        self.leftbackcorner.show()
+        self.rightbackcorner.show()
         doc = App.activeDocument()
         Part.show(self.hdmibuttonboard_standoff1)
         last = len(doc.Objects)-1
@@ -698,6 +864,22 @@ class PortableM64CaseMiddle(PortableM64CaseCommon):
         Part.show(self.hdmihvpowerboard_standoff2)
         last = len(doc.Objects)-1
         doc.Objects[last].Label=self.name+':hdmihvpowerboard_standoff2'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.leftspeaker_standofftop)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':leftspeaker_standofftop'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.leftspeaker_standoffbottom)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':leftspeaker_standoffbottom'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.rightspeaker_standofftop)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':rightspeaker_standofftop'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        Part.show(self.rightspeaker_standoffbottom)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':rightspeaker_standoffbottom'
         doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
         
 
@@ -718,25 +900,81 @@ class PortableM64CaseTop(PortableM64CaseCommon):
                                               self.TopDepth())
         self.back = PortableM64CaseBackPanel(name+":back",torigin,
                                               self.TopDepth())
+        corner = self.panel.corner
+        panelWidth = self.panel.pwidth
+        panelLength = self.panel.pheight
+        panelThick = self.panel.PanelThickness()
+        blocko = corner.add(Base.Vector(0,0,-BlockX._BlockThick))
+        blockl = panelWidth
+        self.frontblock = BlockX(name+":frontblock",blocko,length=blockl)
+        blocko = corner.add(Base.Vector(0,panelLength-BlockX._BlockWidth,
+                                        -BlockX._BlockThick))
+        self.backblock = BlockX(name+":backblock",blocko,length=blockl)
+        blocko = corner.add(Base.Vector(0,BlockX._BlockWidth,
+                                        -BlockX._BlockThick))
+        blockl = panelLength - (2*BlockY._BlockWidth)
+        self.leftblock = BlockY(name+":leftblock",blocko,length=blockl)
+        blocko = corner.add(Base.Vector(panelWidth-BlockY._BlockWidth,
+                                        BlockX._BlockWidth,
+                                        -BlockX._BlockThick))
+        self.rightblock = BlockY(name+":rightblock",blocko,length=blockl)
     def show(self):
         self.panel.show()
         self.left.show()
         self.right.show()
         self.front.show()
         self.back.show()
+        self.frontblock.show()
+        self.backblock.show()
+        self.leftblock.show()
+        self.rightblock.show()
 
-
-
-class PortableM64Case(PortableM64CaseCommon):
+class PortableM64CaseKeyboardShelf(PortableM64CaseCommon):
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
+        shelforig = origin.add(Base.Vector(self.WallThickness(),
+                                           self.WallThickness(),#+_PianoHinge_PinDia
+                                           self.ShelfHeight()))
+        shelfthick = Base.Vector(0,0,self.WallThickness())
+        shelfwidth = self.Width()-(self.WallThickness()*2)
+        self.shelf = Part.makePlane(shelfwidth,
+                                    self.ShelfLength(),
+                                    shelforig).extrude(shelfthick)
+        self.hingeblock = BlockX(name+":hingeblock",
+                                 shelforig.add(shelfthick),
+                                 thickness=self.ShelfBlockThick(),
+                                 length=shelfwidth)
+    def show(self):
+        self.hingeblock.show()
+        doc = App.activeDocument()
+        Part.show(self.shelf)
+        last = len(doc.Objects)-1
+        doc.Objects[last].Label=self.name+':shelf'
+        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,0.0,0.0])
+        
+
+class PortableM64Case(PortableM64CaseCommon):
+    def __init__(self,name,origin,sections=SectionList("all")):
+        self.name = name
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector!")
+        self.origin = origin
+        if not isinstance(sections,SectionList):
+            raise RuntimeError("sections is not a SectionList!")
+        self.sections = sections
         self.bottom = PortableM64CaseBottom(name+":bottom",origin)
         self.middle = PortableM64CaseMiddle(name+":middle",origin)
         self.top    = PortableM64CaseTop(name+":top",origin)
+        self.keyboardshelf = PortableM64CaseKeyboardShelf(name+":keyboardshelf",origin)
     def show(self):
-        self.bottom.show()
-        self.middle.show()
-        self.top.show()
+        if self.sections.sectionP("Bottom"):
+            self.bottom.show()
+        if self.sections.sectionP("Middle"):
+            self.middle.show()
+        if self.sections.sectionP("Top"):
+            self.top.show()
+        if self.sections.sectionP("KeyboardShelf"):
+            self.keyboardshelf.show()

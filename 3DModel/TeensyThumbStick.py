@@ -1,4 +1,3 @@
-#!/usr/bin/FreeCAD
 #*****************************************************************************
 #
 #  System        : 
@@ -8,8 +7,8 @@
 #  Date          : $Date$
 #  Author        : $Author$
 #  Created By    : Robert Heller
-#  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200604.2241>
+#  Created       : Thu Jun 4 19:26:24 2020
+#  Last Modified : <200604.1927>
 #
 #  Description	
 #
@@ -41,27 +40,8 @@
 #
 #*****************************************************************************
 
-import FreeCAD as App
+
 import Part
 from FreeCAD import Base
+import FreeCAD as App
 
-import os
-import sys
-sys.path.append(os.path.dirname(__file__))
-
-from SectionList import *
-from Case import *
-
-if __name__ == '__main__':
-    doc = App.newDocument("BananaPiM64Model")
-    App.setActiveDocument ( "BananaPiM64Model" )
-    o = Base.Vector(0,0,0)
-    case = PortableM64Case("M64Case",o,SectionList("Top"))
-    case.show()
-    Gui.SendMsgToActiveView("ViewFit")
-    Gui.activeDocument().activeView().viewBottom()
-    #doc.FileName="BananaPiM64Model_bottom.fcstd"
-    #doc.Label="BananaPiM64Model"
-    #doc.save()
-    #CutList.ListCuts("BananaPiM64Model_bottom_parts.csv")
-    #sys.exit(1)

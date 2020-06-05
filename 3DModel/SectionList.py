@@ -1,4 +1,3 @@
-#!/usr/bin/FreeCAD
 #*****************************************************************************
 #
 #  System        : 
@@ -8,8 +7,8 @@
 #  Date          : $Date$
 #  Author        : $Author$
 #  Created By    : Robert Heller
-#  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200604.2241>
+#  Created       : Wed Jun 3 18:13:22 2020
+#  Last Modified : <200603.1815>
 #
 #  Description	
 #
@@ -41,27 +40,19 @@
 #
 #*****************************************************************************
 
-import FreeCAD as App
-import Part
-from FreeCAD import Base
 
-import os
-import sys
-sys.path.append(os.path.dirname(__file__))
+class SectionList(object):
+    _values = ["Top","Middle","Bottom","KeyboardShelf"]
+    def __init__(self,*args):
+        self._sections = set()
+        if "all" in args:
+            self._sections=set(SectionList._values)
+        else:
+            for s in args:
+                if s in SectionList._values:
+                    self._sections.add(s)
+                else:
+                    raise RuntimeError("Undefined section!")
+    def sectionP(self,section):
+        return section in self._sections
 
-from SectionList import *
-from Case import *
-
-if __name__ == '__main__':
-    doc = App.newDocument("BananaPiM64Model")
-    App.setActiveDocument ( "BananaPiM64Model" )
-    o = Base.Vector(0,0,0)
-    case = PortableM64Case("M64Case",o,SectionList("Top"))
-    case.show()
-    Gui.SendMsgToActiveView("ViewFit")
-    Gui.activeDocument().activeView().viewBottom()
-    #doc.FileName="BananaPiM64Model_bottom.fcstd"
-    #doc.Label="BananaPiM64Model"
-    #doc.save()
-    #CutList.ListCuts("BananaPiM64Model_bottom_parts.csv")
-    #sys.exit(1)

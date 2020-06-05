@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 11:16:52 2020
-#  Last Modified : <200602.1441>
+#  Last Modified : <200603.2100>
 #
 #  Description	
 #
@@ -139,8 +139,9 @@ class M64Board(object):
         otg_x = ox + (M64Board._m64XMax - M64Board._OTG_XMax)
         otg_y = oy + (M64Board._m64YMax - M64Board._OTG_YMax)
         otg_z = oz + M64Board._m64Thickness
+        self.otg_origin = Base.Vector(otg_x,otg_y,otg_z)
         otgsurf = Part.makePlane(M64Board._OTG_Width,M64Board._OTG_Length,
-                                 Base.Vector(otg_x,otg_y,otg_z))
+                                 self.otg_origin)
         self.otg = otgsurf.extrude(Base.Vector(0,0,M64Board._OTG_Thick))
         self.mhvector = {
             1: Base.Vector(ox+M64Board._m64_m1_relpos[0],
