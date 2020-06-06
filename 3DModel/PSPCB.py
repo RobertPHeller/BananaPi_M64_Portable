@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 22:46:38 2020
-#  Last Modified : <200602.1708>
+#  Last Modified : <200606.1847>
 #
 #  Description	
 #
@@ -190,17 +190,17 @@ class PCBwithStrips(object):
         result = stofface.extrude(Base.Vector(0,0,height))
         return result
     def show(self):
-        Part.show(self.board)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':PSPCB'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.8235,.7058,.5490])
+        obj = doc.addObject("Part::Feature",self.name+"_PSPCB")
+        obj.Shape = self.board
+        obj.Label=self.name+'_PSPCB'
+        obj.ViewObject.ShapeColor=tuple([.8235,.7058,.5490])
         stripno = 1
         for strip in self.strips:
-            Part.show(strip)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=self.name+(":strip%d" % stripno)        
-            doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+            obj = doc.addObject("Part::Feature",self.name+("_strip%d" % stripno))
+            obj.Shape = strip
+            obj.Label=self.name+("_strip%d" % stripno)        
+            obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
             stripno += 1
                     
 class PSOnPCB(PCBwithStrips):
@@ -221,29 +221,29 @@ class PSOnPCB(PCBwithStrips):
         yoff = (PCBwithStrips._psPCBlength - PSK_S15C._pslength)/2.0
         xoff = (PCBwithStrips._psPCBwidth - PSK_S15C._pswidth)/2.0
         psorigin = Base.Vector(ox+xoff,oy+yoff,oz+PCBwithStrips._psPCBThickness)
-        self.powersupply = PSK_S15C(name+":powersupply",psorigin)
+        self.powersupply = PSK_S15C(name+"_powersupply",psorigin)
         actermorigin = Base.Vector(ox+(PCBwithStrips._psPCBwidth - PCBwithStrips._psactermyoff - TB007_508_03BE.Length()),
                                    oy+(PCBwithStrips._psPCBlength - PCBwithStrips._pstermxoff - TB007_508_xxBE._termwidth),
                                    oz+PCBwithStrips._psPCBThickness)
-        self.acterm = TB007_508_03BE(name+":acterm",actermorigin)
+        self.acterm = TB007_508_03BE(name+"_acterm",actermorigin)
         dctermorigin = Base.Vector(ox+(PCBwithStrips._psPCBwidth - PCBwithStrips._psdctermyoff - TB007_508_02BE.Length()),
                                    oy+(PCBwithStrips._pstermxoff),
                                    oz+PCBwithStrips._psPCBThickness)
-        self.dcterm = TB007_508_02BE(name+":dcterm",dctermorigin)
-        self.bypasscap = C333(name+":bypasscap",Base.Vector(ox+PSOnPCB._bypassY,oy+PSOnPCB._bypassX,oz))
-        self.filtercap = AL_CAP_Radial_5mm10x12_5(name+":filtercap",
+        self.dcterm = TB007_508_02BE(name+"_dcterm",dctermorigin)
+        self.bypasscap = C333(name+"_bypasscap",Base.Vector(ox+PSOnPCB._bypassY,oy+PSOnPCB._bypassX,oz))
+        self.filtercap = AL_CAP_Radial_5mm10x12_5(name+"_filtercap",
                             Base.Vector(ox+PSOnPCB._filterY,
                                         oy+PSOnPCB._filterX,
                                         oz+PCBwithStrips._psPCBThickness))
-        self.esd = DO_15_bendedLeads_400_under(name+":esd",
+        self.esd = DO_15_bendedLeads_400_under(name+"_esd",
                             Base.Vector(ox+PSOnPCB._esdY,
                                         oy+PSOnPCB._esdX,
                                         oz))
-        self.fuseholder = Littlefuse_FuseHolder_02810007H_02810010H(name+":fuseholder",
+        self.fuseholder = Littlefuse_FuseHolder_02810007H_02810010H(name+"_fuseholder",
                             Base.Vector(ox+PSOnPCB._fuseholderY,
                                         oy+PSOnPCB._fuseholderX,
                                         oz+PCBwithStrips._psPCBThickness))
-        self.mov = B72220S2301K101(name+":mov",
+        self.mov = B72220S2301K101(name+"_mov",
                             Base.Vector(ox+(PCBwithStrips._psPCBwidth / 2.0),
                                         oy+((PCBwithStrips._psPCBlength - (yoff+PSK_S15C._pspin3Xoff+3) +3.81)),
                                         oz))
@@ -316,32 +316,32 @@ class PSOnPCB(PCBwithStrips):
         green = tuple([0.0,1.0,0.0])
         gnum = 1
         for gw in self.groundwires:
-            Part.show(gw)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=self.name+(':ground%d' % gnum)
-            doc.Objects[last].ViewObject.ShapeColor=green
+            obj = doc.addObject("Part::Feature",self.name+('_ground%d' % gnum))
+            obj.Shape = gw
+            obj.Label=self.name+('_ground%d' % gnum)
+            obj.ViewObject.ShapeColor=green
             gnum += 1
         black = tuple([0.0,0.0,0.0])
         lnum = 1
         for lw in self.linewires:
-            Part.show(lw)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=self.name+(':Line%d' % lnum)
-            doc.Objects[last].ViewObject.ShapeColor=black
+            obj = doc.addObject("Part::Feature",self.name+('_Line%d' % lnum))
+            obj.Shape = lw
+            obj.Label=self.name+('_Line%d' % lnum)
+            obj.ViewObject.ShapeColor=black
             lnum += 1
         mnum = 1
         for mw in self.minuswires:
-            Part.show(mw)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=self.name+(':Minus%d' % mnum)
-            doc.Objects[last].ViewObject.ShapeColor=black
+            obj = doc.addObject("Part::Feature",self.name+('_Minus%d' % lnum))
+            obj.Shape = mw
+            obj.Label=self.name+('_Minus%d' % mnum)
+            obj.ViewObject.ShapeColor=black
             mnum += 1
         red = tuple([1.0,0.0,0.0])
         pnum = 1
         for pl in self.pluswires:
-            Part.show(pl)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=self.name+(':Plus%d' % pnum)
-            doc.Objects[last].ViewObject.ShapeColor=red
+            obj = doc.addObject("Part::Feature",self.name+('_Plus%d' % pnum))
+            obj.Shape = pl
+            obj.Label=self.name+('_Plus%d' % pnum)
+            obj.ViewObject.ShapeColor=red
             pnum += 1
 

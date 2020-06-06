@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 20:52:40 2020
-#  Last Modified : <200601.1454>
+#  Last Modified : <200606.1835>
 #
 #  Description	
 #
@@ -80,15 +80,15 @@ class DO_15_bendedLeads_400_under(object):
                                     ).extrude(Base.Vector(0,0,leadvlen)))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.19607,.19607,.19607])
-        Part.show(self.lead1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':lead1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.98039,.98039,.98039])
-        Part.show(self.lead2)        
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':lead2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.98039,.98039,.98039])
+        obj = doc.addObject("Part::Feature",self.name+'_Body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_Body'
+        obj.ViewObject.ShapeColor=tuple([.19607,.19607,.19607])
+        obj = doc.addObject("Part::Feature",self.name+'_lead1')
+        obj.Shape = self.lead1
+        obj.Label=self.name+'_lead1'
+        obj.ViewObject.ShapeColor=tuple([.98039,.98039,.98039])
+        obj = doc.addObject("Part::Feature",self.name+'_lead2')
+        obj.Shape = self.lead2
+        obj.Label=self.name+'_lead2'
+        obj.ViewObject.ShapeColor=tuple([.98039,.98039,.98039])

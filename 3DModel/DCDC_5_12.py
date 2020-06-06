@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 18:44:55 2020
-#  Last Modified : <200602.2003>
+#  Last Modified : <200606.1904>
 #
 #  Description	
 #
@@ -110,11 +110,11 @@ class DCDC_5_12_Vert12Down(DCDC_5_12_):
         hvect = Base.Vector(0,0,height)
         return  Part.Face(Part.Wire(Part.makeCircle(srad,mho))).extrude(hvect)
     def show(self):
-        Part.show(self.board)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([210/255.0,180/255.0,140/255.0])        
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.board
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([210/255.0,180/255.0,140/255.0])        
 
 class DCDC_5_12_Horiz12Right(DCDC_5_12_):
     def __init__(self,name,origin):
@@ -156,9 +156,9 @@ class DCDC_5_12_Horiz12Right(DCDC_5_12_):
         hvect = Base.Vector(0,0,height)
         return  Part.Face(Part.Wire(Part.makeCircle(srad,mho))).extrude(hvect)
     def show(self):
-        Part.show(self.board)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([210/255.0,180/255.0,140/255.0])        
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.board
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([210/255.0,180/255.0,140/255.0])        
 

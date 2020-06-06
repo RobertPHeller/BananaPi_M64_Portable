@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Jun 3 19:32:20 2020
-#  Last Modified : <200603.2025>
+#  Last Modified : <200606.1910>
 #
 #  Description	
 #
@@ -72,11 +72,11 @@ class USBHub(USBHub_):
         self.body = USBHub_._createPolygon(origin,USBHub_._EndPoly,
                                            Base.Vector(USBHub_._Length,0,0))
     def show(self):
-        Part.show(self.body)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
                                                     
 class USBHub90(USBHub_):
     def __init__(self,name,origin):
@@ -87,11 +87,11 @@ class USBHub90(USBHub_):
         self.body = USBHub_._createPolygon(origin,USBHub_._EndPoly90,
                                            Base.Vector(0,USBHub_._Length,0))
     def show(self):
-        Part.show(self.body)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
                                                     
 class USBHub270(USBHub_):
     def __init__(self,name,origin):
@@ -102,9 +102,9 @@ class USBHub270(USBHub_):
         self.body = USBHub_._createPolygon(origin,USBHub_._EndPoly270,
                                            Base.Vector(0,USBHub_._Length,0))
     def show(self):
-        Part.show(self.body)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
                                                     

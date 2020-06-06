@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:46 2020
-#  Last Modified : <200605.0802>
+#  Last Modified : <200606.1907>
 #
 #  Description	
 #
@@ -123,11 +123,11 @@ class PianoHingeFlatOutsideBack(PianoHinge_):
             self.holes[2,hi] = h
             hi += 1
     def show(self):
-        Part.show(self.hinge)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([190/255.0,190/255.0,190/255.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.hinge
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([190/255.0,190/255.0,190/255.0])
     def MountingHole(self,f,h,baseY,height):
         mh = self.holes[f,h]
         mh = Base.Vector(mh.x,baseY,mh.z)
@@ -165,11 +165,11 @@ class PianoHingeFlatInsideClosedFront(PianoHinge_):
             self.holes[2,hi] = h
             hi += 1
     def show(self):
-        Part.show(self.hinge)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([190/255.0,190/255.0,190/255.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.hinge
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([190/255.0,190/255.0,190/255.0])
     def MountingHole(self,f,h,baseY,height):
         mh = self.holes[f,h]
         mh = Base.Vector(mh.x,baseY,mh.z)

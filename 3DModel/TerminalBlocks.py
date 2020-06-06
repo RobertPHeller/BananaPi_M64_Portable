@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 14:49:02 2020
-#  Last Modified : <200601.1459>
+#  Last Modified : <200606.1822>
 #
 #  Description	
 #
@@ -85,22 +85,22 @@ class TB007_508_03BE(TB007_508_xxBE):
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
-        Part.show(self.pin1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.pin2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.pin3)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin3'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_Body'
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin1')
+        obj.Shape = self.pin1
+        obj.Label=self.name+'_Pin1'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin2')
+        obj.Shape = self.pin2
+        obj.Label=self.name+'_Pin2'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin3')
+        obj.Shape = self.pin3
+        obj.Label=self.name+'_Pin3'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
         
 class TB007_508_02BE(TB007_508_xxBE):
     @staticmethod
@@ -127,15 +127,15 @@ class TB007_508_02BE(TB007_508_xxBE):
                                                                     oz)))).extrude(Base.Vector(0,0,-TB007_508_xxBE._termpinlen))
     def show(self):        
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
-        Part.show(self.pin1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.pin2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_Body'
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin1')
+        obj.Shape = self.pin1
+        obj.Label=self.name+'_Pin1'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin2')
+        obj.Shape = self.pin2
+        obj.Label=self.name+'_Pin2'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])

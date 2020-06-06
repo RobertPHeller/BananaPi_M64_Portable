@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 20:53:10 2020
-#  Last Modified : <200601.1458>
+#  Last Modified : <200606.1828>
 #
 #  Description	
 #
@@ -82,16 +82,16 @@ class Littlefuse_FuseHolder_02810007H_02810010H(object):
                              ).extrude(Base.Vector(0,0,pinlen))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        Part.show(self.pin1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
-        Part.show(self.pin2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Pin2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
+        obj = doc.addObject("Part::Feature",self.name+'_Body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_Body'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin1')
+        obj.Shape = self.pin1
+        obj.Label=self.name+'_Pin1'
+        obj.ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
+        obj = doc.addObject("Part::Feature",self.name+'_Pin2')
+        obj.Shape = self.pin2
+        obj.Label=self.name+'_Pin2'
+        obj.ViewObject.ShapeColor=tuple([.78431,.78431,.78431])
 

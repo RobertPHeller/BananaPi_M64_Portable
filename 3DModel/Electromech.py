@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Mon Jun 1 10:34:36 2020
-#  Last Modified : <200602.1624>
+#  Last Modified : <200606.1804>
 #
 #  Description	
 #
@@ -93,14 +93,14 @@ class Inlet(object):
                                          ).extrude(Base.Vector(0,-Inlet._lugdepth))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
-        Part.show(self.solderlugs)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':solderlugs'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_body'
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+'_solderlugs')
+        obj.Shape = self.solderlugs
+        obj.Label=self.name+'_solderlugs'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
 
 
 class DCStrainRelief(object):
@@ -126,10 +126,10 @@ class DCStrainRelief(object):
         self.body = body.fuse(flange)
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
     def MountHole(self,yBase,yDepth):
         holerad = DCStrainRelief._holedia/2.0
         holeorig = Base.Vector(self.origin.x,yBase,self.origin.z)
@@ -183,10 +183,10 @@ class Fan02510SS_05P_AT00(object):
             self.body = self.body.cut(Part.Face(Part.Wire(Part.makeCircle(fanmhrad,self.mh[i],XNorm))).extrude(fanextrude))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
     def MountingHole(self,i,xBase,xDepth):
         mh = Base.Vector(xBase,self.mh[i].y,self.mh[i].z)
         fanmhrad = Fan02510SS_05P_AT00._fanmholedia/2.0

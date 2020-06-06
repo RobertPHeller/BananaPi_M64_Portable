@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:07:22 2020
-#  Last Modified : <200602.2359>
+#  Last Modified : <200606.1858>
 #
 #  Description	
 #
@@ -87,9 +87,9 @@ class LCDScreen(LCDDims):
         self.screen = surf.extrude(thick)
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.screen)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([250/255.0,250/255.0,250/255.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.screen
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([250/255.0,250/255.0,250/255.0])
 
         

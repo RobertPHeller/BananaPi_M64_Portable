@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 16:36:29 2020
-#  Last Modified : <200601.1457>
+#  Last Modified : <200606.1826>
 #
 #  Description	
 #
@@ -88,18 +88,18 @@ class C333(object):
                                                             oy-bend,oz-t2)))).extrude(Base.Vector(0,0,afterbend)))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
-        Part.show(self.lead1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Lead1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
-        Part.show(self.lead2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Lead2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_Body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_Body'
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+'_Lead1')
+        obj.Shape = self.lead1
+        obj.Label=self.name+'_Lead1'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_Lead2')
+        obj.Shape = self.lead2
+        obj.Label=self.name+'_Lead2'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
         
                                    
 class AL_CAP_Radial_5mm10x12_5(object):
@@ -129,16 +129,16 @@ class AL_CAP_Radial_5mm10x12_5(object):
         self.lead2 = lead2face.extrude(Base.Vector(0,0,-AL_CAP_Radial_5mm10x12_5._leadlength))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.94117,.94117,.94117])
-        Part.show(self.lead1)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':lead1'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
-        Part.show(self.lead2)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':lead2'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_Body')
+        obj.Shape = self.body
+        obj.Label=self.name+'_Body'
+        obj.ViewObject.ShapeColor=tuple([.94117,.94117,.94117])
+        obj = doc.addObject("Part::Feature",self.name+'_lead1')
+        obj.Shape = self.lead1
+        obj.Label=self.name+'_lead1'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_lead2')
+        obj.Shape = self.lead2
+        obj.Label=self.name+'_lead2'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
 

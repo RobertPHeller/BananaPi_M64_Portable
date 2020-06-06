@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 11:16:52 2020
-#  Last Modified : <200603.2100>
+#  Last Modified : <200606.1854>
 #
 #  Description	
 #
@@ -194,26 +194,26 @@ class M64Board(object):
         return result
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.board)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':M64Board'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,1.0,0.0])        
-        Part.show(self.dualusb)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Dual USB'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
-        Part.show(self.rj45)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Ethernet Jack'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.9,.9,.9])
-        Part.show(self.audiobody)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':Audio Body'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
-        Part.show(self.otg)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':OTG Jack'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.9,0.9,0.9])
+        obj = doc.addObject("Part::Feature",self.name+'_M64Board')
+        obj.Shape = self.board
+        obj.Label=self.name+'_M64Board'
+        obj.ViewObject.ShapeColor=tuple([0.0,1.0,0.0])        
+        obj = doc.addObject("Part::Feature",self.name+'_Dual USB')
+        obj.Shape = self.dualusb
+        obj.Label=self.name+'_Dual USB'
+        obj.ViewObject.ShapeColor=tuple([.9,.9,.9])
+        obj = doc.addObject("Part::Feature",self.name+'_Ethernet Jack')
+        obj.Shape = self.rj45
+        obj.Label=self.name+'_Ethernet Jack'
+        obj.ViewObject.ShapeColor=tuple([.9,.9,.9])
+        obj = doc.addObject("Part::Feature",self.name+'_Audio Body')
+        obj.Shape = self.audiobody
+        obj.Label=self.name+'_Audio Body'
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+'_OTG Jack')
+        obj.Shape = self.otg
+        obj.Label=self.name+'_OTG Jack'
+        obj.ViewObject.ShapeColor=tuple([0.9,0.9,0.9])
     def DualUSBCutout(self,xBase,panelThickness):
         dualusb_h = M64Board._DualUSBWidth
         dualusb_w = M64Board._DualUSBHeight

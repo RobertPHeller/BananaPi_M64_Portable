@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:24 2020
-#  Last Modified : <200605.0930>
+#  Last Modified : <200606.1914>
 #
 #  Description	
 #
@@ -120,18 +120,18 @@ class TeensyThumbStick(TeensyThumbStick_):
         self.cutoutorigin = origin.add(Base.Vector(self._CutoutX,self._CutoutY,0))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.board)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":board"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([210/255.0,180/255.0,140/255.0])
-        Part.show(self.thumbstick)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":thumbstick"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
-        Part.show(self.teensy)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":teensy"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,192/255.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+"_board")
+        obj.Shape = self.board
+        obj.Label=self.name+"_board"
+        obj.ViewObject.ShapeColor=tuple([210/255.0,180/255.0,140/255.0])
+        obj = doc.addObject("Part::Feature",self.name+"_thumbstick")
+        obj.Shape = self.thumbstick
+        obj.Label=self.name+"_thumbstick"
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+"_teensy")
+        obj.Shape = self.teensy
+        obj.Label=self.name+"_teensy"
+        obj.ViewObject.ShapeColor=tuple([0.0,192/255.0,0.0])
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)
@@ -209,11 +209,11 @@ class TeensyThumbStickCover(TeensyThumbStick_):
         self.coverpanel = self.coverpanel.cut(bhole)
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.coverpanel)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
-        doc.Objects[last].ViewObject.Transparency=20
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.coverpanel
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([1.0,1.0,1.0])
+        obj.ViewObject.Transparency=20
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)
@@ -249,27 +249,27 @@ if __name__ == '__main__':
     teensythumbstickcoverorig = orig.add(Base.Vector(25,25,thick))
     teensythumbstickcover = TeensyThumbStickCover("teensythumbstickcover",teensythumbstickcoverorig)
     panel = panel.cut(teensythumbstick.Cutout(0,thick))
-    Part.show(panel)
     doc = App.activeDocument()
-    last = len(doc.Objects)-1
-    doc.Objects[last].Label="panel"
-    doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,0.0,0.0])
-    Part.show(standoff1)
-    last = len(doc.Objects)-1
-    doc.Objects[last].Label="standoff1"
-    doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
-    Part.show(standoff2)
-    last = len(doc.Objects)-1
-    doc.Objects[last].Label="standoff2"
-    doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
-    Part.show(standoff3)
-    last = len(doc.Objects)-1
-    doc.Objects[last].Label="standoff3"
-    doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
-    Part.show(standoff4)
-    last = len(doc.Objects)-1
-    doc.Objects[last].Label="standoff4"
-    doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+    obj = doc.addObject("Part::Feature","panel")
+    obj.Shape = panel
+    obj.Label="panel"
+    obj.ViewObject.ShapeColor=tuple([1.0,0.0,0.0])
+    obj = doc.addObject("Part::Feature","standoff1")
+    obj.Shape = standoff1
+    obj.Label="standoff1"
+    obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+    obj = doc.addObject("Part::Feature","standoff2")
+    obj.Shape = standoff2
+    obj.Label="standoff2"
+    obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+    obj = doc.addObject("Part::Feature","standoff3")
+    obj.Shape = standoff3
+    obj.Label="standoff3"
+    obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+    obj = doc.addObject("Part::Feature","standoff4")
+    obj.Shape = standoff4
+    obj.Label="standoff4"
+    obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
     teensythumbstick.show()
     teensythumbstickcover.show()
     

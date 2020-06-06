@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:55 2020
-#  Last Modified : <200603.1020>
+#  Last Modified : <200606.1937>
 #
 #  Description	
 #
@@ -159,11 +159,11 @@ class HDMIConverterMainBoard(HDMIConverterDims):
             mhFace = Part.Face(Part.Wire(Part.makeCircle(mrad,self.mh[i])))
             self.board = self.board.cut(mhFace.extrude(boardthick))
     def show(self):
-        Part.show(self.board)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,1.0,0.0])
+        doc = App.activeDocument()                                              
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.board
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,1.0,0.0])
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)
@@ -199,11 +199,11 @@ class HDMIButtonBoard_Upsidedown(HDMIConverterDims):
             mhFace = Part.Face(Part.Wire(Part.makeCircle(mrad,self.mh[i])))
             self.board = self.board.cut(mhFace.extrude(boardthick))
     def show(self):
-        Part.show(self.board)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([255/255.0,165/255.0,79/255.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.board
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([255/255.0,165/255.0,79/255.0])
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)
@@ -247,11 +247,11 @@ class HDMIHVPowerBoard_Upsidedown(HDMIConverterDims):
         mh2Face = Part.Face(Part.Wire(Part.makeCircle(mrad,self.mh[2])))
         self.board = self.board.cut(mh2Face.extrude(boardthick))
     def show(self):
-        Part.show(self.board)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,1.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.board
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,1.0,0.0])
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)

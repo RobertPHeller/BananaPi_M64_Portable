@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:36 2020
-#  Last Modified : <200604.2016>
+#  Last Modified : <200606.1908>
 #
 #  Description	
 #
@@ -97,10 +97,10 @@ class SpeakerLeft_UpsideDown(Speaker_):
                                            ).extrude(recessdepth))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)
@@ -149,10 +149,10 @@ class SpeakerRight_UpsideDown(Speaker_):
                                            ).extrude(recessdepth))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])        
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])        
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)

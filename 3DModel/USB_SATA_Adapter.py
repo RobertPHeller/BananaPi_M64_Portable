@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Jun 3 21:18:32 2020
-#  Last Modified : <200604.1100>
+#  Last Modified : <200606.1915>
 #
 #  Description	
 #
@@ -110,14 +110,14 @@ class USB_SATA_Adapter(USB_SATA_Adapter_):
                                      ).extrude(Base.Vector(0,0,USB_SATA_Adapter_._USBPlug_Height))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.board)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":board"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([128/255.0,0.0,0.0])
-        Part.show(self.usbplug)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":usbplug"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.95,.95,.95])
+        obj = doc.addObject("Part::Feature",self.name+"_board")
+        obj.Shape = self.board
+        obj.Label=self.name+"_board"
+        obj.ViewObject.ShapeColor=tuple([128/255.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+"_usbplug")
+        obj.Shape = self.usbplug
+        obj.Label=self.name+"_usbplug"
+        obj.ViewObject.ShapeColor=tuple([.95,.95,.95])
         
 
 class USB_SATA_Adapter_Horiz(USB_SATA_Adapter_):
@@ -139,14 +139,14 @@ class USB_SATA_Adapter_Horiz(USB_SATA_Adapter_):
                                      ).extrude(Base.Vector(0,0,USB_SATA_Adapter_._USBPlug_Height))
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.board)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":board"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([128/255.0,0.0,0.0])
-        Part.show(self.usbplug)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":usbplug"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.95,.95,.95])
+        obj = doc.addObject("Part::Feature",self.name+"_board")
+        obj.Shape = self.board
+        obj.Label=self.name+"_board"
+        obj.ViewObject.ShapeColor=tuple([128/255.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+"_usbplug")
+        obj.Shape = self.usbplug
+        obj.Label=self.name+"_usbplug"
+        obj.ViewObject.ShapeColor=tuple([.95,.95,.95])
         
 
 class USB_SATA_Adapter_BoardCradleHoriz(object):
@@ -197,11 +197,11 @@ class USB_SATA_Adapter_BoardCradleHoriz(object):
                             ).extrude(mhHeight)
             self.body = self.body.cut(hole)
     def show(self):
-        Part.show(self.body)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
     def MountingHole(self,i,zBase,panelThick):
         mh = self.mh[i]
         mh = Base.Vector(mh.x,mh.y,zBase)

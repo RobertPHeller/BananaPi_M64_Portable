@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:45 2020
-#  Last Modified : <200603.0146>
+#  Last Modified : <200606.1858>
 #
 #  Description	
 #
@@ -161,12 +161,12 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
         self.bracket = self.bracket.fuse(angle_b.extrude(extrude_b))
     def show(self):
         #for i in [1,2,3,4]:
-        #    Part.show(self.mhFaces[i])
+        #    obj.Shape = self.mhFaces[i]
         doc = App.activeDocument()
-        Part.show(self.bracket)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.bracket
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
     def MountingHole(self,i,zBase,height):
         bracketmh = self.bracketmh[i]
         bracketmh = Base.Vector(bracketmh.x,bracketmh.y,zBase)

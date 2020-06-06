@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Jun 3 20:43:35 2020
-#  Last Modified : <200603.2109>
+#  Last Modified : <200606.1914>
 #
 #  Description	
 #
@@ -84,13 +84,12 @@ class OTGAdaptor(object):
                                      microborig).extrude(microbthick)
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
-        Part.show(self.microb)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+":microb"
-        doc.Objects[last].ViewObject.ShapeColor=tuple([0.95,0.95,0.95])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+"_microb")
+        obj.Shape = self.microb
+        obj.Label=self.name+"_microb"
+        obj.ViewObject.ShapeColor=tuple([0.95,0.95,0.95])
                 

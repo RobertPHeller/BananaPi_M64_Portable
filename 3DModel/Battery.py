@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Jun 3 18:03:47 2020
-#  Last Modified : <200603.1915>
+#  Last Modified : <200606.1900>
 #
 #  Description	
 #
@@ -60,7 +60,7 @@ class Battery(object):
                                    origin).extrude(bheight)
     def show(self):
         doc = App.activeDocument()
-        Part.show(self.body)
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])

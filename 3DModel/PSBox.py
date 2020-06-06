@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200602.1613>
+#  Last Modified : <200606.1840>
 #
 #  Description	
 #
@@ -168,11 +168,11 @@ class CU_3002A_Base(CU_3002A_):
         
         self.base = base.fuse(front).fuse(back)
     def show(self):
-        Part.show(self.base)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':CU3002ABase'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_CU3002ABase')
+        obj.Shape = self.base        
+        obj.Label=self.name+'_CU3002ABase'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
 
 class CU_3002A_Cover(CU_3002A_):
     def __init__(self,name,origin):
@@ -218,11 +218,11 @@ class CU_3002A_Cover(CU_3002A_):
         right = right.cut(backhole)
         self.cover = top.fuse(left).fuse(right)
     def show(self):
-        Part.show(self.cover)
         doc = App.activeDocument()
-        last = len(doc.Objects)-1
-        doc.Objects[last].Label=self.name+':CU3002ACover'
-        doc.Objects[last].ViewObject.ShapeColor=tuple([.75,.75,.75])
+        obj = doc.addObject("Part::Feature",self.name+'_CU3002ACover')
+        obj.Shape = self.cover
+        obj.Label=self.name+'_CU3002ACover'
+        obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
         
 
 class CU_3002A(CU_3002A_Base,CU_3002A_Cover):
@@ -258,7 +258,7 @@ class PSBox(CU_3002A):
         pcborig=Base.Vector(ox+((self.baseWidth()-PCBwithStrips._psPCBwidth)/2.0),
                             oy+((self.baseLength()-PCBwithStrips._psPCBlength)/2.0),
                             oz+self.thickness()+PSBox._standoff_height)
-        self.pspcb = PSOnPCB(self.name+':pcb',pcborig)
+        self.pspcb = PSOnPCB(self.name+'_pcb',pcborig)
         self.standoffs = list()
         for i in [1,2,3,4]:
             self.standoffs.append(self.pspcb.Standoff(i,oz+self.thickness(),
@@ -270,22 +270,22 @@ class PSBox(CU_3002A):
             mh = self.pspcb.MountingHole(i,oz).extrude(mhthick)
             b = b.cut(mh)
         self.base = b
-        self.inlet = Inlet(self.name+":inlet",Base.Vector(ox+PSBox._inletXoff,
+        self.inlet = Inlet(self.name+"_inlet",Base.Vector(ox+PSBox._inletXoff,
                                                         oy+self.baseLength(),
                                                         oz+PSBox._inletZoff))
         b = self.base.cut(self.inlet.bodyCutout(ox+self.baseLength(),-self.thickness()))
         self.base = b  
-        self.dcstrainrelief = DCStrainRelief(self.name+":dcstrain",Base.Vector(ox+PSBox._dcstrainXoff,oy,oz+PSBox._dcstrainZoff))
+        self.dcstrainrelief = DCStrainRelief(self.name+"_dcstrain",Base.Vector(ox+PSBox._dcstrainXoff,oy,oz+PSBox._dcstrainZoff))
         b = self.base.cut(self.dcstrainrelief.MountHole(oy,self.thickness()))
         self.base = b
         fx = ox+self._fanXoff()
         f1y = oy+self._fan1Yoff()
         fz = oz+self._fanZoff()
         f1origin = Base.Vector(fx,f1y,fz)
-        self.fan1 = Fan02510SS_05P_AT00(self.name+":fan1",f1origin)
+        self.fan1 = Fan02510SS_05P_AT00(self.name+"_fan1",f1origin)
         f2y = oy+self._fan2Yoff()
         f2origin = Base.Vector(fx,f2y,fz)
-        self.fan2 = Fan02510SS_05P_AT00(self.name+":fan2",f2origin)
+        self.fan2 = Fan02510SS_05P_AT00(self.name+"_fan2",f2origin)
         c = self.cover
         for i in [1,2,3,4]:
             c = c.cut(self.fan1.MountingHole(i,fx,-self.thickness()))
@@ -315,12 +315,30 @@ class PSBox(CU_3002A):
         self.pspcb.show()
         i = 1
         for standoff in self.standoffs:
-            Part.show(standoff)
-            last = len(doc.Objects)-1
-            doc.Objects[last].Label=self.name+(':Standoff%d' % i)
-            doc.Objects[last].ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+            obj = doc.addObject("Part::Feature",self.name+('_Standoff%d' % i))
+            obj.Shape = standoff
+            obj.Label=self.name+('_Standoff%d' % i)
+            obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
             i = i + 1
         self.inlet.show()
         self.dcstrainrelief.show()
         self.fan1.show()
         self.fan2.show()
+    
+
+
+if __name__ == '__main__':
+    doc = App.newDocument("PowerSupplyBox")
+    print "New document created"
+    App.setActiveDocument ( "PowerSupplyBox" )
+    print "Active Document set"
+    o = Base.Vector(0,0,0)
+    print "Origin created"
+    psbox = PSBox("psbox",o)
+    print "Box created"
+    psbox.show()
+    Gui.SendMsgToActiveView("ViewFit")
+    print "Box shown"
+    print "The type of psbox.cover is ",type(psbox.cover)
+    print "The type of doc is ",type(doc)
+
