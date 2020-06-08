@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun Jun 7 15:27:04 2020
-#  Last Modified : <200608.0831>
+#  Last Modified : <200608.0920>
 #
 #  Description	
 #
@@ -153,7 +153,7 @@ if __name__ == '__main__':
   ## hole for a strain relief in the ends of the base. The cover half needs 
   ## mounting and air flow holes for a pair of small fans.
   ##
-  if True:
+  if False:
     ####
     ## First the base
     garbage = doc.findObjects('Drawing::FeatureViewPart')
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     doc.psboxBaseISOView.Scale = .75
     doc.PowerSupplyBoxBasePage.addObject(doc.psboxBaseISOView)
 
-  if False:
+  if True:
     ## Then the cover
     doc.addObject('Drawing::FeaturePage','PowerSupplyBoxCoverPage')
     doc.PowerSupplyBoxCoverPage.Template = "/home/heller/BananaPi_M64_Portable/3DModel/Letter_Portrait_ISO7200.svg"
@@ -224,21 +224,28 @@ if __name__ == '__main__':
     psbcBounds = psboxCover.Shape.BoundBox
     doc.addObject('Drawing::FeatureViewPart','psboxCoverLeftView')
     doc.psboxCoverLeftView.Source = psboxCover    
-    doc.psboxCoverLeftView.X = (-psbcBounds.YMin)+138.1
-    doc.psboxCoverLeftView.Y = (-psbcBounds.ZMin)+25.4+(psbcBounds.ZLength)
-    doc.psboxCoverLeftView.Rotation = 0
+    doc.psboxCoverLeftView.X = -137.5
+    doc.psboxCoverLeftView.Y = 25
+    doc.psboxCoverLeftView.Rotation = 90
     doc.psboxCoverLeftView.Direction = (1.0,0.0,0.0)
     doc.psboxCoverLeftView.Scale = 1
     doc.PowerSupplyBoxCoverPage.addObject(doc.psboxCoverLeftView)
     doc.addObject('Drawing::FeatureViewPart','psboxCoverRightView')
     doc.psboxCoverRightView.Source = psboxCover
-    doc.psboxCoverRightView.X = (-psbcBounds.YMin)+138.1
-    doc.psboxCoverRightView.Y = (-psbcBounds.ZMin)+(2*(25.4+(psbcBounds.ZLength)))
-    doc.psboxCoverRightView.Rotation = 0
+    doc.psboxCoverRightView.X = -137.5
+    doc.psboxCoverRightView.Y = 125.0
+    doc.psboxCoverRightView.Rotation = 90
     doc.psboxCoverRightView.Direction = (-1.0,0.0,0.0)
     doc.psboxCoverRightView.Scale = 1
     doc.PowerSupplyBoxCoverPage.addObject(doc.psboxCoverRightView)
-
+    doc.addObject('Drawing::FeatureViewPart','psboxCoverISOView')
+    doc.psboxCoverISOView.Source = psboxCover
+    doc.psboxCoverISOView.X = 150
+    doc.psboxCoverISOView.Y = 237.5
+    doc.psboxCoverISOView.Rotation = 45.0
+    doc.psboxCoverISOView.Direction = (-1.0,-1.0,-1.0)
+    doc.psboxCoverISOView.Scale = .5
+    doc.PowerSupplyBoxCoverPage.addObject(doc.psboxCoverISOView)
 
   doc.recompute()
 
