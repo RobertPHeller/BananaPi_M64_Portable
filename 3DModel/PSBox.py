@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200606.1840>
+#  Last Modified : <200608.0758>
 #
 #  Description	
 #
@@ -273,7 +273,7 @@ class PSBox(CU_3002A):
         self.inlet = Inlet(self.name+"_inlet",Base.Vector(ox+PSBox._inletXoff,
                                                         oy+self.baseLength(),
                                                         oz+PSBox._inletZoff))
-        b = self.base.cut(self.inlet.bodyCutout(ox+self.baseLength(),-self.thickness()))
+        b = self.base.cut(self.inlet.bodyCutout(oy+self.baseLength(),-self.thickness()))
         self.base = b  
         self.dcstrainrelief = DCStrainRelief(self.name+"_dcstrain",Base.Vector(ox+PSBox._dcstrainXoff,oy,oz+PSBox._dcstrainZoff))
         b = self.base.cut(self.dcstrainrelief.MountHole(oy,self.thickness()))
