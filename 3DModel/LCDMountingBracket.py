@@ -1,3 +1,4 @@
+#!/usr/bin/FreeCADCmd
 #*****************************************************************************
 #
 #  System        : 
@@ -8,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:45 2020
-#  Last Modified : <200606.1858>
+#  Last Modified : <200609.1645>
 #
 #  Description	
 #
@@ -42,7 +43,7 @@
 
 
 
-import Part
+import Part, Draft, Drawing
 from FreeCAD import Base
 import FreeCAD as App
 
@@ -139,6 +140,7 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
             extrude_b = Base.Vector(self.AngleThickness(),0,0)
         else:        
             raise RuntimeError("side must be L or R!")
+        self.bracketPoly = bracketPoly
         borig=origin.add(Base.Vector(0,self.AngleLength(),-self.AngleHeight()))
         angle_b = Part.makePlane(self.AngleHeight(),
                                  self.AngleLength(),
@@ -159,9 +161,10 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
         extrude_a = Base.Vector(0,0,-self.AngleThickness())
         self.bracket = angle_a.extrude(extrude_a)
         self.bracket = self.bracket.fuse(angle_b.extrude(extrude_b))
+        self._mapPolyVerts()
+        self._mapBMHoleEdges()
+        self._mapLCDMHoleEdges()
     def show(self):
-        #for i in [1,2,3,4]:
-        #    obj.Shape = self.mhFaces[i]
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name)
         obj.Shape = self.bracket
@@ -172,3 +175,135 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
         bracketmh = Base.Vector(bracketmh.x,bracketmh.y,zBase)
         extrude_mh = Base.Vector(0,0,height)
         return Part.Face(Part.Wire(Part.makeCircle(self.BRACKET_r(),bracketmh))).extrude(extrude_mh)
+    def _mapPolyVerts(self):
+        self.polyVertexMap = list()
+        for p in self.bracketPoly:
+            i = 0
+            for v in self.bracket.Vertexes:
+                if v.X == p.x and v.Y == p.y and v.Z == p.z:
+                   self.polyVertexMap.append(i)
+                   break
+                i += 1
+    def _mapBMHoleEdges(self):
+        self.BMHoleEdgeMap = dict()
+        for i in [1,2,3,4]:
+            ie = 0
+            print "*** LCDMountingBracket::_mapBMHoleEdges(): self.bracketmh[",i,"] is ",self.bracketmh[i]
+            for e in self.bracket.Edges:
+                c = e.Curve
+                print "*** LCDMountingBracket::_mapBMHoleEdges(): type(c) is ",type(c)
+                print "*** LCDMountingBracket::_mapBMHoleEdges(): type(Part.Circle()) is ",type(Part.Circle())
+                if type(c) is type(Part.Circle()):
+                    print "*** LCDMountingBracket::_mapBMHoleEdges(): c.Center is ",c.Center
+                    if c.Center.x == self.bracketmh[i].x and \
+                       c.Center.y == self.bracketmh[i].y and \
+                       c.Center.z == self.bracketmh[i].z:
+                        self.BMHoleEdgeMap[i] = ie
+                        break
+                ie += 1
+    def _mapLCDMHoleEdges(self):
+        self.LCDMHoleEdgeMap = dict()
+        for i in [1,2,3,4]:
+            ie = 0
+            for e in self.bracket.Edges:
+                if type(e) is type(Part.Circle):
+                    if e.Center.x == self.lcdmh[i].x and \
+                       e.Center.y == self.lcdmh[i].y and \
+                       e.Center.z == self.lcdmh[i].z:
+                        self.LCDMHoleEdgeMap[i] = ie
+                        break
+                ie += 1
+    def dumpVerts(self):
+        i = 0
+        for v in self.bracket.Vertexes:
+            print '%d (%g,%g,%g)' % (i,v.X,v.Y,v.Z)
+            i += 1
+    def findLCDMHolesAsVerts(self):
+        for i in [1,2,3,4]:
+            vi = 0
+            for v in bracket.bracket.Vertexes:
+                if v.Y == self.lcdmh[i].y:
+                    print "Y match for %d (%g,%g,%g): %d (%g,%g,%g)" % \
+                        (i,self.lcdmh[i].x,self.lcdmh[i].y,self.lcdmh[i].z,
+                         vi,v.X,v.Y,v.Z)
+                vi += 1
+            i += 1
+    def findBMHolesAsVerts(self):
+        for i in [1,2,3,4]:
+            vi = 0
+            for v in bracket.bracket.Vertexes:
+                if v.Y == self.bracketmh[i].y:
+                    print "Y match for %d (%g,%g,%g): %d (%g,%g,%g)" % \
+                        (i,self.bracketmh[i].x,self.bracketmh[i].y,self.bracketmh[i].z,
+                         vi,v.X,v.Y,v.Z)
+                vi += 1
+            i += 1
+
+if __name__ == '__main__':
+    if not App.listDocuments().has_key("TestDimension"):
+        App.ActiveDocument=App.newDocument("TestDimension")
+    else:
+        App.ActiveDocument=App.getDocument("TestDimension")
+    doc = App.activeDocument()
+    garbage = doc.findObjects("Part::Feature")
+    for g in garbage:
+        doc.removeObject(g.Name)
+    #garbage = doc.findObjects("")
+    #for g in garbage:
+    #    doc.removeObject(g.Name)
+    bracket = LCDMountingBracket("left",Base.Vector(0,0,0))
+    bracket.show()
+    bounds = bracket.bracket.BoundBox
+    tz = bracket.bracket.Vertexes[0].Z
+    tx = bounds.XMin - 12.7
+    v1 = bracket.polyVertexMap[0]
+    v2 = bracket.polyVertexMap[1]
+    ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
+    tv = Base.Vector(tx,ty,tz)
+    d1 = Draft.makeDimension(doc.left,v1,v2,tv)
+    d1.ViewObject.FontSize=5
+    d1.ViewObject.Override="L"
+    v1 = v2
+    v2 = bracket.polyVertexMap[2]
+    ty = bounds.YMax + 6.35
+    tx = (bracket.bracket.Vertexes[v1].X+bracket.bracket.Vertexes[v2].X)/2.0
+    tv = Base.Vector(tx,ty,tz)
+    d2 = Draft.makeDimension(doc.left,v1,v2,tv)
+    d2.ViewObject.FontSize=5
+    d2.ViewObject.Override="w"
+    v1 = v2
+    v2 = bracket.polyVertexMap[3]
+    tx = bounds.XMin - 6.35
+    ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
+    tv = Base.Vector(tx,ty,tz)
+    d3 = Draft.makeDimension(doc.left,v2,v1,tv)
+    d3.ViewObject.FontSize=5
+    d3.ViewObject.Override="A"
+    v1 = v2
+    v2 = bracket.polyVertexMap[4]
+    ty = bracket.bracket.Vertexes[v1].Y - 6.35
+    tx = (bracket.bracket.Vertexes[v1].X+bracket.bracket.Vertexes[v2].X)/2.0
+    tv = Base.Vector(tx,ty,tz)
+    d4 = Draft.makeDimension(doc.left,v1,v2,tv)
+    d4.ViewObject.FontSize=5
+    d4.ViewObject.Override="N"
+    v1 = v2
+    v2 = bracket.polyVertexMap[5]
+    tx = bounds.XMin - 6.35
+    ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
+    tv = Base.Vector(tx,ty,tz)
+    d5 = Draft.makeDimension(doc.left,v2,v1,tv)
+    d5.ViewObject.FontSize=5
+    d5.ViewObject.Override="B"
+    #
+    e1 = bracket.BMHoleEdgeMap[1]
+    ty = bracket.bracket.Edges[e1].Curve.Center.y
+    tx = bounds.XMin + 6.35
+    tv = Base.Vector(tx,ty,tz) 
+    d6 = Draft.makeDimension(doc.left,e1,"diameter",tv)
+    d6.ViewObject.FontSize=5
+    d6.ViewObject.Override="BMDia"    
+
+
+    doc.recompute()       
+    
