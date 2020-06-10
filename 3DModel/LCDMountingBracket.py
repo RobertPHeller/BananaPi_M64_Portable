@@ -1,4 +1,4 @@
-#!/usr/bin/FreeCADCmd
+#!/usr/local/bin/FreeCAD018
 #*****************************************************************************
 #
 #  System        : 
@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:45 2020
-#  Last Modified : <200609.1645>
+#  Last Modified : <200610.1632>
 #
 #  Description	
 #
@@ -43,9 +43,13 @@
 
 
 
-import Part, Draft, Drawing
+import Part, TechDraw
 from FreeCAD import Base
 import FreeCAD as App
+
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
 
 from LCDScreen import *
 
@@ -188,13 +192,13 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
         self.BMHoleEdgeMap = dict()
         for i in [1,2,3,4]:
             ie = 0
-            print "*** LCDMountingBracket::_mapBMHoleEdges(): self.bracketmh[",i,"] is ",self.bracketmh[i]
+            print ("*** LCDMountingBracket::_mapBMHoleEdges(): self.bracketmh[",i,"] is ",self.bracketmh[i])
             for e in self.bracket.Edges:
                 c = e.Curve
-                print "*** LCDMountingBracket::_mapBMHoleEdges(): type(c) is ",type(c)
-                print "*** LCDMountingBracket::_mapBMHoleEdges(): type(Part.Circle()) is ",type(Part.Circle())
+                print ("*** LCDMountingBracket::_mapBMHoleEdges(): type(c) is ",type(c))
+                print ("*** LCDMountingBracket::_mapBMHoleEdges(): type(Part.Circle()) is ",type(Part.Circle()))
                 if type(c) is type(Part.Circle()):
-                    print "*** LCDMountingBracket::_mapBMHoleEdges(): c.Center is ",c.Center
+                    print ("*** LCDMountingBracket::_mapBMHoleEdges(): c.Center is ",c.Center)
                     if c.Center.x == self.bracketmh[i].x and \
                        c.Center.y == self.bracketmh[i].y and \
                        c.Center.z == self.bracketmh[i].z:
@@ -216,16 +220,16 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
     def dumpVerts(self):
         i = 0
         for v in self.bracket.Vertexes:
-            print '%d (%g,%g,%g)' % (i,v.X,v.Y,v.Z)
+            print ('%d (%g,%g,%g)' % (i,v.X,v.Y,v.Z))
             i += 1
     def findLCDMHolesAsVerts(self):
         for i in [1,2,3,4]:
             vi = 0
             for v in bracket.bracket.Vertexes:
                 if v.Y == self.lcdmh[i].y:
-                    print "Y match for %d (%g,%g,%g): %d (%g,%g,%g)" % \
-                        (i,self.lcdmh[i].x,self.lcdmh[i].y,self.lcdmh[i].z,
-                         vi,v.X,v.Y,v.Z)
+                    print ("Y match for %d (%g,%g,%g): %d (%g,%g,%g)" % \
+                        (i,self.lcdmh[i].x,self.lcdmh[i].y,self.lcdmh[i].z,\
+                         vi,v.X,v.Y,v.Z))
                 vi += 1
             i += 1
     def findBMHolesAsVerts(self):
@@ -233,77 +237,151 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
             vi = 0
             for v in bracket.bracket.Vertexes:
                 if v.Y == self.bracketmh[i].y:
-                    print "Y match for %d (%g,%g,%g): %d (%g,%g,%g)" % \
-                        (i,self.bracketmh[i].x,self.bracketmh[i].y,self.bracketmh[i].z,
-                         vi,v.X,v.Y,v.Z)
+                    print ("Y match for %d (%g,%g,%g): %d (%g,%g,%g)" % \
+                        (i,self.bracketmh[i].x,self.bracketmh[i].y,self.bracketmh[i].z,\
+                         vi,v.X,v.Y,v.Z))
                 vi += 1
             i += 1
 
 if __name__ == '__main__':
-    if not App.listDocuments().has_key("TestDimension"):
-        App.ActiveDocument=App.newDocument("TestDimension")
-    else:
-        App.ActiveDocument=App.getDocument("TestDimension")
+    if "TestDimension" in App.listDocuments().keys():
+        App.closeDocument("TestDimension")
+    App.ActiveDocument=App.newDocument("TestDimension")
     doc = App.activeDocument()
-    garbage = doc.findObjects("Part::Feature")
-    for g in garbage:
-        doc.removeObject(g.Name)
-    #garbage = doc.findObjects("")
-    #for g in garbage:
-    #    doc.removeObject(g.Name)
     bracket = LCDMountingBracket("left",Base.Vector(0,0,0))
     bracket.show()
+    Gui.SendMsgToActiveView("ViewFit")
     bounds = bracket.bracket.BoundBox
-    tz = bracket.bracket.Vertexes[0].Z
-    tx = bounds.XMin - 12.7
+    ##
+    ## 
+    doc.addObject('TechDraw::DrawPage','Page1')
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    doc.Page1.Template = doc.USLetterTemplate
+    edt = doc.Page1.Template.EditableTexts
+    edt['CompanyName'] = "Deepwoods Software"
+    edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
+    doc.Page1.Template.EditableTexts = edt
+    #
+    doc.addObject('TechDraw::DrawViewPart','EndView')
+    doc.Page1.addView(doc.EndView)
+    doc.EndView.Source = doc.left
+    doc.EndView.X = 40
+    doc.EndView.Y = 180
+    doc.EndView.Direction=(0.0,1.0,0.0)
+    doc.EndView.recompute()
+    
+    #
+    doc.addObject('TechDraw::DrawViewPart','SideView')
+    doc.Page1.addView(doc.SideView)
+    doc.SideView.Source = doc.left
+    doc.SideView.X = 140
+    doc.SideView.Y = 130
+    doc.SideView.Direction=(1.0,0.0,0.0)
+    doc.SideView.recompute()
+    #
+    doc.addObject('TechDraw::DrawViewPart','BottomView')
+    doc.Page1.addView(doc.BottomView)
+    doc.BottomView.Source = doc.left
+    doc.BottomView.Direction=(0.0,0.0,-1.0)
+    doc.BottomView.Rotation = 90
+    doc.BottomView.X = 140
+    doc.BottomView.Y = 80
+    #tz = bracket.bracket.Vertexes[0].Z
+    #tx = bounds.XMin - 12.7
     v1 = bracket.polyVertexMap[0]
     v2 = bracket.polyVertexMap[1]
-    ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
-    tv = Base.Vector(tx,ty,tz)
-    d1 = Draft.makeDimension(doc.left,v1,v2,tv)
-    d1.ViewObject.FontSize=5
-    d1.ViewObject.Override="L"
+    #ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
+    #tv = Base.Vector(tx,ty,tz)
+    #d1 = Draft.makeDimension(doc.left,v1,v2,tv)
+    #d1.ViewObject.FontSize=5
+    #d1.ViewObject.Override="L"
+    doc.addObject('TechDraw::DrawViewDimension','Length')
+    doc.Length.Type = 'DistanceX'
+    doc.Length.References2D=[(doc.BottomView,"Vertex%d"%v1),\
+                             (doc.BottomView,"Vertex%d"%v2)]
+    doc.Length.FormatSpec='L'
+    doc.Length.Arbitrary = True
+    doc.Length.X = 0
+    doc.Length.Y = 32
+    doc.Page1.addView(doc.Length)
     v1 = v2
     v2 = bracket.polyVertexMap[2]
-    ty = bounds.YMax + 6.35
-    tx = (bracket.bracket.Vertexes[v1].X+bracket.bracket.Vertexes[v2].X)/2.0
-    tv = Base.Vector(tx,ty,tz)
-    d2 = Draft.makeDimension(doc.left,v1,v2,tv)
-    d2.ViewObject.FontSize=5
-    d2.ViewObject.Override="w"
+    #ty = bounds.YMax + 6.35
+    #tx = (bracket.bracket.Vertexes[v1].X+bracket.bracket.Vertexes[v2].X)/2.0
+    #tv = Base.Vector(tx,ty,tz)
+    #d2 = Draft.makeDimension(doc.left,v1,v2,tv)
+    #d2.ViewObject.FontSize=5
+    #d2.ViewObject.Override="w"
+    doc.addObject('TechDraw::DrawViewDimension','Width')
+    doc.Width.Type = 'DistanceY'
+    doc.Width.References2D=[(doc.BottomView,"Vertex%d"%v1),\
+                            (doc.BottomView,"Vertex%d"%v2)]
+    doc.Width.FormatSpec='w'
+    doc.Width.Arbitrary = True
+    doc.Page1.addView(doc.Width)
     v1 = v2
     v2 = bracket.polyVertexMap[3]
-    tx = bounds.XMin - 6.35
-    ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
-    tv = Base.Vector(tx,ty,tz)
-    d3 = Draft.makeDimension(doc.left,v2,v1,tv)
-    d3.ViewObject.FontSize=5
-    d3.ViewObject.Override="A"
+    #tx = bounds.XMin - 6.35
+    #ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
+    #tv = Base.Vector(tx,ty,tz)
+    #d3 = Draft.makeDimension(doc.left,v2,v1,tv)
+    #d3.ViewObject.FontSize=5
+    #d3.ViewObject.Override="A"
+    doc.addObject('TechDraw::DrawViewDimension','A')
+    doc.A.Type = 'DistanceX'
+    doc.A.References2D=[(doc.BottomView,"Vertex%d"%v1),\
+                        (doc.BottomView,"Vertex%d"%v2)]
+    doc.A.FormatSpec='A'
+    doc.A.Arbitrary = True
+    doc.Page1.addView(doc.A)
     v1 = v2
     v2 = bracket.polyVertexMap[4]
-    ty = bracket.bracket.Vertexes[v1].Y - 6.35
-    tx = (bracket.bracket.Vertexes[v1].X+bracket.bracket.Vertexes[v2].X)/2.0
-    tv = Base.Vector(tx,ty,tz)
-    d4 = Draft.makeDimension(doc.left,v1,v2,tv)
-    d4.ViewObject.FontSize=5
-    d4.ViewObject.Override="N"
+    #ty = bracket.bracket.Vertexes[v1].Y - 6.35
+    #tx = (bracket.bracket.Vertexes[v1].X+bracket.bracket.Vertexes[v2].X)/2.0
+    #tv = Base.Vector(tx,ty,tz)
+    #d4 = Draft.makeDimension(doc.left,v1,v2,tv)
+    #d4.ViewObject.FontSize=5
+    #d4.ViewObject.Override="N"
+    doc.addObject('TechDraw::DrawViewDimension','N')
+    doc.N.Type = 'Distance'
+    doc.N.References2D=[(doc.BottomView,"Vertex%d"%v1),\
+                        (doc.BottomView,"Vertex%d"%v2)]
+    doc.N.FormatSpec='N'
+    doc.N.Arbitrary = True
+    doc.Page1.addView(doc.N)
     v1 = v2
     v2 = bracket.polyVertexMap[5]
-    tx = bounds.XMin - 6.35
-    ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
-    tv = Base.Vector(tx,ty,tz)
-    d5 = Draft.makeDimension(doc.left,v2,v1,tv)
-    d5.ViewObject.FontSize=5
-    d5.ViewObject.Override="B"
-    #
+    #tx = bounds.XMin - 6.35
+    #ty = (bracket.bracket.Vertexes[v1].Y+bracket.bracket.Vertexes[v2].Y)/2.0
+    #tv = Base.Vector(tx,ty,tz)
+    #d5 = Draft.makeDimension(doc.left,v2,v1,tv)
+    #d5.ViewObject.FontSize=5
+    #d5.ViewObject.Override="B"
+    doc.addObject('TechDraw::DrawViewDimension','B')
+    doc.B.Type = 'Distance'
+    doc.B.References2D=[(doc.BottomView,"Vertex%d"%v1),\
+                        (doc.BottomView,"Vertex%d"%v2)]
+    doc.B.FormatSpec='B'
+    doc.B.Arbitrary = True
+    doc.Page1.addView(doc.B)
+    ##
     e1 = bracket.BMHoleEdgeMap[1]
-    ty = bracket.bracket.Edges[e1].Curve.Center.y
-    tx = bounds.XMin + 6.35
-    tv = Base.Vector(tx,ty,tz) 
-    d6 = Draft.makeDimension(doc.left,e1,"diameter",tv)
-    d6.ViewObject.FontSize=5
-    d6.ViewObject.Override="BMDia"    
-
+    #ty = bracket.bracket.Edges[e1].Curve.Center.y
+    #tx = bounds.XMin + 6.35
+    #tv = Base.Vector(tx,ty,tz) 
+    #d6 = Draft.makeDimension(doc.left,e1,"Diameter",tv)
+    #d6.ViewObject.FontSize=5
+    #d6.ViewObject.Override="BMDia"
+    doc.addObject('TechDraw::DrawViewDimension','BMDia')
+    doc.BMDia.Type = 'Diameter'
+    doc.BMDia.References2D=[(doc.BottomView,"Edge%d"%e1)]
+    doc.BMDia.FormatSpec='BMDia'
+    doc.BMDia.Arbitrary = True
+    doc.Page1.addView(doc.BMDia)
+    doc.BottomView.recompute()
+    doc.Page1.ViewObject.show()
+    
 
     doc.recompute()       
     

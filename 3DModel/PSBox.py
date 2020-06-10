@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200608.0758>
+#  Last Modified : <200610.1310>
 #
 #  Description	
 #
@@ -43,9 +43,12 @@
 
 
 
-import Part
+import Part, TechDraw
 from FreeCAD import Base
 import FreeCAD as App
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
 
 from PSPCB import *
 from Electromech import *
@@ -329,16 +332,9 @@ class PSBox(CU_3002A):
 
 if __name__ == '__main__':
     doc = App.newDocument("PowerSupplyBox")
-    print "New document created"
     App.setActiveDocument ( "PowerSupplyBox" )
-    print "Active Document set"
     o = Base.Vector(0,0,0)
-    print "Origin created"
     psbox = PSBox("psbox",o)
-    print "Box created"
     psbox.show()
     Gui.SendMsgToActiveView("ViewFit")
-    print "Box shown"
-    print "The type of psbox.cover is ",type(psbox.cover)
-    print "The type of doc is ",type(doc)
-
+    
