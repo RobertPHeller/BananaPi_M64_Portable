@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:45 2020
-#  Last Modified : <200611.0125>
+#  Last Modified : <200611.1033>
 #
 #  Description	
 #
@@ -243,13 +243,6 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
                 vi += 1
             i += 1
 
-def strdup(ch,count):
-    result = ""
-    while count > 0:
-       result += ch
-       count -= 1
-    return result
-
 if __name__ == '__main__':
     if "TestDimension" in App.listDocuments().keys():
         App.closeDocument("TestDimension")
@@ -266,8 +259,22 @@ if __name__ == '__main__':
     doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
     doc.Page1.Template = doc.USLetterTemplate
     edt = doc.Page1.Template.EditableTexts
+    #print (edt.keys())
     edt['CompanyName'] = "Deepwoods Software"
     edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
+    edt['DrawingTitle1']= 'Left LCD Mounting Bracket'
+    edt['DrawingTitle2']= ""
+    edt['DrawingTitle3']= ""
+    edt['DrawnBy'] = "Robert Heller"
+    edt['CheckedBy'] = ""
+    edt['Approved1'] = ""
+    edt['Approved2'] = ""
+    edt['Scale'] = "1:1"
+    edt['Weight'] = ""
+    edt['Sheet'] = "Sheet 1 of 1"
+    edt['Code'] = ""
+    edt['DrawingNumber'] = ""
+    edt['Revision'] = "A"
     doc.Page1.Template.EditableTexts = edt
     doc.Page1.ViewObject.show()
     #
@@ -557,9 +564,6 @@ if __name__ == '__main__':
     doc.DimBlock.CellEnd = "C%d"%(ir-1)
     doc.DimBlock.X = 58
     doc.DimBlock.Y = 55
-    #heading = ('|%-11.11s|%10.10s|%10.10s|'%("Dim","inch","mm"))
-    #tline = strdup('-',len(heading))
-    #doc.DimBlock.Text = ""
     doc.Page1.addView(doc.DimBlock)
     doc.DimBlock.recompute()    
 
