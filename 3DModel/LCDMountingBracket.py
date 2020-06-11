@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:45 2020
-#  Last Modified : <200610.1632>
+#  Last Modified : <200611.0125>
 #
 #  Description	
 #
@@ -43,7 +43,7 @@
 
 
 
-import Part, TechDraw
+import Part, TechDraw, Spreadsheet
 from FreeCAD import Base
 import FreeCAD as App
 
@@ -192,13 +192,13 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
         self.BMHoleEdgeMap = dict()
         for i in [1,2,3,4]:
             ie = 0
-            print ("*** LCDMountingBracket::_mapBMHoleEdges(): self.bracketmh[",i,"] is ",self.bracketmh[i])
+            #print ("*** LCDMountingBracket::_mapBMHoleEdges(): self.bracketmh[",i,"] is ",self.bracketmh[i])
             for e in self.bracket.Edges:
                 c = e.Curve
-                print ("*** LCDMountingBracket::_mapBMHoleEdges(): type(c) is ",type(c))
-                print ("*** LCDMountingBracket::_mapBMHoleEdges(): type(Part.Circle()) is ",type(Part.Circle()))
+                #print ("*** LCDMountingBracket::_mapBMHoleEdges(): type(c) is ",type(c))
+                #print ("*** LCDMountingBracket::_mapBMHoleEdges(): type(Part.Circle()) is ",type(Part.Circle()))
                 if type(c) is type(Part.Circle()):
-                    print ("*** LCDMountingBracket::_mapBMHoleEdges(): c.Center is ",c.Center)
+                    #print ("*** LCDMountingBracket::_mapBMHoleEdges(): c.Center is ",c.Center)
                     if c.Center.x == self.bracketmh[i].x and \
                        c.Center.y == self.bracketmh[i].y and \
                        c.Center.z == self.bracketmh[i].z:
@@ -243,6 +243,13 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
                 vi += 1
             i += 1
 
+def strdup(ch,count):
+    result = ""
+    while count > 0:
+       result += ch
+       count -= 1
+    return result
+
 if __name__ == '__main__':
     if "TestDimension" in App.listDocuments().keys():
         App.closeDocument("TestDimension")
@@ -262,13 +269,65 @@ if __name__ == '__main__':
     edt['CompanyName'] = "Deepwoods Software"
     edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
     doc.Page1.Template.EditableTexts = edt
+    doc.Page1.ViewObject.show()
+    #
+    sheet = doc.addObject('Spreadsheet::Sheet','DimensionTable')
+    
+    sheet.set("A1",'%-11.11s'%"Dim")
+    sheet.set("B1",'%10.10s'%"inch")
+    sheet.set("C1",'%10.10s'%"mm")
+    ir = 2
     #
     doc.addObject('TechDraw::DrawViewPart','EndView')
     doc.Page1.addView(doc.EndView)
     doc.EndView.Source = doc.left
-    doc.EndView.X = 40
+    doc.EndView.X = 35
     doc.EndView.Y = 180
     doc.EndView.Direction=(0.0,1.0,0.0)
+    doc.addObject('TechDraw::DrawViewDimension','Thick1')
+    doc.Thick1.Type = 'DistanceX'
+    doc.Thick1.References2D=[(doc.EndView,"Vertex7"),(doc.EndView,"Vertex4")]
+    doc.Thick1.Y = -10
+    doc.Thick1.X = 0
+    doc.Thick1.FormatSpec='t'
+    doc.Thick1.Arbitrary = True
+    doc.Page1.addView(doc.Thick1)
+    doc.addObject('TechDraw::DrawViewDimension','Thick2')
+    doc.Thick2.Type = 'DistanceY'
+    doc.Thick2.References2D=[(doc.EndView,"Vertex5"),(doc.EndView,"Vertex6")]
+    doc.Thick2.Y = 0
+    doc.Thick2.X = 10
+    doc.Thick2.FormatSpec='t'
+    doc.Thick2.Arbitrary = True
+    doc.Page1.addView(doc.Thick2)
+    sheet.set("A%d"%ir,'%-11.11s'%"t")
+    sheet.set("B%d"%ir,'%10.6f'%(BracketAngleDims._AngleThickness/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%BracketAngleDims._AngleThickness)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Height')
+    doc.Height.Type = 'DistanceX'
+    doc.Height.Y = 15
+    doc.Height.X = 0
+    doc.Height.References2D=[(doc.EndView,"Vertex0"),(doc.EndView,"Vertex5")]
+    doc.Height.FormatSpec='h'
+    doc.Height.Arbitrary = True
+    doc.Page1.addView(doc.Height)
+    sheet.set("A%d"%ir,'%-11.11s'%"h")
+    sheet.set("B%d"%ir,'%10.6f'%(BracketAngleDims._AngleHeight/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%BracketAngleDims._AngleHeight)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Width')
+    doc.Width.Type = 'DistanceY'
+    doc.Width.X = -15
+    doc.Width.Y = 0
+    doc.Width.References2D=[(doc.EndView,"Vertex4"),(doc.EndView,"Vertex0")]
+    doc.Width.FormatSpec='w'
+    doc.Width.Arbitrary = True
+    doc.Page1.addView(doc.Width)
+    sheet.set("A%d"%ir,'%-11.11s'%"w")
+    sheet.set("B%d"%ir,'%10.6f'%(BracketAngleDims._AngleWidth/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%BracketAngleDims._AngleWidth)
+    ir += 1
     doc.EndView.recompute()
     
     #
@@ -276,8 +335,31 @@ if __name__ == '__main__':
     doc.Page1.addView(doc.SideView)
     doc.SideView.Source = doc.left
     doc.SideView.X = 140
-    doc.SideView.Y = 130
+    doc.SideView.Y = 155
     doc.SideView.Direction=(1.0,0.0,0.0)
+    doc.addObject('TechDraw::DrawViewDimension','MDia')
+    doc.MDia.Type = 'Diameter'
+    doc.MDia.References2D=[(doc.SideView,"Edge10")]
+    doc.MDia.FormatSpec='MDia (4x)'
+    doc.MDia.Arbitrary = True
+    doc.MDia.X = 85
+    doc.MDia.Y = 18
+    doc.Page1.addView(doc.MDia)
+    sheet.set("A%d"%ir,'%-11.11s'%"MDia")
+    sheet.set("B%d"%ir,'%10.6f'%((LCDDims._M_r*2)/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%(LCDDims._M_r*2))
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MX')
+    doc.MX.Type = 'DistanceY'
+    doc.MX.References2D=[(doc.SideView,"Vertex4"),(doc.SideView,"Vertex17")]
+    doc.MX.FormatSpec='MX'
+    doc.MX.Arbitrary = True
+    doc.MX.X = 75
+    doc.Page1.addView(doc.MX)
+    sheet.set("A%d"%ir,'%-11.11s'%"MX")
+    sheet.set("B%d"%ir,'%10.6f'%(LCDDims._M_x/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%LCDDims._M_x)
+    ir += 1
     doc.SideView.recompute()
     #
     doc.addObject('TechDraw::DrawViewPart','BottomView')
@@ -286,7 +368,7 @@ if __name__ == '__main__':
     doc.BottomView.Direction=(0.0,0.0,-1.0)
     doc.BottomView.Rotation = 90
     doc.BottomView.X = 140
-    doc.BottomView.Y = 80
+    doc.BottomView.Y = 120
     #tz = bracket.bracket.Vertexes[0].Z
     #tx = bounds.XMin - 12.7
     v1 = bracket.polyVertexMap[0]
@@ -298,13 +380,20 @@ if __name__ == '__main__':
     #d1.ViewObject.Override="L"
     doc.addObject('TechDraw::DrawViewDimension','Length')
     doc.Length.Type = 'DistanceX'
-    doc.Length.References2D=[(doc.BottomView,"Vertex%d"%v1),\
-                             (doc.BottomView,"Vertex%d"%v2)]
+    #doc.Length.References2D=[(doc.BottomView,"Vertex%d"%(v1)),\
+    #                         (doc.BottomView,"Vertex%d"%(v2))]
+    doc.Length.References2D=[(doc.BottomView,"Vertex0"),\
+                             (doc.BottomView,"Vertex1")]
     doc.Length.FormatSpec='L'
     doc.Length.Arbitrary = True
     doc.Length.X = 0
-    doc.Length.Y = 32
+    doc.Length.Y = 25.4
     doc.Page1.addView(doc.Length)
+    sheet.set("A%d"%ir,'%-11.11s'%"L")
+    length = bracket.bracket.Vertexes[v2].Y-bracket.bracket.Vertexes[v1].Y
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
     v1 = v2
     v2 = bracket.polyVertexMap[2]
     #ty = bounds.YMax + 6.35
@@ -313,13 +402,6 @@ if __name__ == '__main__':
     #d2 = Draft.makeDimension(doc.left,v1,v2,tv)
     #d2.ViewObject.FontSize=5
     #d2.ViewObject.Override="w"
-    doc.addObject('TechDraw::DrawViewDimension','Width')
-    doc.Width.Type = 'DistanceY'
-    doc.Width.References2D=[(doc.BottomView,"Vertex%d"%v1),\
-                            (doc.BottomView,"Vertex%d"%v2)]
-    doc.Width.FormatSpec='w'
-    doc.Width.Arbitrary = True
-    doc.Page1.addView(doc.Width)
     v1 = v2
     v2 = bracket.polyVertexMap[3]
     #tx = bounds.XMin - 6.35
@@ -330,11 +412,20 @@ if __name__ == '__main__':
     #d3.ViewObject.Override="A"
     doc.addObject('TechDraw::DrawViewDimension','A')
     doc.A.Type = 'DistanceX'
-    doc.A.References2D=[(doc.BottomView,"Vertex%d"%v1),\
-                        (doc.BottomView,"Vertex%d"%v2)]
+    #doc.A.References2D=[(doc.BottomView,"Vertex%d"%(v1)),\
+    #                    (doc.BottomView,"Vertex%d"%(v2))]
+    doc.A.References2D=[(doc.BottomView,"Vertex3"),\
+                        (doc.BottomView,"Vertex6")]
     doc.A.FormatSpec='A'
     doc.A.Arbitrary = True
+    doc.A.Y = 15
+    doc.A.X = 75
     doc.Page1.addView(doc.A)
+    sheet.set("A%d"%ir,'%-11.11s'%"A")
+    length = bracket.bracket.Vertexes[v1].Y-bracket.bracket.Vertexes[v2].Y
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
     v1 = v2
     v2 = bracket.polyVertexMap[4]
     #ty = bracket.bracket.Vertexes[v1].Y - 6.35
@@ -344,12 +435,19 @@ if __name__ == '__main__':
     #d4.ViewObject.FontSize=5
     #d4.ViewObject.Override="N"
     doc.addObject('TechDraw::DrawViewDimension','N')
-    doc.N.Type = 'Distance'
-    doc.N.References2D=[(doc.BottomView,"Vertex%d"%v1),\
-                        (doc.BottomView,"Vertex%d"%v2)]
+    doc.N.Type = 'DistanceY'
+    #doc.N.References2D=[(doc.BottomView,"Vertex%d"%(v1)),\
+    #                    (doc.BottomView,"Vertex%d"%(v2))]
+    doc.N.References2D=[(doc.BottomView,"Vertex6"),\
+                        (doc.BottomView,"Vertex7")]
     doc.N.FormatSpec='N'
     doc.N.Arbitrary = True
     doc.Page1.addView(doc.N)
+    sheet.set("A%d"%ir,'%-11.11s'%"N")
+    length = bracket.bracket.Vertexes[v2].X-bracket.bracket.Vertexes[v1].X
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
     v1 = v2
     v2 = bracket.polyVertexMap[5]
     #tx = bounds.XMin - 6.35
@@ -359,12 +457,20 @@ if __name__ == '__main__':
     #d5.ViewObject.FontSize=5
     #d5.ViewObject.Override="B"
     doc.addObject('TechDraw::DrawViewDimension','B')
-    doc.B.Type = 'Distance'
-    doc.B.References2D=[(doc.BottomView,"Vertex%d"%v1),\
-                        (doc.BottomView,"Vertex%d"%v2)]
+    doc.B.Type = 'DistanceX'
+    #doc.B.References2D=[(doc.BottomView,"Vertex%d"%(v1)),\
+    #                    (doc.BottomView,"Vertex%d"%(v2))]
+    doc.B.References2D=[(doc.BottomView,"Vertex7"),\
+                        (doc.BottomView,"Vertex8")]
     doc.B.FormatSpec='B'
     doc.B.Arbitrary = True
+    doc.B.Y = 15
     doc.Page1.addView(doc.B)
+    sheet.set("A%d"%ir,'%-11.11s'%"B")
+    length = bracket.bracket.Vertexes[v1].Y-bracket.bracket.Vertexes[v2].Y
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
     ##
     e1 = bracket.BMHoleEdgeMap[1]
     #ty = bracket.bracket.Edges[e1].Curve.Center.y
@@ -375,12 +481,88 @@ if __name__ == '__main__':
     #d6.ViewObject.Override="BMDia"
     doc.addObject('TechDraw::DrawViewDimension','BMDia')
     doc.BMDia.Type = 'Diameter'
-    doc.BMDia.References2D=[(doc.BottomView,"Edge%d"%e1)]
-    doc.BMDia.FormatSpec='BMDia'
+    #doc.BMDia.References2D=[(doc.BottomView,"Edge%d"%(e1))]
+    doc.BMDia.References2D=[(doc.BottomView,"Edge12")]
+    doc.BMDia.FormatSpec='BMDia (4x)'
     doc.BMDia.Arbitrary = True
+    doc.BMDia.X = 85
+    doc.BMDia.Y = 18
     doc.Page1.addView(doc.BMDia)
+    sheet.set("A%d"%ir,'%-11.11s'%"BMDia")
+    sheet.set("B%d"%ir,'%10.6f'%((BracketAngleDims._BRACKET_r*2)/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%(BracketAngleDims._BRACKET_r*2))
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','M1')
+    doc.M1.Type = 'DistanceX'
+    doc.M1.References2D=[(doc.BottomView,"Vertex1"),
+                         (doc.BottomView,"Vertex15")]
+    doc.M1.FormatSpec='M1'
+    doc.M1.Arbitrary = True
+    doc.M1.Y = -15
+    doc.M1.X = 105.5
+    doc.Page1.addView(doc.M1)
+    sheet.set("A%d"%ir,'%-11.11s'%"M1")
+    length = LCDDims._M1_y
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','M2')
+    doc.M2.Type = 'DistanceX'
+    doc.M2.References2D=[(doc.BottomView,"Vertex15"),
+                         (doc.BottomView,"Vertex18")]
+    doc.M2.FormatSpec='M2'
+    doc.M2.Arbitrary = True
+    doc.M2.Y = -15
+    doc.M2.X = 73.5
+    doc.Page1.addView(doc.M2)
+    sheet.set("A%d"%ir,'%-11.11s'%"M2")
+    length = LCDDims._M2_y - LCDDims._M1_y
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','M3')
+    doc.M3.Type = 'DistanceX'
+    doc.M3.References2D=[(doc.BottomView,"Vertex18"),
+                         (doc.BottomView,"Vertex12")]
+    doc.M3.FormatSpec='M3'
+    doc.M3.Arbitrary = True
+    doc.M3.Y = -15
+    doc.Page1.addView(doc.M3)
+    length = LCDDims._M3_y - LCDDims._M2_y
+    sheet.set("A%d"%ir,'%-11.11s'%"M3")
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','M4')
+    doc.M4.Type = 'DistanceX'
+    doc.M4.References2D=[(doc.BottomView,"Vertex12"),
+                         (doc.BottomView,"Vertex21")]
+    doc.M4.FormatSpec='M4'
+    doc.M4.Arbitrary = True
+    doc.M4.Y = -15
+    doc.M4.X = -73.5
+    doc.Page1.addView(doc.M4)
+    length = LCDDims._M4_y - LCDDims._M3_y
+    sheet.set("A%d"%ir,'%-11.11s'%"M4")
+    sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
     doc.BottomView.recompute()
-    doc.Page1.ViewObject.show()
+
+    
+    sheet.recompute()
+    doc.addObject('TechDraw::DrawViewSpreadsheet','DimBlock')
+    doc.DimBlock.Source = sheet
+    doc.DimBlock.TextSize = 8
+    doc.DimBlock.CellEnd = "C%d"%(ir-1)
+    doc.DimBlock.X = 58
+    doc.DimBlock.Y = 55
+    #heading = ('|%-11.11s|%10.10s|%10.10s|'%("Dim","inch","mm"))
+    #tline = strdup('-',len(heading))
+    #doc.DimBlock.Text = ""
+    doc.Page1.addView(doc.DimBlock)
+    doc.DimBlock.recompute()    
+
     
 
     doc.recompute()       
