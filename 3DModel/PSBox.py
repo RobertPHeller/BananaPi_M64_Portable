@@ -1,3 +1,4 @@
+#!/usr/local/bin/FreeCAD018
 #*****************************************************************************
 #
 #  System        : 
@@ -8,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200610.1310>
+#  Last Modified : <200613.0733>
 #
 #  Description	
 #
@@ -43,12 +44,17 @@
 
 
 
-import Part, TechDraw
+import Part, TechDraw, Spreadsheet, TechDrawGui
+import FreeCADGui
+from FreeCAD import Console
 from FreeCAD import Base
 import FreeCAD as App
 import os
 import sys
 sys.path.append(os.path.dirname(__file__))
+
+import datetime
+
 
 from PSPCB import *
 from Electromech import *
@@ -331,10 +337,336 @@ class PSBox(CU_3002A):
 
 
 if __name__ == '__main__':
-    doc = App.newDocument("PowerSupplyBox")
-    App.setActiveDocument ( "PowerSupplyBox" )
+    if "PowerSupplyBoxTechDrawing" in App.listDocuments().keys():
+        App.closeDocument("PowerSupplyBoxTechDrawing")
+    App.ActiveDocument=App.newDocument("PowerSupplyBoxTechDrawing")
+    doc = App.activeDocument()
     o = Base.Vector(0,0,0)
     psbox = PSBox("psbox",o)
     psbox.show()
     Gui.SendMsgToActiveView("ViewFit")
+    Gui.activeDocument().activeView().viewIsometric()
+    basebounds = psbox.base.BoundBox
+    coverbounds = psbox.cover.BoundBox
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    edt['CompanyName'] = "Deepwoods Software"
+    edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
+    edt['DrawingTitle1']= 'Power Supply Box'
+    edt['DrawingTitle3']= ""
+    edt['DrawnBy'] = "Robert Heller"
+    edt['CheckedBy'] = ""
+    edt['Approved1'] = ""
+    edt['Approved2'] = ""
+    edt['Code'] = ""
+    edt['Weight'] = ''
+    edt['DrawingNumber'] = datetime.datetime.now().ctime()
+    edt['Revision'] = "A"
+    doc.USLetterTemplate.EditableTexts = edt
+    doc.addObject('TechDraw::DrawPage','PowerSupplyBoxBasePage')
+    doc.PowerSupplyBoxBasePage.Template = doc.USLetterTemplate
+    edt = doc.PowerSupplyBoxBasePage.Template.EditableTexts
+    edt['DrawingTitle2']= "Base"
+    edt['Scale'] = '1:1'
+    edt['Sheet'] = "Sheet 1 of 3"
+    doc.PowerSupplyBoxBasePage.Template.EditableTexts = edt
+    doc.PowerSupplyBoxBasePage.ViewObject.show()
+    basesheet = doc.addObject('Spreadsheet::Sheet','BaseDimensionTable')
+    basesheet.set("A1",'%-11.11s'%"Dim")
+    basesheet.set("B1",'%10.10s'%"inch")
+    basesheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','BaseTopView')
+    doc.PowerSupplyBoxBasePage.addView(doc.BaseTopView)
+    doc.BaseTopView.Source = doc.psbox_CU3002ABase
+    doc.BaseTopView.X = 60
+    doc.BaseTopView.Y = 140
+    doc.BaseTopView.Direction=(0.0,0.0,1.0)
+    doc.BaseTopView.Caption = "Top"
+    doc.addObject('TechDraw::DrawViewDimension','MHDia')
+    doc.MHDia.Type = 'Diameter'
+    doc.MHDia.References2D=[(doc.BaseTopView,"Edge5")]
+    doc.MHDia.FormatSpec='MHDia (4x)'
+    doc.MHDia.Arbitrary = True
+    doc.MHDia.X = 0
+    doc.MHDia.Y = -40
+    doc.PowerSupplyBoxBasePage.addView(doc.MHDia)
+    basesheet.set("A%d"%ir,'%-11.11s'%"MHDia")
+    basesheet.set("B%d"%ir,'%10.6f'%(PSOnPCB._mhdia/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%PSOnPCB._mhdia)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','A')
+    doc.A.Type = 'DistanceX'
+    doc.A.References2D=[(doc.BaseTopView,"Vertex6"),(doc.BaseTopView,"Vertex9")]
+    doc.A.FormatSpec='A'
+    doc.A.Arbitrary = True
+    doc.A.X = 0
+    doc.A.Y = 40
+    doc.PowerSupplyBoxBasePage.addView(doc.A)
+    basesheet.set("A%d"%ir,'%-11.11s'%"A")
+    ADist = PCBwithStrips._psPCBwidth-(PCBwithStrips._stripIncr*2)
+    basesheet.set("B%d"%ir,'%10.6f'%(ADist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%ADist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','B')
+    doc.B.Type = 'DistanceY'
+    doc.B.References2D=[(doc.BaseTopView,"Vertex9"),(doc.BaseTopView,"Vertex12")]
+    doc.B.FormatSpec='B'
+    doc.B.Arbitrary = True
+    doc.B.X = 8
+    doc.B.Y = 0
+    doc.PowerSupplyBoxBasePage.addView(doc.B)
+    basesheet.set("A%d"%ir,'%-11.11s'%"B")
+    BDist = PCBwithStrips._psPCBlength-(2*(PCBwithStrips._stripIncr+5*2.54))
+    basesheet.set("B%d"%ir,'%10.6f'%(BDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%BDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','C')
+    doc.C.Type = 'DistanceX'
+    doc.C.References2D=[(doc.BaseTopView,"Vertex17"),(doc.BaseTopView,"Vertex15")]
+    doc.C.FormatSpec='C'
+    doc.C.Arbitrary = True
+    doc.C.X = -25
+    doc.C.Y = -60
+    doc.PowerSupplyBoxBasePage.addView(doc.C)
+    basesheet.set("A%d"%ir,'%-11.11s'%"C")
+    CDist = psbox.pspcb.mhvector[1].x - o.x
+    basesheet.set("B%d"%ir,'%10.6f'%(CDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%CDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','D')
+    doc.D.Type = 'DistanceY'
+    doc.D.References2D=[(doc.BaseTopView,"Vertex17"),(doc.BaseTopView,"Vertex15")]
+    doc.D.FormatSpec='D'
+    doc.D.Arbitrary = True
+    doc.D.X = -36
+    doc.D.Y = -37.5
+    doc.PowerSupplyBoxBasePage.addView(doc.D)
+    basesheet.set("A%d"%ir,'%-11.11s'%"D")
+    DDist = psbox.pspcb.mhvector[1].y - o.y
+    basesheet.set("B%d"%ir,'%10.6f'%(DDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%DDist)
+    ir += 1
+    doc.BaseTopView.recompute()
+
+    doc.addObject('TechDraw::DrawViewPart','BaseFrontView')
+    doc.PowerSupplyBoxBasePage.addView(doc.BaseFrontView)
+    doc.BaseFrontView.Source = doc.psbox_CU3002ABase
+    doc.BaseFrontView.X = 128
+    doc.BaseFrontView.Y = 170
+    doc.BaseFrontView.Direction=(0.0,-1.0,0.0)
+    doc.BaseFrontView.Caption = "Front"
+    doc.addObject('TechDraw::DrawViewDimension','E')
+    doc.E.Type = 'Diameter'
+    doc.E.References2D=[(doc.BaseFrontView,"Edge15")]
+    doc.E.FormatSpec='EDia'
+    doc.E.Arbitrary = True
+    doc.E.X = 15
+    doc.E.Y = 15
+    doc.PowerSupplyBoxBasePage.addView(doc.E)
+    basesheet.set("A%d"%ir,'%-11.11s'%"EDia")
+    basesheet.set("B%d"%ir,'%10.6f'%(DCStrainRelief._bodydia/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%DCStrainRelief._bodydia)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','F')
+    doc.F.Type = 'DistanceX'
+    doc.F.References2D=[(doc.BaseFrontView,"Vertex1"),\
+                        (doc.BaseFrontView,"Vertex14")]
+    doc.F.FormatSpec='F'
+    doc.F.Arbitrary = True
+    doc.F.X = -15
+    doc.F.Y = -10
+    doc.PowerSupplyBoxBasePage.addView(doc.F)
+    basesheet.set("A%d"%ir,'%-11.11s'%"F")
+    FDist = psbox.dcstrainrelief.origin.x-o.x # DistanceX
+    basesheet.set("B%d"%ir,'%10.6f'%(FDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%FDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','G')
+    doc.G.Type = 'DistanceY'
+    doc.G.References2D=[(doc.BaseFrontView,"Vertex1"),\
+                        (doc.BaseFrontView,"Vertex14")]
+    doc.G.FormatSpec='G'
+    doc.G.Arbitrary = True
+    doc.G.X = 15
+    doc.G.Y = -10
+    doc.PowerSupplyBoxBasePage.addView(doc.G)
+    basesheet.set("A%d"%ir,'%-11.11s'%"G")
+    GDist = psbox.dcstrainrelief.origin.z-o.z # DIstanceY
+    basesheet.set("B%d"%ir,'%10.6f'%(GDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%GDist)
+    ir += 1
+    doc.BaseFrontView.recompute()
+
+    doc.addObject('TechDraw::DrawViewPart','BaseRearView')
+    doc.PowerSupplyBoxBasePage.addView(doc.BaseRearView)
+    doc.BaseRearView.Source = doc.psbox_CU3002ABase
+    doc.BaseRearView.X = 128
+    doc.BaseRearView.Y = 110
+    doc.BaseRearView.Direction=(0.0,1.0,0.0)
+    doc.BaseRearView.Caption = "Rear"
+    #Vertex1 -- origin
+    #Vertex11 -- inlet.origin
+    #Vertex12 -- inlet height
+    #Vertex14 -- inlet width
+    doc.addObject('TechDraw::DrawViewDimension','H')
+    doc.H.Type = 'DistanceX'
+    doc.H.References2D=[(doc.BaseRearView,"Vertex11"),(doc.BaseRearView,"Vertex14")]
+    doc.H.FormatSpec="H"
+    doc.H.Arbitrary = True
+    doc.H.X = 12
+    doc.H.Y = 14
+    doc.PowerSupplyBoxBasePage.addView(doc.H)
+    basesheet.set("A%d"%ir,'%-11.11s'%"H")
+    basesheet.set("B%d"%ir,'%10.6f'%(Inlet._bodywidth/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%Inlet._bodywidth)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','I')
+    doc.I.Type = 'DistanceY'
+    doc.I.References2D=[(doc.BaseRearView,"Vertex11"),(doc.BaseRearView,"Vertex12")]
+    doc.I.FormatSpec="I"
+    doc.I.Arbitrary = True
+    doc.I.X = 15
+    doc.I.Y = 7
+    basesheet.set("A%d"%ir,'%-11.11s'%"I")
+    doc.PowerSupplyBoxBasePage.addView(doc.I)
+    basesheet.set("B%d"%ir,'%10.6f'%(Inlet._bodyheight/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%Inlet._bodyheight)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','J')
+    doc.J.Type = 'DistanceX'
+    doc.J.References2D=[(doc.BaseRearView,"Vertex1"),(doc.BaseRearView,"Vertex11")]
+    doc.J.FormatSpec="J"
+    doc.J.Arbitrary = True
+    doc.J.X = 18
+    doc.J.Y = -6
+    doc.PowerSupplyBoxBasePage.addView(doc.J)
+    basesheet.set("A%d"%ir,'%-11.11s'%"J")
+    JDist = psbox.inlet.origin.x - o.x
+    basesheet.set("B%d"%ir,'%10.6f'%(JDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%JDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','K')
+    doc.K.Type = 'DistanceY'
+    doc.K.References2D=[(doc.BaseRearView,"Vertex1"),(doc.BaseRearView,"Vertex11")]
+    doc.K.FormatSpec="K"
+    doc.K.Arbitrary = True
+    doc.K.X = -12
+    doc.K.Y = -10
+    doc.PowerSupplyBoxBasePage.addView(doc.K)
+    basesheet.set("A%d"%ir,'%-11.11s'%"K")
+    KDist = psbox.inlet.origin.z - o.z
+    basesheet.set("B%d"%ir,'%10.6f'%(KDist/25.4))
+    basesheet.set("C%d"%ir,'%10.6f'%KDist)
+    ir += 1
+    doc.BaseRearView.recompute()
+
+    doc.addObject('TechDraw::DrawViewPart','BaseISOView')
+    doc.PowerSupplyBoxBasePage.addView(doc.BaseISOView)
+    doc.BaseISOView.Source = doc.psbox_CU3002ABase
+    doc.BaseISOView.Scale = .375
+    doc.BaseISOView.X = 55#210
+    doc.BaseISOView.Y = 50#165
+    doc.BaseISOView.Direction=(1.0,-1.0,1.0)
+    doc.BaseISOView.Caption = "ISOMetric"
+
+    doc.BaseISOView.recompute()    
+    
+    basesheet.recompute()
+    doc.addObject('TechDraw::DrawViewSpreadsheet','BaseDimBlock')
+    doc.BaseDimBlock.Source = basesheet
+    doc.BaseDimBlock.TextSize = 8
+    doc.BaseDimBlock.CellEnd = "C%d"%(ir-1)
+    doc.PowerSupplyBoxBasePage.addView(doc.BaseDimBlock)
+    doc.BaseDimBlock.recompute()
+    doc.BaseDimBlock.X = 210
+    doc.BaseDimBlock.Y = 160
+
+    doc.PowerSupplyBoxBasePage.recompute()
+
+
+    doc.addObject('TechDraw::DrawPage','PowerSupplyBoxCoverPage')
+    doc.PowerSupplyBoxCoverPage.Template = doc.USLetterTemplate
+    edt = doc.PowerSupplyBoxCoverPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Cover"
+    edt['Sheet'] = "Sheet 2 of 3"
+    doc.PowerSupplyBoxCoverPage.Template.EditableTexts = edt
+    doc.PowerSupplyBoxCoverPage.ViewObject.show()
+    coversheet = doc.addObject('Spreadsheet::Sheet','CoverDimensionTable')
+    coversheet.set("A1",'%-11.11s'%"Dim")
+    coversheet.set("B1",'%10.10s'%"inch")
+    coversheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','CoverLeftView')
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverLeftView)
+    doc.CoverLeftView.Source = doc.psbox_CU3002ACover
+    doc.CoverLeftView.X = 80
+    doc.CoverLeftView.Y = 170
+    doc.CoverLeftView.Direction=(-1.0,0.0,0.0)
+    doc.CoverLeftView.Caption = "Left"
+    doc.CoverLeftView.recompute()
+    
+    doc.addObject('TechDraw::DrawViewPart','CoverRightView')
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverRightView)
+    doc.CoverRightView.Source = doc.psbox_CU3002ACover
+    doc.CoverRightView.X = 80
+    doc.CoverRightView.Y = 110
+    doc.CoverRightView.Direction=(1.0,0.0,0.0)
+    doc.CoverRightView.Caption = "Right"
+    doc.CoverRightView.Scale = 1
+    obj = doc.CoverRightView
+    objprops = obj.PropertiesList
+    for p in objprops:
+        Console.PrintMessage("Property: "+ str(p)+ " Value: " + str(obj.getPropertyByName(p))+"\r\n")
+    # Edge137    -- Round Fan Cutout (left)
+    # Vertex354  -- Round Fan Cutout Center (left)
+    # Vertex342  -- Round Fan Cutout Center (right)
+    # Vertex351  -- Left Fan MH (lower left)
+    # Vertex357  -- Left Fan MH (lower right)
+    # Vertex333  -- Left Fan MH (upper left)
+    # Vertex327  -- Left Fan MH (upper right)
+    
+    doc.CoverRightView.recompute()
+    
+    doc.addObject('TechDraw::DrawViewPart','CoverISOView')
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverISOView)
+    doc.CoverISOView.Source = doc.psbox_CU3002ACover
+    doc.CoverISOView.X = 55
+    doc.CoverISOView.Y = 50
+    doc.CoverISOView.Scale = .375
+    doc.CoverISOView.Direction=(1.0,-1.0,1.0)
+    doc.CoverISOView.Caption = "ISOMetric"
+    doc.CoverISOView.recompute()
+    
+    doc.addObject('TechDraw::DrawViewSpreadsheet','CoverDimBlock')
+    doc.CoverDimBlock.Source = coversheet
+    doc.CoverDimBlock.TextSize = 8
+    doc.CoverDimBlock.CellEnd = "C%d"%(ir-1)
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverDimBlock)
+    doc.CoverDimBlock.recompute()
+    doc.CoverDimBlock.X = 210
+    doc.CoverDimBlock.Y = 160
+
+    doc.PowerSupplyBoxCoverPage.recompute()
+
+
+
+    doc.addObject('TechDraw::DrawPage','PowerSupplyBoxGrillPage')
+    doc.PowerSupplyBoxGrillPage.Template = doc.USLetterTemplate
+    edt = doc.PowerSupplyBoxGrillPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Grill"
+    edt['Sheet'] = "Sheet 3 of 3"
+    doc.PowerSupplyBoxGrillPage.Template.EditableTexts = edt
+    #doc.PowerSupplyBoxGrillPage.ViewObject.show()
+    grillsheet = doc.addObject('Spreadsheet::Sheet','GrillDimensionTable')
+    grillsheet.set("A1",'%-11.11s'%"Dim")
+    grillsheet.set("B1",'%10.10s'%"inch")
+    grillsheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+
+    doc.recompute()
     

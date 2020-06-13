@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 22:09:45 2020
-#  Last Modified : <200611.1033>
+#  Last Modified : <200612.0842>
 #
 #  Description	
 #
@@ -43,14 +43,14 @@
 
 
 
-import Part, TechDraw, Spreadsheet
+import Part, TechDraw, Spreadsheet, TechDrawGui
 from FreeCAD import Base
 import FreeCAD as App
 
 import os
 import sys
 sys.path.append(os.path.dirname(__file__))
-
+import datetime
 from LCDScreen import *
 
 class BracketAngleDims(object):
@@ -244,9 +244,9 @@ class LCDMountingBracket(LCDDims,BracketAngleDims):
             i += 1
 
 if __name__ == '__main__':
-    if "TestDimension" in App.listDocuments().keys():
-        App.closeDocument("TestDimension")
-    App.ActiveDocument=App.newDocument("TestDimension")
+    if "LeftBracketTechDrawing" in App.listDocuments().keys():
+        App.closeDocument("LeftBracketTechDrawing")
+    App.ActiveDocument=App.newDocument("LeftBracketTechDrawing")
     doc = App.activeDocument()
     bracket = LCDMountingBracket("left",Base.Vector(0,0,0))
     bracket.show()
@@ -254,16 +254,16 @@ if __name__ == '__main__':
     bounds = bracket.bracket.BoundBox
     ##
     ## 
-    doc.addObject('TechDraw::DrawPage','Page1')
+    doc.addObject('TechDraw::DrawPage','LeftBracketPage')
     doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
     doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
-    doc.Page1.Template = doc.USLetterTemplate
-    edt = doc.Page1.Template.EditableTexts
+    doc.LeftBracketPage.Template = doc.USLetterTemplate
+    edt = doc.LeftBracketPage.Template.EditableTexts
     #print (edt.keys())
     edt['CompanyName'] = "Deepwoods Software"
     edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
     edt['DrawingTitle1']= 'Left LCD Mounting Bracket'
-    edt['DrawingTitle2']= ""
+    edt['DrawingTitle2']= "(Right bracket is just a mirror image)"
     edt['DrawingTitle3']= ""
     edt['DrawnBy'] = "Robert Heller"
     edt['CheckedBy'] = ""
@@ -273,10 +273,10 @@ if __name__ == '__main__':
     edt['Weight'] = ""
     edt['Sheet'] = "Sheet 1 of 1"
     edt['Code'] = ""
-    edt['DrawingNumber'] = ""
+    edt['DrawingNumber'] = datetime.datetime.now().ctime()
     edt['Revision'] = "A"
-    doc.Page1.Template.EditableTexts = edt
-    doc.Page1.ViewObject.show()
+    doc.LeftBracketPage.Template.EditableTexts = edt
+    doc.LeftBracketPage.ViewObject.show()
     #
     sheet = doc.addObject('Spreadsheet::Sheet','DimensionTable')
     
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     ir = 2
     #
     doc.addObject('TechDraw::DrawViewPart','EndView')
-    doc.Page1.addView(doc.EndView)
+    doc.LeftBracketPage.addView(doc.EndView)
     doc.EndView.Source = doc.left
     doc.EndView.X = 35
     doc.EndView.Y = 180
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     doc.Thick1.X = 0
     doc.Thick1.FormatSpec='t'
     doc.Thick1.Arbitrary = True
-    doc.Page1.addView(doc.Thick1)
+    doc.LeftBracketPage.addView(doc.Thick1)
     doc.addObject('TechDraw::DrawViewDimension','Thick2')
     doc.Thick2.Type = 'DistanceY'
     doc.Thick2.References2D=[(doc.EndView,"Vertex5"),(doc.EndView,"Vertex6")]
@@ -306,7 +306,7 @@ if __name__ == '__main__':
     doc.Thick2.X = 10
     doc.Thick2.FormatSpec='t'
     doc.Thick2.Arbitrary = True
-    doc.Page1.addView(doc.Thick2)
+    doc.LeftBracketPage.addView(doc.Thick2)
     sheet.set("A%d"%ir,'%-11.11s'%"t")
     sheet.set("B%d"%ir,'%10.6f'%(BracketAngleDims._AngleThickness/25.4))
     sheet.set("C%d"%ir,'%10.6f'%BracketAngleDims._AngleThickness)
@@ -318,7 +318,7 @@ if __name__ == '__main__':
     doc.Height.References2D=[(doc.EndView,"Vertex0"),(doc.EndView,"Vertex5")]
     doc.Height.FormatSpec='h'
     doc.Height.Arbitrary = True
-    doc.Page1.addView(doc.Height)
+    doc.LeftBracketPage.addView(doc.Height)
     sheet.set("A%d"%ir,'%-11.11s'%"h")
     sheet.set("B%d"%ir,'%10.6f'%(BracketAngleDims._AngleHeight/25.4))
     sheet.set("C%d"%ir,'%10.6f'%BracketAngleDims._AngleHeight)
@@ -330,7 +330,7 @@ if __name__ == '__main__':
     doc.Width.References2D=[(doc.EndView,"Vertex4"),(doc.EndView,"Vertex0")]
     doc.Width.FormatSpec='w'
     doc.Width.Arbitrary = True
-    doc.Page1.addView(doc.Width)
+    doc.LeftBracketPage.addView(doc.Width)
     sheet.set("A%d"%ir,'%-11.11s'%"w")
     sheet.set("B%d"%ir,'%10.6f'%(BracketAngleDims._AngleWidth/25.4))
     sheet.set("C%d"%ir,'%10.6f'%BracketAngleDims._AngleWidth)
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     
     #
     doc.addObject('TechDraw::DrawViewPart','SideView')
-    doc.Page1.addView(doc.SideView)
+    doc.LeftBracketPage.addView(doc.SideView)
     doc.SideView.Source = doc.left
     doc.SideView.X = 140
     doc.SideView.Y = 155
@@ -351,7 +351,7 @@ if __name__ == '__main__':
     doc.MDia.Arbitrary = True
     doc.MDia.X = 85
     doc.MDia.Y = 18
-    doc.Page1.addView(doc.MDia)
+    doc.LeftBracketPage.addView(doc.MDia)
     sheet.set("A%d"%ir,'%-11.11s'%"MDia")
     sheet.set("B%d"%ir,'%10.6f'%((LCDDims._M_r*2)/25.4))
     sheet.set("C%d"%ir,'%10.6f'%(LCDDims._M_r*2))
@@ -362,7 +362,7 @@ if __name__ == '__main__':
     doc.MX.FormatSpec='MX'
     doc.MX.Arbitrary = True
     doc.MX.X = 75
-    doc.Page1.addView(doc.MX)
+    doc.LeftBracketPage.addView(doc.MX)
     sheet.set("A%d"%ir,'%-11.11s'%"MX")
     sheet.set("B%d"%ir,'%10.6f'%(LCDDims._M_x/25.4))
     sheet.set("C%d"%ir,'%10.6f'%LCDDims._M_x)
@@ -370,7 +370,7 @@ if __name__ == '__main__':
     doc.SideView.recompute()
     #
     doc.addObject('TechDraw::DrawViewPart','BottomView')
-    doc.Page1.addView(doc.BottomView)
+    doc.LeftBracketPage.addView(doc.BottomView)
     doc.BottomView.Source = doc.left
     doc.BottomView.Direction=(0.0,0.0,-1.0)
     doc.BottomView.Rotation = 90
@@ -395,7 +395,7 @@ if __name__ == '__main__':
     doc.Length.Arbitrary = True
     doc.Length.X = 0
     doc.Length.Y = 25.4
-    doc.Page1.addView(doc.Length)
+    doc.LeftBracketPage.addView(doc.Length)
     sheet.set("A%d"%ir,'%-11.11s'%"L")
     length = bracket.bracket.Vertexes[v2].Y-bracket.bracket.Vertexes[v1].Y
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -427,7 +427,7 @@ if __name__ == '__main__':
     doc.A.Arbitrary = True
     doc.A.Y = 15
     doc.A.X = 75
-    doc.Page1.addView(doc.A)
+    doc.LeftBracketPage.addView(doc.A)
     sheet.set("A%d"%ir,'%-11.11s'%"A")
     length = bracket.bracket.Vertexes[v1].Y-bracket.bracket.Vertexes[v2].Y
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -449,7 +449,7 @@ if __name__ == '__main__':
                         (doc.BottomView,"Vertex7")]
     doc.N.FormatSpec='N'
     doc.N.Arbitrary = True
-    doc.Page1.addView(doc.N)
+    doc.LeftBracketPage.addView(doc.N)
     sheet.set("A%d"%ir,'%-11.11s'%"N")
     length = bracket.bracket.Vertexes[v2].X-bracket.bracket.Vertexes[v1].X
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -472,7 +472,7 @@ if __name__ == '__main__':
     doc.B.FormatSpec='B'
     doc.B.Arbitrary = True
     doc.B.Y = 15
-    doc.Page1.addView(doc.B)
+    doc.LeftBracketPage.addView(doc.B)
     sheet.set("A%d"%ir,'%-11.11s'%"B")
     length = bracket.bracket.Vertexes[v1].Y-bracket.bracket.Vertexes[v2].Y
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -494,7 +494,7 @@ if __name__ == '__main__':
     doc.BMDia.Arbitrary = True
     doc.BMDia.X = 85
     doc.BMDia.Y = 18
-    doc.Page1.addView(doc.BMDia)
+    doc.LeftBracketPage.addView(doc.BMDia)
     sheet.set("A%d"%ir,'%-11.11s'%"BMDia")
     sheet.set("B%d"%ir,'%10.6f'%((BracketAngleDims._BRACKET_r*2)/25.4))
     sheet.set("C%d"%ir,'%10.6f'%(BracketAngleDims._BRACKET_r*2))
@@ -507,7 +507,7 @@ if __name__ == '__main__':
     doc.M1.Arbitrary = True
     doc.M1.Y = -15
     doc.M1.X = 105.5
-    doc.Page1.addView(doc.M1)
+    doc.LeftBracketPage.addView(doc.M1)
     sheet.set("A%d"%ir,'%-11.11s'%"M1")
     length = LCDDims._M1_y
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -521,7 +521,7 @@ if __name__ == '__main__':
     doc.M2.Arbitrary = True
     doc.M2.Y = -15
     doc.M2.X = 73.5
-    doc.Page1.addView(doc.M2)
+    doc.LeftBracketPage.addView(doc.M2)
     sheet.set("A%d"%ir,'%-11.11s'%"M2")
     length = LCDDims._M2_y - LCDDims._M1_y
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -534,7 +534,7 @@ if __name__ == '__main__':
     doc.M3.FormatSpec='M3'
     doc.M3.Arbitrary = True
     doc.M3.Y = -15
-    doc.Page1.addView(doc.M3)
+    doc.LeftBracketPage.addView(doc.M3)
     length = LCDDims._M3_y - LCDDims._M2_y
     sheet.set("A%d"%ir,'%-11.11s'%"M3")
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -548,7 +548,7 @@ if __name__ == '__main__':
     doc.M4.Arbitrary = True
     doc.M4.Y = -15
     doc.M4.X = -73.5
-    doc.Page1.addView(doc.M4)
+    doc.LeftBracketPage.addView(doc.M4)
     length = LCDDims._M4_y - LCDDims._M3_y
     sheet.set("A%d"%ir,'%-11.11s'%"M4")
     sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
@@ -562,12 +562,13 @@ if __name__ == '__main__':
     doc.DimBlock.Source = sheet
     doc.DimBlock.TextSize = 8
     doc.DimBlock.CellEnd = "C%d"%(ir-1)
-    doc.DimBlock.X = 58
-    doc.DimBlock.Y = 55
-    doc.Page1.addView(doc.DimBlock)
+    doc.DimBlock.X = 67
+    doc.DimBlock.Y = 58
+    doc.LeftBracketPage.addView(doc.DimBlock)
     doc.DimBlock.recompute()    
-
-    
-
+    doc.DimBlock.X = 67
+    doc.DimBlock.Y = 58
     doc.recompute()       
-    
+    TechDrawGui.exportPageAsPdf(doc.LeftBracketPage,"BananaPiM64Model_leftbracket_new.pdf")
+    App.closeDocument("LeftBracketTechDrawing")
+    sys.exit(1)
