@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Mon Jun 1 10:34:36 2020
-#  Last Modified : <200606.1804>
+#  Last Modified : <200613.1827>
 #
 #  Description	
 #
@@ -145,6 +145,9 @@ class Fan02510SS_05P_AT00(object):
     _fanmholespacing = 20
     _fanmholedia = 2.8
     _fanholedia = 24.3
+    def mhxyoff(self):
+        return (Fan02510SS_05P_AT00._fanwidth_height-\
+                Fan02510SS_05P_AT00._fanmholespacing)/2.0
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -160,8 +163,7 @@ class Fan02510SS_05P_AT00(object):
                                    Fan02510SS_05P_AT00._fanwidth_height,
                                    forig,XNorm
                                   ).extrude(fanextrude)
-        mhXYoff = (Fan02510SS_05P_AT00._fanwidth_height-
-                   Fan02510SS_05P_AT00._fanmholespacing)/2.0
+        mhXYoff = self.mhxyoff()
         self.mh = dict()
         self.mh[1] = Base.Vector(ox,oy+mhXYoff,oz+mhXYoff)
         self.mh[2] = Base.Vector(ox,
