@@ -1,3 +1,4 @@
+#!/usr/local/bin/FreeCAD018
 #*****************************************************************************
 #
 #  System        : 
@@ -8,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:24 2020
-#  Last Modified : <200606.1914>
+#  Last Modified : <200614.2319>
 #
 #  Description	
 #
@@ -41,9 +42,19 @@
 #*****************************************************************************
 
 
-import Part
+import Part, TechDraw, Spreadsheet, TechDrawGui
+import FreeCADGui
+from FreeCAD import Console
 from FreeCAD import Base
 import FreeCAD as App
+
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
+
+import datetime
+
+
 
 class TeensyThumbStick_(object):
     _Width = 68.62
@@ -229,6 +240,10 @@ class TeensyThumbStickCover(TeensyThumbStick_):
                               cutouto).extrude(thick)
 
 if __name__ == '__main__':
+    if "TeensyThumbStickCoverTechDrawing" in App.listDocuments().keys():
+        App.closeDocument("TeensyThumbStickCoverTechDrawing")
+    App.ActiveDocument=App.newDocument("TeensyThumbStickCoverTechDrawing")
+    doc = App.activeDocument()
     orig = Base.Vector(0,0,0)
     thick = .125*25.4
     thickness = Base.Vector(0,0,thick)
@@ -272,4 +287,298 @@ if __name__ == '__main__':
     obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
     teensythumbstick.show()
     teensythumbstickcover.show()
+    Gui.SendMsgToActiveView("ViewFit")
+    Gui.activeDocument().activeView().viewIsometric()
+    coverbounds = teensythumbstickcover.coverpanel.BoundBox
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    doc.addObject('TechDraw::DrawPage','TeensyThumbStickCoverPage')
+    doc.TeensyThumbStickCoverPage.Template = doc.USLetterTemplate
+    edt = doc.TeensyThumbStickCoverPage.Template.EditableTexts
+    edt['CompanyName'] = "Deepwoods Software"
+    edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
+    edt['DrawingTitle1']= 'Teensy Cover Panel'
+    edt['DrawingTitle3']= ""
+    edt['DrawnBy'] = "Robert Heller"
+    edt['CheckedBy'] = ""
+    edt['Approved1'] = ""
+    edt['Approved2'] = ""
+    edt['Code'] = ""
+    edt['Weight'] = ''
+    edt['DrawingNumber'] = datetime.datetime.now().ctime()
+    edt['Revision'] = "A"
+    edt['DrawingTitle2']= ""
+    edt['Scale'] = '1:1'
+    edt['Sheet'] = "Sheet 1 of 1"
+    doc.TeensyThumbStickCoverPage.Template.EditableTexts = edt
+    doc.TeensyThumbStickCoverPage.ViewObject.show()
+    sheet = doc.addObject('Spreadsheet::Sheet','DimensionTable')
+    sheet.set("A1",'%-11.11s'%"Dim")
+    sheet.set("B1",'%10.10s'%"inch")
+    sheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','TopView')
+    doc.TeensyThumbStickCoverPage.addView(doc.TopView)
+    doc.TopView.Source = doc.teensythumbstickcover
+    doc.TopView.X = 75
+    doc.TopView.Y = 155
+    doc.TopView.Direction=(0.0,0.0,1.0)
     
+    doc.addObject('TechDraw::DrawViewDimension','Height')
+    doc.Height.Type = 'DistanceY'
+    doc.Height.References2D=[(doc.TopView,'Vertex0'),\
+                             (doc.TopView,'Vertex3')]
+    doc.Height.FormatSpec='h'
+    doc.Height.Arbitrary = True
+    doc.Height.X = -50
+    doc.Height.Y = 0
+    doc.TeensyThumbStickCoverPage.addView(doc.Height)
+    sheet.set("A%d"%ir,'%-11.11s'%"h")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._Height/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._Height)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Width')
+    doc.Width.Type = 'DistanceX'
+    doc.Width.References2D=[(doc.TopView,'Vertex0'),\
+                            (doc.TopView,'Vertex3')]
+    doc.Width.FormatSpec='w'
+    doc.Width.Arbitrary = True
+    doc.Width.X = 0
+    doc.Width.Y = -50
+    doc.TeensyThumbStickCoverPage.addView(doc.Width)
+    sheet.set("A%d"%ir,'%-11.11s'%"w")
+    sheet.set("B%d"%ir,'%10.6f'%((TeensyThumbStickCover._Width+12.7)/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%(TeensyThumbStickCover._Width+12.7))
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewDimension','CutoutHeight')
+    doc.CutoutHeight.Type = 'DistanceY'
+    doc.CutoutHeight.References2D=[(doc.TopView,'Vertex19'),\
+                             (doc.TopView,'Vertex22')]
+    doc.CutoutHeight.FormatSpec='H'
+    doc.CutoutHeight.Arbitrary = True
+    doc.CutoutHeight.X = 17
+    doc.CutoutHeight.Y = 11
+    doc.TeensyThumbStickCoverPage.addView(doc.CutoutHeight)
+    sheet.set("A%d"%ir,'%-11.11s'%"H")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._CoverCutoutHeight/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._CoverCutoutHeight)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CutoutWidth')
+    doc.CutoutWidth.Type = 'DistanceX'
+    doc.CutoutWidth.References2D=[(doc.TopView,'Vertex19'),\
+                            (doc.TopView,'Vertex22')]
+    doc.CutoutWidth.FormatSpec='W'
+    doc.CutoutWidth.Arbitrary = True
+    doc.CutoutWidth.X = 0
+    doc.CutoutWidth.Y = 8
+    doc.TeensyThumbStickCoverPage.addView(doc.CutoutWidth)
+    sheet.set("A%d"%ir,'%-11.11s'%"W")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._CoverCutoutWidth/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._CoverCutoutWidth)
+    ir += 1
+
+
+    doc.addObject('TechDraw::DrawViewDimension','CutoutY')
+    doc.CutoutY.Type = 'DistanceY'
+    doc.CutoutY.References2D=[(doc.TopView,'Vertex19'),\
+                             (doc.TopView,'Vertex0')]
+    doc.CutoutY.FormatSpec='Y'
+    doc.CutoutY.Arbitrary = True
+    doc.CutoutY.X = -18
+    doc.CutoutY.Y = -20
+    doc.TeensyThumbStickCoverPage.addView(doc.CutoutY)
+    sheet.set("A%d"%ir,'%-11.11s'%"Y")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._CoverCutoutY/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._CoverCutoutY)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CutoutX')
+    doc.CutoutX.Type = 'DistanceX'
+    doc.CutoutX.References2D=[(doc.TopView,'Vertex19'),\
+                            (doc.TopView,'Vertex0')]
+    doc.CutoutX.FormatSpec='X'
+    doc.CutoutX.Arbitrary = True
+    doc.CutoutX.X = -32
+    doc.CutoutX.Y = -9
+    doc.TeensyThumbStickCoverPage.addView(doc.CutoutX)
+    sheet.set("A%d"%ir,'%-11.11s'%"X")
+    sheet.set("B%d"%ir,'%10.6f'%((TeensyThumbStickCover._CoverCutoutX+6.35)/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%(TeensyThumbStickCover._CoverCutoutX+6.35))
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewDimension','MHole')
+    doc.MHole.Type = 'Diameter'
+    doc.MHole.References2D=[(doc.TopView,'Edge13')]
+    doc.MHole.FormatSpec='MDia (4x)'
+    doc.MHole.Arbitrary = True
+    doc.MHole.X = 55
+    doc.MHole.Y = 20
+    doc.TeensyThumbStickCoverPage.addView(doc.MHole)
+    sheet.set("A%d"%ir,'%-11.11s'%"MDia")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._MHDia/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._MHDia)
+    ir += 1
+    
+    cwidth = TeensyThumbStickCover._Width+12.7
+    mhxoff = (cwidth-TeensyThumbStickCover._MHWidth)/2
+    mhyoff = (TeensyThumbStickCover._Height-TeensyThumbStickCover._MHHeight)/2.0
+    
+    doc.addObject('TechDraw::DrawViewDimension','MHYOff')
+    doc.MHYOff.Type = 'DistanceY'
+    doc.MHYOff.References2D=[(doc.TopView,'Vertex18'),\
+                             (doc.TopView,'Vertex0')]
+    doc.MHYOff.FormatSpec='y'
+    doc.MHYOff.Arbitrary = True
+    doc.MHYOff.X = -22.5
+    doc.MHYOff.Y = -38
+    doc.TeensyThumbStickCoverPage.addView(doc.MHYOff)
+    sheet.set("A%d"%ir,'%-11.11s'%"y")
+    sheet.set("B%d"%ir,'%10.6f'%(mhyoff/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%mhyoff)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MHXOff')
+    doc.MHXOff.Type = 'DistanceX'
+    doc.MHXOff.References2D=[(doc.TopView,'Vertex18'),\
+                            (doc.TopView,'Vertex0')]
+    doc.MHXOff.FormatSpec='x'
+    doc.MHXOff.Arbitrary = True
+    doc.MHXOff.X = -36
+    doc.MHXOff.Y = -37
+    doc.TeensyThumbStickCoverPage.addView(doc.MHXOff)
+    sheet.set("A%d"%ir,'%-11.11s'%"x")
+    sheet.set("B%d"%ir,'%10.6f'%(mhxoff/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%mhxoff)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewDimension','MHHeight')
+    doc.MHHeight.Type = 'DistanceY'
+    doc.MHHeight.References2D=[(doc.TopView,'Vertex18'),\
+                             (doc.TopView,'Vertex25')]
+    doc.MHHeight.FormatSpec='mh'
+    doc.MHHeight.Arbitrary = True
+    doc.MHHeight.X = -10
+    doc.MHHeight.Y =  14.5
+    doc.TeensyThumbStickCoverPage.addView(doc.MHHeight)
+    sheet.set("A%d"%ir,'%-11.11s'%"mh")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._MHHeight/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._MHHeight)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MHWidth')
+    doc.MHWidth.Type = 'DistanceX'
+    doc.MHWidth.References2D=[(doc.TopView,'Vertex18'),\
+                            (doc.TopView,'Vertex25')]
+    doc.MHWidth.FormatSpec='mw'
+    doc.MHWidth.Arbitrary = True
+    doc.MHWidth.X = -24
+    doc.MHWidth.Y = -19
+    doc.TeensyThumbStickCoverPage.addView(doc.MHWidth)
+    sheet.set("A%d"%ir,'%-11.11s'%"mw")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._MHWidth/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._MHWidth)
+    ir += 1
+
+    # Edge6    (right [dia])
+    doc.addObject('TechDraw::DrawViewDimension','ButtonHoleDia')
+    doc.ButtonHoleDia.Type = 'Diameter'
+    doc.ButtonHoleDia.References2D=[(doc.TopView,'Edge6')]
+    doc.ButtonHoleDia.FormatSpec='BDia (3x)'
+    doc.ButtonHoleDia.Arbitrary = True
+    doc.ButtonHoleDia.X = 55
+    doc.ButtonHoleDia.Y =  0
+    doc.TeensyThumbStickCoverPage.addView(doc.ButtonHoleDia)
+    sheet.set("A%d"%ir,'%-11.11s'%"BDia")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStickCover._CoverButtonHoleDia/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStickCover._CoverButtonHoleDia)
+    ir += 1
+    
+    # Vertex9  (left)
+    doc.addObject('TechDraw::DrawViewDimension','BHYOff')
+    doc.BHYOff.Type = 'DistanceY'
+    doc.BHYOff.References2D=[(doc.TopView,'Vertex9'),\
+                             (doc.TopView,'Vertex0')]
+    doc.BHYOff.FormatSpec='bhy'
+    doc.BHYOff.Arbitrary = True
+    doc.BHYOff.X =   6
+    doc.BHYOff.Y = -24
+    doc.TeensyThumbStickCoverPage.addView(doc.BHYOff)
+    sheet.set("A%d"%ir,'%-11.11s'%"bhy")
+    sheet.set("B%d"%ir,'%10.6f'%(TeensyThumbStick_._CoverButtonHoleY/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%TeensyThumbStick_._CoverButtonHoleY)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','BH1XOff')
+    doc.BH1XOff.Type = 'DistanceX'
+    doc.BH1XOff.References2D=[(doc.TopView,'Vertex9'),\
+                            (doc.TopView,'Vertex0')]
+    doc.BH1XOff.FormatSpec='bhx'
+    doc.BH1XOff.Arbitrary = True
+    doc.BH1XOff.X = -23
+    doc.BH1XOff.Y = -12
+    doc.TeensyThumbStickCoverPage.addView(doc.BH1XOff)
+    sheet.set("A%d"%ir,'%-11.11s'%"bhx")
+    sheet.set("B%d"%ir,'%10.6f'%((TeensyThumbStick_._CoverButtonHole1X+6.35)/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%(TeensyThumbStick_._CoverButtonHole1X+6.35))
+    ir += 1
+
+    # Vertex15 (middle)
+    bhdx = TeensyThumbStick_._CoverButtonHole2X - \
+           TeensyThumbStick_._CoverButtonHole1X
+    doc.addObject('TechDraw::DrawViewDimension','BH12DX')
+    doc.BH12DX.Type = 'DistanceX'
+    doc.BH12DX.References2D=[(doc.TopView,'Vertex9'),\
+                            (doc.TopView,'Vertex15')]
+    doc.BH12DX.FormatSpec='bhdx1'
+    doc.BH12DX.Arbitrary = True
+    doc.BH12DX.X =  19
+    doc.BH12DX.Y =  -5
+    doc.TeensyThumbStickCoverPage.addView(doc.BH12DX)
+    sheet.set("A%d"%ir,'%-11.11s'%"bhdx1")
+    sheet.set("B%d"%ir,'%10.6f'%(bhdx/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%bhdx)
+    ir += 1
+
+    # Vertex12 (right)
+    bhdx = TeensyThumbStick_._CoverButtonHole3X - \
+           TeensyThumbStick_._CoverButtonHole2X
+    doc.addObject('TechDraw::DrawViewDimension','BH23DX')
+    doc.BH23DX.Type = 'DistanceX'
+    doc.BH23DX.References2D=[(doc.TopView,'Vertex15'),\
+                            (doc.TopView,'Vertex12')]
+    doc.BH23DX.FormatSpec='bhdx2'
+    doc.BH23DX.Arbitrary = True
+    doc.BH23DX.X =  48.5
+    doc.BH23DX.Y = -15.4
+    doc.TeensyThumbStickCoverPage.addView(doc.BH23DX)
+    sheet.set("A%d"%ir,'%-11.11s'%"bhdx2")
+    sheet.set("B%d"%ir,'%10.6f'%(bhdx/25.4))
+    sheet.set("C%d"%ir,'%10.6f'%bhdx)
+    ir += 1
+
+
+    doc.addObject('TechDraw::DrawViewPart','ISOView')
+    doc.TeensyThumbStickCoverPage.addView(doc.ISOView)
+    doc.ISOView.Source = doc.teensythumbstickcover
+    doc.ISOView.X = 60
+    doc.ISOView.Y = 73
+    doc.ISOView.Scale = .5
+    doc.ISOView.Direction=(1.0,-1.0,1.0)
+    
+
+    sheet.recompute()
+    doc.addObject('TechDraw::DrawViewSpreadsheet','DimBlock')
+    doc.DimBlock.Source = sheet
+    doc.DimBlock.TextSize = 8
+    doc.DimBlock.CellEnd = "C%d"%(ir-1)
+    doc.TeensyThumbStickCoverPage.addView(doc.DimBlock)
+    doc.DimBlock.recompute()
+    doc.DimBlock.X = 200
+    doc.DimBlock.Y = 150
+    
+    doc.TeensyThumbStickCoverPage.recompute()
+    doc.recompute()
+    
+    
+    TechDrawGui.exportPageAsPdf(doc.TeensyThumbStickCoverPage,"BananaPiM64Model_TeensyThumbStickCover.pdf")
+    sys.exit(1)
