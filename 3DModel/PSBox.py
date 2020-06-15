@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200614.0837>
+#  Last Modified : <200614.1716>
 #
 #  Description	
 #
@@ -58,6 +58,7 @@ import datetime
 
 from PSPCB import *
 from Electromech import *
+from Case import *
 
 ## Al. box:      Mouser #563-CU-3002A
 # Base: 2.125in wide, 4.000in long, 1.625in high
@@ -343,7 +344,22 @@ if __name__ == '__main__':
     doc = App.activeDocument()
     o = Base.Vector(0,0,0)
     psbox = PSBox("psbox",o)
+    grillz = psbox.fan1.origin.z-5
+    grilly = psbox.fan2.origin.y+Fan02510SS_05P_AT00._fanwidth_height+5
+    grillh = Fan02510SS_05P_AT00._fanwidth_height+10
+    grillw = (Fan02510SS_05P_AT00._fanwidth_height*2)+10
+    grillthick = .05*25.4
+    grillx = o.x+CU_3002A_._basewidth+Fan02510SS_05P_AT00._fandepth+(.125*25.4)
+    gporig = Base.Vector(grillx,grilly,grillz)
+    gpextv = Base.Vector(grillthick,0,0)
+    grillpanel = Part.makePlane(grillh,grillw,gporig,Base.Vector(1,0,0)).extrude(gpextv)
+    grillpanel = psbox.DrillGrillHoles1(grillx,grillthick,2.5,3.5,grillpanel)
+    grillpanel = psbox.DrillGrillHoles2(grillx,grillthick,2.5,3.5,grillpanel)
     psbox.show()
+    obj = doc.addObject("Part::Feature","psgrill")
+    obj.Shape = grillpanel;
+    obj.Label = "psgrill"
+    obj.ViewObject.ShapeColor=tuple([.9,.9,.9])
     Gui.SendMsgToActiveView("ViewFit")
     Gui.activeDocument().activeView().viewIsometric()
     basebounds = psbox.base.BoundBox
@@ -587,6 +603,8 @@ if __name__ == '__main__':
     doc.BaseDimBlock.Y = 160
 
     doc.PowerSupplyBoxBasePage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxBasePage,"BananaPiM64Model_PowerSupplyBoxBasePage.pdf")
 
 
     doc.addObject('TechDraw::DrawPage','PowerSupplyBoxCoverPage')
@@ -866,9 +884,10 @@ if __name__ == '__main__':
     doc.CoverDimBlock.X = 210
     doc.CoverDimBlock.Y = 150
 
+
     doc.PowerSupplyBoxCoverPage.recompute()
-
-
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxCoverPage,"BananaPiM64Model_PowerSupplyBoxCoverPage.pdf")
 
     doc.addObject('TechDraw::DrawPage','PowerSupplyBoxGrillPage')
     doc.PowerSupplyBoxGrillPage.Template = doc.USLetterTemplate
@@ -876,12 +895,154 @@ if __name__ == '__main__':
     edt['DrawingTitle2']= "Grill"
     edt['Sheet'] = "Sheet 3 of 3"
     doc.PowerSupplyBoxGrillPage.Template.EditableTexts = edt
-    #doc.PowerSupplyBoxGrillPage.ViewObject.show()
+    doc.PowerSupplyBoxGrillPage.ViewObject.show()
     grillsheet = doc.addObject('Spreadsheet::Sheet','GrillDimensionTable')
     grillsheet.set("A1",'%-11.11s'%"Dim")
     grillsheet.set("B1",'%10.10s'%"inch")
     grillsheet.set("C1",'%10.10s'%"mm")
     ir = 2
 
-    doc.recompute()
+    doc.addObject('TechDraw::DrawViewPart','PSGrillRightView')
+    doc.PowerSupplyBoxGrillPage.addView(doc.PSGrillRightView)
+    doc.PSGrillRightView.Source = doc.psgrill
+    doc.PSGrillRightView.X = 80
+    doc.PSGrillRightView.Y = 170
+    doc.PSGrillRightView.Direction=(1.0,0.0,0.0)
+    doc.PSGrillRightView.Scale = 1
+    # Edge74         Upper Left Hole (diameter)
+    doc.addObject('TechDraw::DrawViewDimension','GrillGDia')
+    doc.GrillGDia.Type = 'Diameter'
+    doc.GrillGDia.References2D=[(doc.PSGrillRightView,"Edge74")]
+    doc.GrillGDia.FormatSpec="GDia (98x)"
+    doc.GrillGDia.Arbitrary = True
+    doc.GrillGDia.X = 0
+    doc.GrillGDia.Y = 22
+    doc.PowerSupplyBoxGrillPage.addView(doc.GrillGDia)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"GDia")
+    grillsheet.set("B%d"%ir,'%10.6f'%(2.5/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%2.5)
+    ir += 1
+    # Vertex1        Origin (Lower Left)
+    # Vertex2        Extent (Upper Right)
+    doc.addObject('TechDraw::DrawViewDimension','GrillW')
+    doc.GrillW.Type = 'DistanceX'
+    doc.GrillW.References2D=[(doc.PSGrillRightView,"Vertex1"),\
+                             (doc.PSGrillRightView,"Vertex2")]
+    doc.GrillW.FormatSpec="W"
+    doc.GrillW.Arbitrary = True
+    doc.GrillW.X = 0
+    doc.GrillW.Y = 30
+    doc.PowerSupplyBoxGrillPage.addView(doc.GrillW)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"W")
+    grillsheet.set("B%d"%ir,'%10.6f'%(grillw/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%grillw)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','GrillH')
+    doc.GrillH.Type = 'DistanceY'
+    doc.GrillH.References2D=[(doc.PSGrillRightView,"Vertex1"),\
+                             (doc.PSGrillRightView,"Vertex2")]
+    doc.GrillH.FormatSpec="H"
+    doc.GrillH.Arbitrary = True
+    doc.GrillH.X = 50
+    doc.GrillH.Y =  0
+    doc.PowerSupplyBoxGrillPage.addView(doc.GrillH)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"H")
+    grillsheet.set("B%d"%ir,'%10.6f'%(grillh/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%grillh)
+    ir += 1
+    # Vertex252 -- grill orig hole
+    doc.addObject('TechDraw::DrawViewDimension','GrillX')
+    doc.GrillX.Type = 'DistanceX'
+    doc.GrillX.References2D=[(doc.PSGrillRightView,"Vertex1"),\
+                             (doc.PSGrillRightView,"Vertex252")]
+    doc.GrillX.FormatSpec="X"
+    doc.GrillX.Arbitrary = True
+    doc.GrillX.X = -12
+    doc.GrillX.Y = -30
+    doc.PowerSupplyBoxGrillPage.addView(doc.GrillX)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"X")
+    grillsheet.set("B%d"%ir,'%10.6f'%((5+(3.5/2))/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%(5+(3.5/2)))
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','GrillY')
+    doc.GrillY.Type = 'DistanceY'
+    doc.GrillY.References2D=[(doc.PSGrillRightView,"Vertex1"),\
+                             (doc.PSGrillRightView,"Vertex252")]
+    doc.GrillY.FormatSpec="Y"
+    doc.GrillY.Arbitrary = True
+    doc.GrillY.X = -40
+    doc.GrillY.Y = -14
+    doc.PowerSupplyBoxGrillPage.addView(doc.GrillY)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"Y")
+    grillsheet.set("B%d"%ir,'%10.6f'%((5+(3.5/2))/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%(5+(3.5/2)))
+    ir += 1
+    # Vertex159 -- grill orig hole (#2)
+    doc.addObject('TechDraw::DrawViewDimension','GrillD')
+    doc.GrillD.Type = 'DistanceX'
+    doc.GrillD.References2D=[(doc.PSGrillRightView,"Vertex252"),\
+                             (doc.PSGrillRightView,"Vertex159")]
+    doc.GrillD.FormatSpec="D"
+    doc.GrillD.Arbitrary = True
+    doc.GrillD.X = -9
+    doc.GrillD.Y = -20
+    doc.PowerSupplyBoxGrillPage.addView(doc.GrillD)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"D")
+    grillsheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanwidth_height/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanwidth_height)
+    ir += 1
+    # Vertex243 -- horiz. pitch hole
+    doc.addObject('TechDraw::DrawViewDimension','Grillph')
+    doc.Grillph.Type = 'DistanceX'
+    doc.Grillph.References2D=[(doc.PSGrillRightView,"Vertex252"),\
+                              (doc.PSGrillRightView,"Vertex243")]
+    doc.Grillph.FormatSpec="ph (12x)"
+    doc.Grillph.Arbitrary = True
+    doc.Grillph.X = -44
+    doc.Grillph.Y = -24.5
+    doc.PowerSupplyBoxGrillPage.addView(doc.Grillph)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"ph")
+    grillsheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%3.5)
+    ir += 1
+    # Vertex255 -- vert. pitch hole
+    doc.addObject('TechDraw::DrawViewDimension','Grillpv')
+    doc.Grillpv.Type = 'DistanceY'
+    doc.Grillpv.References2D=[(doc.PSGrillRightView,"Vertex252"),\
+                              (doc.PSGrillRightView,"Vertex255")]
+    doc.Grillpv.FormatSpec="pv (6x)"
+    doc.Grillpv.Arbitrary=True
+    doc.Grillpv.X = -53
+    doc.Grillpv.Y = 5
+    doc.PowerSupplyBoxGrillPage.addView(doc.Grillpv)
+    grillsheet.set("A%d"%ir,'%-11.11s'%"pv")
+    grillsheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
+    grillsheet.set("C%d"%ir,'%10.6f'%3.5)
+    ir += 1
+
+
+
+
+    doc.PSGrillRightView.recompute()
     
+    doc.addObject('TechDraw::DrawViewPart','PSGrillISOView')
+    doc.PowerSupplyBoxGrillPage.addView(doc.PSGrillISOView)
+    doc.PSGrillISOView.Source = doc.psgrill
+    doc.PSGrillISOView.X = 71
+    doc.PSGrillISOView.Y = 100
+    doc.PSGrillISOView.Direction=(1.0,1.0,1.0)
+    doc.PSGrillISOView.Scale = 1
+    
+    doc.addObject('TechDraw::DrawViewSpreadsheet','PSGrillDimBlock')
+    doc.PowerSupplyBoxGrillPage.addView(doc.PSGrillDimBlock)
+    doc.PSGrillDimBlock.Source = grillsheet
+    doc.PSGrillDimBlock.TextSize = 8
+    doc.PSGrillDimBlock.CellEnd = "C%d"%(ir-1)
+    doc.PSGrillDimBlock.recompute()
+    doc.PSGrillDimBlock.X = 210
+    doc.PSGrillDimBlock.Y = 150 
+
+    doc.PowerSupplyBoxGrillPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxGrillPage,"BananaPiM64Model_PowerSupplyBoxGrillPage.pdf")
+    sys.exit(1)    
