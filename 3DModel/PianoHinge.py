@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:46 2020
-#  Last Modified : <200606.1907>
+#  Last Modified : <200615.1749>
 #
 #  Description	
 #
@@ -54,8 +54,8 @@ class PianoHinge_(object):
     _PinOff = 16-4.4-10.54
     _PinFlangeL = 12.7
     _HoleDia = 4.75
-    _1stHoleOff = 22.25+(4.75/2.0)
-    _Holespace  = 46.24+4.75
+    _1stHoleOff = 25.4
+    _Holespace  = 50.8
     _HoleCount = 6
     _HoleSideOff = 10.54/2.0
     def __init__(self):

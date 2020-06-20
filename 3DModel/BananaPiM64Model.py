@@ -1,4 +1,4 @@
-#!/usr/bin/FreeCAD
+#!/usr/local/bin/FreeCAD018
 #*****************************************************************************
 #
 #  System        : 
@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200605.1021>
+#  Last Modified : <200619.1756>
 #
 #  Description	
 #
@@ -59,9 +59,8 @@ if __name__ == '__main__':
     case = PortableM64Case("M64Case",o,SectionList("all"))
     case.show()
     Gui.SendMsgToActiveView("ViewFit")
-    Gui.activeDocument().activeView().viewBottom()
-    doc.FileName="BananaPiM64Model.fcstd"
+    Gui.activeDocument().activeView().viewTop()
     doc.Label="BananaPiM64Model"
-    doc.save()
+    doc.saveAs("BananaPiM64Model.fcstd")
     CutList.ListCuts("BananaPiM64Model_parts.csv")
     sys.exit(1)

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200606.1853>
+#  Last Modified : <200620.1318>
 #
 #  Description	
 #
@@ -41,9 +41,16 @@
 #*****************************************************************************
 
 
-import Part
+import Part, TechDraw, Spreadsheet, TechDrawGui
+import FreeCADGui
+from FreeCAD import Console
 from FreeCAD import Base
 import FreeCAD as App
+import os
+import sys
+sys.path.append(os.path.dirname(__file__))
+
+import datetime
 
 from M64 import *
 from PSBox import *
@@ -104,7 +111,7 @@ class CutList(object):
             raise RuntimeError("Unsupport units!")
     @classmethod
     def ListCuts(cls,filename):
-        keys = cls._cutList.keys()
+        keys = list(cls._cutList.keys())
         keys.sort()
         f = open(filename,"w")
         w = csv.writer(f)
@@ -610,6 +617,67 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
                                                  self.panel.PanelThickness()))
         blockl = self.panel.pwidth
         self.frontblock = BlockX(name+"_frontblock",blocko,length=blockl)
+        blocko = borig.add(Base.Vector(-BlockY._BlockWidth,0,0))
+        blockl = Battery._Width - 6.35
+        self.batteryblock1 = BlockY(name+"_batteryblock1",blocko,length=blockl)
+        blocko = borig.add(Base.Vector(-BlockY._BlockWidth,Battery._Width,0))
+        blockl = Battery._Length+BlockY._BlockWidth
+        self.batteryblock2 = BlockX(name+"_batteryblock2",blocko,length=blockl)
+        bpanelorig = borig.add(Base.Vector(-BlockY._BlockWidth,-BlockX._BlockWidth,BlockY._BlockThick))
+        bpanellength = Battery._Length+(2*BlockY._BlockWidth)
+        bpanelwidth  = Battery._Width+(2*BlockX._BlockWidth)
+        self.bpanel = Part.makePlane(bpanellength,bpanelwidth,bpanelorig)\
+                        .extrude(Base.Vector(0,0,self.WallThickness()))
+        CutList.AddCut(bpanelwidth,bpanellength,self.WallThickness())
+        bpanelMH1_x = bpanelorig.x + 38.1
+        bpanelMH2_x = (bpanelorig.x + bpanellength)- 38.1
+        bpanelMH1_y = bpanelorig.y + 6.35
+        bpanelMH2_y = (bpanelorig.y+bpanelwidth)-6.35
+        bpanelMHShapes = dict()
+        bpanelMHRad = (.125*25.4)/2.0
+        bpanelMHDepth = Base.Vector(0,0,bpanelorig.z+self.WallThickness())
+        bpanelMHShapes[1] = Part.Face(Part.Wire(Part.makeCircle(bpanelMHRad,\
+                    Base.Vector(bpanelMH1_x,bpanelMH1_y,0))))\
+                    .extrude(bpanelMHDepth)
+        bpanelMHShapes[2] = Part.Face(Part.Wire(Part.makeCircle(bpanelMHRad,\
+                    Base.Vector(bpanelMH2_x,bpanelMH1_y,0))))\
+                    .extrude(bpanelMHDepth)
+        bpanelMHShapes[3] = Part.Face(Part.Wire(Part.makeCircle(bpanelMHRad,\
+                    Base.Vector(bpanelMH1_x,bpanelMH2_y,0))))\
+                    .extrude(bpanelMHDepth)
+        bpanelMHShapes[4] = Part.Face(Part.Wire(Part.makeCircle(bpanelMHRad,\
+                    Base.Vector(bpanelMH2_x,bpanelMH2_y,0))))\
+                    .extrude(bpanelMHDepth)
+        for i in [1,2,3,4]:
+            self.panel.cutfrom(bpanelMHShapes[i])
+            self.bpanel = self.bpanel.cut(bpanelMHShapes[i])
+            if i == 1 or i == 2:
+                self.frontblock.cutfrom(bpanelMHShapes[i])
+            else:
+                self.batteryblock2.cutfrom(bpanelMHShapes[i])
+        ventholeRad = ((3.0/16.0)*25.4)/2.0
+        ventholeSpace = (1.0/4.0)*25.4
+        xleft = bpanelorig.x+BlockY._BlockWidth+(ventholeSpace/2.0)
+        xleftend = bpanelMH1_x
+        xright = bpanelMH2_x+(ventholeSpace/2.0)
+        ybottom = bpanelorig.y+BlockY._BlockWidth+(ventholeSpace/2.0)
+        holeextrude = Base.Vector(0,0,self.WallThickness())
+        while xleft < xleftend:
+            yhole = ybottom
+            while yhole < (bpanelMH2_y-ventholeSpace):
+                holeorig = Base.Vector(xleft,yhole,bpanelorig.z)
+                hole = Part.Face(Part.Wire(Part.makeCircle(ventholeRad,\
+                                                            holeorig)))\
+                          .extrude(holeextrude)
+                self.bpanel = self.bpanel.cut(hole)
+                holeorig = Base.Vector(xright,yhole,bpanelorig.z)
+                hole = Part.Face(Part.Wire(Part.makeCircle(ventholeRad,\
+                                                            holeorig)))\
+                          .extrude(holeextrude)
+                self.bpanel = self.bpanel.cut(hole)
+                yhole += ventholeSpace
+            xleft += ventholeSpace
+            xright += ventholeSpace
         blocko = self.panel.corner.add(Base.Vector(0,self.panel.pheight-BlockX._BlockWidth,self.panel.PanelThickness()))
         self.backblock = BlockX(name+"_backblock",blocko,length=usbo_x)
         blocko = self.panel.corner.add(Base.Vector(0,
@@ -628,10 +696,11 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         blockl = self._ShelfHeight-(self.panel.PanelThickness()+BlockZa._BlockThick)
         self.leftfrontcorner = BlockZa(name+"_leftfrontcorner",blocko,
                                        length=blockl)
-        blocko = self.panel.corner.add(Base.Vector(self.panel.pwidth-BlockY._BlockThick,0,self.panel.PanelThickness()+Battery._Height))
+        blocko = self.panel.corner.add(Base.Vector(self.panel.pwidth-BlockY._BlockThick,0,self.panel.PanelThickness()+BlockX._BlockThick))
         blockl = self._ShelfHeight-(self.panel.PanelThickness()+BlockZa._BlockWidth)
         self.rightfrontcorner = BlockZa(name+"_rightfrontcorner",blocko,
                                        length=blockl)
+        self.bpanel = self.bpanel.cut(self.rightfrontcorner.block)
         blocko = self.panel.corner.add(Base.Vector(0,
                               self.panel.pheight-BlockZa._BlockWidth,
                               self.panel.PanelThickness()+BlockZa._BlockThick))
@@ -674,6 +743,8 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         self.usbsataadaptor.show()
         self.usbsataadaptorcradle.show()
         self.frontblock.show()
+        self.batteryblock1.show()
+        self.batteryblock2.show()
         self.backblock.show()
         self.leftblock.show()
         self.rightblock.show()
@@ -736,6 +807,10 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
         obj.Shape = self.hdmiconvertermainboard_standoff4
         obj.Label=self.name+'_hdmiconvertermainboard_standoff4'
         obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
+        obj = doc.addObject("Part::Feature",self.name+'_batterypanel')
+        obj.Shape = self.bpanel
+        obj.Label=self.name+'_batterypanel'
+        obj.ViewObject.ShapeColor=tuple([1.0,0.0,0.0])
                 
 
 class PortableM64CaseMiddle(PortableM64CaseCommon):
@@ -970,6 +1045,7 @@ class PortableM64CaseKeyboardShelf(PortableM64CaseCommon):
         self.shelf = Part.makePlane(shelfwidth,
                                     self.ShelfLength(),
                                     shelforig).extrude(shelfthick)
+        CutList.AddCut(shelfwidth,self.ShelfLength(),self.WallThickness())
         self.hingeblock = BlockX(name+"_hingeblock",
                                  shelforig.add(shelfthick),
                                  thickness=self.ShelfBlockThick(),
@@ -1002,10 +1078,18 @@ class PortableM64CaseKeyboardShelf(PortableM64CaseCommon):
                 (self._TeensyThumbStickDrop + TeensyThumbStick_._BoardThick + self.WallThickness())))
         self.teensythumbstickcover = TeensyThumbStickCover(name+"_teensythumbstickcover",
                                                        teensythumbstickcoverO)
+        drop = Base.Vector(0,0,-self.TeensyThumbStickDrop())
+        self.teensythumbstickbuttons = dict()
+        for h in ['left','middle','right']:
+            horig = self.teensythumbstickcover.buttonholes[h]
+            porig = horig.add(drop)
+            self.teensythumbstickbuttons[h] = TeensyThumbStickButtonPlunger(name+"_teensythumbstick_"+h,porig)
     def show(self):
         self.hingeblock.show()
         self.teensythumbstick.show()
         self.teensythumbstickcover.show()
+        for h in ['left','middle','right']:
+            self.teensythumbstickbuttons[h].show()
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name+'_shelf')
         obj.Shape = self.shelf
@@ -1083,3 +1167,1220 @@ class PortableM64Case(PortableM64CaseCommon):
             self.bottommiddlehinge.show()
         if self.sections.sectionP("Middle") and self.sections.sectionP("Top"):
             self.middletophinge.show()
+
+if __name__ == '__main__':
+    doc = None
+    for docname in App.listDocuments():
+        lddoc = App.getDocument(docname)
+        if lddoc.Label == 'BananaPiM64Model':
+            doc = lddoc
+            break
+    if doc == None:
+        App.open("/home/heller/BananaPi_M64_Portable/3DModel/BananaPiM64Model.fcstd")
+        doc = App.getDocument('BananaPiM64Model')
+    App.ActiveDocument=doc
+    Gui.ActiveDocument=doc
+    #Gui.SendMsgToActiveView("ViewFit")
+    #Gui.activeDocument().activeView().viewIsometric()
+    for g in doc.findObjects('TechDraw::DrawSVGTemplate'):
+        doc.removeObject(g.Name)
+    for g in doc.findObjects('TechDraw::DrawPage'):
+        doc.removeObject(g.Name)
+    for g in doc.findObjects('Spreadsheet::Sheet'):
+        doc.removeObject(g.Name)
+    for g in doc.findObjects('TechDraw::DrawViewPart'):
+        doc.removeObject(g.Name)
+    for g in doc.findObjects('TechDraw::DrawViewDimension'):
+        doc.removeObject(g.Name)
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    edt['CompanyName'] = "Deepwoods Software"
+    edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
+    edt['DrawingTitle1']= 'Block Drill Sheets'
+    edt['DrawingTitle3']= ""
+    edt['DrawnBy'] = "Robert Heller"
+    edt['CheckedBy'] = ""
+    edt['Approved1'] = ""
+    edt['Approved2'] = ""
+    edt['Code'] = ""
+    edt['Weight'] = ''
+    edt['DrawingNumber'] = datetime.datetime.now().ctime()
+    edt['Revision'] = "A"
+    doc.USLetterTemplate.EditableTexts = edt
+    #*****
+    # Top blocks -- hinge mounting holes
+    doc.addObject('TechDraw::DrawPage','TopBackBlockDrillSheetPage')
+    doc.TopBackBlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.TopBackBlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Top Back"
+    edt['Scale'] = '.5'
+    edt['Sheet'] = "Sheet 1 of 7"
+    doc.TopBackBlockDrillSheetPage.Template.EditableTexts = edt
+    doc.TopBackBlockDrillSheetPage.ViewObject.show()
+    topbacksheet = doc.addObject('Spreadsheet::Sheet','TopBackDimensionTable')
+    topbacksheet.set("A1",'%-11.11s'%"Dim")
+    topbacksheet.set("B1",'%10.10s'%"inch")
+    topbacksheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','TopBackView')
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackView)
+    doc.TopBackView.Source = doc.M64Case_top_backblock
+    doc.TopBackView.Direction=(0.0,1.0,0.0)
+    doc.TopBackView.Scale = .5
+    doc.TopBackView.X = 140
+    doc.TopBackView.Y = 180
+    
+    blockShape = doc.M64Case_top_backblock.Shape
+    minX = 999999999
+    minZ = 999999999
+    maxX = 0
+    maxZ = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Z < minZ:
+           minZ = v.Z
+       if v.Z > maxZ:
+           maxZ = v.Z
+    length = maxX - minX
+    height = maxZ - minZ
+    #print ('*** TopBack: origin (%g,%g), length = %g, height = %g'%(minX,minZ,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** TopBack: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** TopBack: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x,circ.Location.z))
+    #    i += 1
+    holediameter = blockShape.Edges[11].Curve.Radius*2
+    holezoff = blockShape.Edges[11].Curve.Location.z-minZ
+    holez1off = height-holezoff
+    #print ('*** TopBack: holezoff=%g,holez1off=%g'%(holezoff,holez1off))
+    holeoff1 = blockShape.Edges[11].Curve.Location.x-minX
+    holeoff2 = blockShape.Edges[12].Curve.Location.x-minX
+    holeoff3 = blockShape.Edges[7].Curve.Location.x-minX
+    holeoff4 = blockShape.Edges[8].Curve.Location.x-minX
+    holeoff5 = blockShape.Edges[10].Curve.Location.x-minX
+    holeoff6 = blockShape.Edges[9].Curve.Location.x-minX
+    #print ('*** TopBack: holeoff1=%g,holeoff2=%g,holeoff3=%g,holeoff4=%g,holeoff5=%g,holeoff6=%g'%\
+    #       (holeoff1,holeoff2,holeoff3,holeoff4,holeoff5,holeoff6))
+    # Edge6    -- For diameter (holediameter)
+    doc.addObject('TechDraw::DrawViewDimension','TopBackHDia')
+    doc.TopBackHDia.Type = 'Diameter'
+    doc.TopBackHDia.References2D=[(doc.TopBackView,'Edge6')]
+    doc.TopBackHDia.FormatSpec='HDia (6x)'
+    doc.TopBackHDia.Arbitrary = True
+    doc.TopBackHDia.X = -30
+    doc.TopBackHDia.Y = 10
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackHDia)
+    topbacksheet.set("A%d"%ir,'%-11.11s'%"HDia")
+    topbacksheet.set("B%d"%ir,'%10.6f'%(holediameter/25.4))
+    topbacksheet.set("C%d"%ir,'%10.6f'%holediameter)
+    ir += 1
+    # Vertex1  -- Origin (ll)
+    # Vertex2  -- Extent (ur) (length,height)
+    doc.addObject('TechDraw::DrawViewDimension','TopBackLength')
+    doc.TopBackLength.Type = 'DistanceX'
+    doc.TopBackLength.References2D=[(doc.TopBackView,'Vertex1'),\
+                                    (doc.TopBackView,'Vertex2')]
+    doc.TopBackLength.FormatSpec='l'
+    doc.TopBackLength.Arbitrary = True
+    doc.TopBackLength.X = 0
+    doc.TopBackLength.Y = -5
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackLength)
+    topbacksheet.set("A%d"%ir,'%-11.11s'%"l")
+    topbacksheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    topbacksheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','TopBackHeight')
+    doc.TopBackHeight.Type = 'DistanceY'
+    doc.TopBackHeight.References2D=[(doc.TopBackView,'Vertex1'),\
+                                    (doc.TopBackView,'Vertex2')]
+    doc.TopBackHeight.FormatSpec='h'
+    doc.TopBackHeight.Arbitrary = True
+    doc.TopBackHeight.X =105
+    doc.TopBackLength.Y =-11 
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackHeight)
+    topbacksheet.set("A%d"%ir,'%-11.11s'%"h")
+    topbacksheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    topbacksheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+    # Vertex12 -- Hole 1 (holezoff,holeoff1)
+    doc.addObject('TechDraw::DrawViewDimension','TopBackHoleZ')
+    doc.TopBackHoleZ.Type = 'DistanceY'
+    doc.TopBackHoleZ.References2D=[(doc.TopBackView,'Vertex1'),\
+                                   (doc.TopBackView,'Vertex12')]
+    doc.TopBackHoleZ.FormatSpec='z'
+    doc.TopBackHoleZ.Arbitrary = True
+    doc.TopBackHoleZ.X = -105
+    doc.TopBackHoleZ.Y = -5
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackHoleZ)
+    topbacksheet.set("A%d"%ir,'%-11.11s'%"z")
+    topbacksheet.set("B%d"%ir,'%10.6f'%(holezoff/25.4))
+    topbacksheet.set("C%d"%ir,'%10.6f'%holezoff)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','TopBackHole1')
+    doc.TopBackHole1.Type = 'DistanceX'
+    doc.TopBackHole1.References2D=[(doc.TopBackView,'Vertex1'),\
+                                   (doc.TopBackView,'Vertex12')]
+    doc.TopBackHole1.FormatSpec='a'
+    doc.TopBackHole1.Arbitrary = True
+    doc.TopBackHole1.X = -80
+    doc.TopBackHole1.Y = -6
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackHole1)
+    topbacksheet.set("A%d"%ir,'%-11.11s'%"a")
+    topbacksheet.set("B%d"%ir,'%10.6f'%(holeoff1/25.4))
+    topbacksheet.set("C%d"%ir,'%10.6f'%holeoff1)
+    ir += 1
+    # Vertex15 -- Hole 2 (holeoff2)
+    doc.addObject('TechDraw::DrawViewDimension','TopBackHolePitch')
+    doc.TopBackHolePitch.Type = 'DistanceX'
+    doc.TopBackHolePitch.References2D=[(doc.TopBackView,'Vertex12'),\
+                                       (doc.TopBackView,'Vertex15')]
+    doc.TopBackHolePitch.FormatSpec='p (5x)'
+    doc.TopBackHolePitch.Arbitrary = True
+    doc.TopBackHolePitch.X = -50
+    doc.TopBackHolePitch.Y = -6
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackHolePitch)
+    topbacksheet.set("A%d"%ir,'%-11.11s'%"p")
+    topbacksheet.set("B%d"%ir,'%10.6f'%((holeoff2-holeoff1)/25.4))
+    topbacksheet.set("C%d"%ir,'%10.6f'%(holeoff2-holeoff1))
+    ir += 1
+    # Vertex9  -- Hole 3 (holeoff3)
+    # Vertex6  -- Hole 4 (holeoff4)
+    # Vertex21 -- Hole 5 (holeoff5)
+    # Vertex18 -- Hole 6 (holeoff6)
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','TopBackDimBlock')
+    doc.TopBackBlockDrillSheetPage.addView(doc.TopBackDimBlock)
+    doc.TopBackDimBlock.Source = topbacksheet
+    doc.TopBackDimBlock.TextSize = 8
+    doc.TopBackDimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.TopBackDimBlock.recompute()
+    doc.TopBackDimBlock.X = 82
+    doc.TopBackDimBlock.Y = 140
+    doc.TopBackBlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.TopBackBlockDrillSheetPage,"BananaPiM64Model_TopBackBlockDrillSheet.pdf")
+    #*****
+    # Middle blocks (various mounting holes)
+    # Back (HDMI aux boards: buttons and HV PS)
+    doc.addObject('TechDraw::DrawPage','MiddleBackBlockDrillSheetPage')
+    doc.MiddleBackBlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.MiddleBackBlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Middle Back"
+    edt['Scale'] = '.5'
+    edt['Sheet'] = "Sheet 2 of 7"
+    doc.MiddleBackBlockDrillSheetPage.Template.EditableTexts = edt
+    doc.MiddleBackBlockDrillSheetPage.ViewObject.show()
+    middlebacksheet = doc.addObject('Spreadsheet::Sheet','MiddleBackDimensionTable')
+    middlebacksheet.set("A1",'%-11.11s'%"Dim")
+    middlebacksheet.set("B1",'%10.10s'%"inch")
+    middlebacksheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','MiddleBackView')
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackView)
+    doc.MiddleBackView.Source = doc.M64Case_middle_backblock
+    doc.MiddleBackView.Direction=(0.0,0.0,-1.0)
+    doc.MiddleBackView.Scale = .5
+    doc.MiddleBackView.Rotation = 180
+    doc.MiddleBackView.X = 140
+    doc.MiddleBackView.Y = 180
+    blockShape = doc.M64Case_middle_backblock.Shape
+    minX = 999999999
+    minY = 999999999
+    maxX = 0
+    maxY = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Y < minY:
+           minY = v.Y
+       if v.Y > maxY:
+           maxY = v.Y
+    length = maxX - minX
+    height = maxY - minY
+    #print ('*** MiddleBack: origin (%g,%g), length = %g, height = %g'%(minX,minY,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** MiddleBack: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** MiddleBack: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x-minX,circ.Location.y-minY))
+    #    i += 1
+    
+    # Vertex0  -- origin (ur)
+    # Vertex3  -- extent (ll) (height,length)
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackLength')
+    doc.MiddleBackLength.Type = 'DistanceX'
+    doc.MiddleBackLength.References2D = [(doc.MiddleBackView,'Vertex0'),\
+                                         (doc.MiddleBackView,'Vertex3')]
+    doc.MiddleBackLength.FormatSpec='l'
+    doc.MiddleBackLength.Arbitrary = True
+    doc.MiddleBackLength.X = 0
+    doc.MiddleBackLength.Y = -12
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackLength)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"l")
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackHeight')
+    doc.MiddleBackHeight.Type = 'DistanceY'
+    doc.MiddleBackHeight.References2D = [(doc.MiddleBackView,'Vertex0'),\
+                                         (doc.MiddleBackView,'Vertex3')]
+    doc.MiddleBackHeight.FormatSpec='h'
+    doc.MiddleBackHeight.Arbitrary = True
+    doc.MiddleBackHeight.X = 105
+    doc.MiddleBackHeight.Y = 0
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackHeight)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"h")
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+
+    # Edge7    -- button board MH diameter
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBBMHDia')
+    doc.MiddleBBMHDia.Type = 'Diameter'
+    doc.MiddleBBMHDia.References2D = [(doc.MiddleBackView,'Edge7')]
+    doc.MiddleBBMHDia.FormatSpec='BBDia (2x)'
+    doc.MiddleBBMHDia.Arbitrary = True
+    doc.MiddleBBMHDia.X = 60
+    doc.MiddleBBMHDia.Y = 13
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBBMHDia)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"BBDia")
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(HDMIConverterDims._buttonboardMHDia/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%HDMIConverterDims._buttonboardMHDia)
+    ir += 1
+    
+    # Vertex15 -- button board MH 1 (right) (nearest Vertex0) blockShape.Edges[7] 
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackBBMH1Yoff')
+    doc.MiddleBackBBMH1Yoff.Type = 'DistanceY'
+    doc.MiddleBackBBMH1Yoff.References2D = [(doc.MiddleBackView,'Vertex2'),\
+                                         (doc.MiddleBackView,'Vertex15')]
+    doc.MiddleBackBBMH1Yoff.FormatSpec='E'
+    doc.MiddleBackBBMH1Yoff.Arbitrary = True
+    doc.MiddleBackBBMH1Yoff.X = 70
+    doc.MiddleBackBBMH1Yoff.Y = -6
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackBBMH1Yoff)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"E")
+    E = blockShape.Edges[7].Curve.Location.y - minY
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(E/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%E)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackBBMH1Xoff')
+    doc.MiddleBackBBMH1Xoff.Type = 'DistanceX'
+    doc.MiddleBackBBMH1Xoff.References2D = [(doc.MiddleBackView,'Vertex0'),\
+                                         (doc.MiddleBackView,'Vertex15')]
+    doc.MiddleBackBBMH1Xoff.FormatSpec='A'
+    doc.MiddleBackBBMH1Xoff.Arbitrary = True
+    doc.MiddleBackBBMH1Xoff.X = 92
+    doc.MiddleBackBBMH1Xoff.Y = -7
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackBBMH1Xoff)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"A")
+    A = blockShape.Edges[7].Curve.Location.x - minX
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(A/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%A)
+    ir += 1
+    # Vertex12 -- button board MH 2 (left) blockShape.Edges[6]
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackBBMH12Xoff')
+    doc.MiddleBackBBMH12Xoff.Type = 'DistanceX'
+    doc.MiddleBackBBMH12Xoff.References2D = [(doc.MiddleBackView,'Vertex15'),\
+                                         (doc.MiddleBackView,'Vertex12')]
+    doc.MiddleBackBBMH12Xoff.FormatSpec='B'
+    doc.MiddleBackBBMH12Xoff.Arbitrary = True
+    doc.MiddleBackBBMH12Xoff.X = 61
+    doc.MiddleBackBBMH12Xoff.Y = -7
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackBBMH12Xoff)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"B")
+    bbmh12X = HDMIConverterDims._buttonboardMH2_x - \
+                HDMIConverterDims._buttonboardMH1_x
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(bbmh12X/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%bbmh12X)
+    ir += 1
+
+    # Edge5    -- HV PS board MH diameter
+    doc.addObject('TechDraw::DrawViewDimension','MiddleHVMHDia')
+    doc.MiddleHVMHDia.Type = 'Diameter'
+    doc.MiddleHVMHDia.References2D = [(doc.MiddleBackView,'Edge5')]
+    doc.MiddleHVMHDia.FormatSpec='HVDia (2x)'
+    doc.MiddleHVMHDia.Arbitrary = True
+    doc.MiddleHVMHDia.X = -60
+    doc.MiddleHVMHDia.Y = 13
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleHVMHDia)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"HVDia")
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(HDMIConverterDims._hvpowerboardMHDia/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%HDMIConverterDims._hvpowerboardMHDia)
+    ir += 1
+
+    # Vertex6  -- HV PS Board MH 2 (right) blockShape.Edges[4]
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackHVMH2Xoff')
+    doc.MiddleBackHVMH2Xoff.Type = 'DistanceX'
+    doc.MiddleBackHVMH2Xoff.References2D = [(doc.MiddleBackView,'Vertex6'),\
+                                         (doc.MiddleBackView,'Vertex9')]
+    doc.MiddleBackHVMH2Xoff.FormatSpec='D'
+    doc.MiddleBackHVMH2Xoff.Arbitrary = True
+    doc.MiddleBackHVMH2Xoff.X = -50
+    doc.MiddleBackHVMH2Xoff.Y = -7
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackHVMH2Xoff)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"D")
+    D = HDMIConverterDims._hvpowerboardMH2_x - (HDMIConverterDims._hvpowerboardMH1_x1+(HDMIConverterDims._hvpowerboardMH1_wide/2.0))
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(D/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%D)
+    ir += 1
+    # Vertex9  -- HV PS Board MH 1 (left) (nearest Vertex3) blockShape.Edges[5]
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackHVMH1Yoff')
+    doc.MiddleBackHVMH1Yoff.Type = 'DistanceY'
+    doc.MiddleBackHVMH1Yoff.References2D = [(doc.MiddleBackView,'Vertex3'),\
+                                         (doc.MiddleBackView,'Vertex9')]
+    doc.MiddleBackHVMH1Yoff.FormatSpec='F'
+    doc.MiddleBackHVMH1Yoff.Arbitrary = True
+    doc.MiddleBackHVMH1Yoff.X = -70
+    doc.MiddleBackHVMH1Yoff.Y = -6
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackHVMH1Yoff)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"F")
+    F = blockShape.Edges[5].Curve.Location.y - minY
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(F/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%F)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleBackHVMH1Xoff')
+    doc.MiddleBackHVMH1Xoff.Type = 'DistanceX'
+    doc.MiddleBackHVMH1Xoff.References2D = [(doc.MiddleBackView,'Vertex3'),\
+                                         (doc.MiddleBackView,'Vertex9')]
+    doc.MiddleBackHVMH1Xoff.FormatSpec='C'
+    doc.MiddleBackHVMH1Xoff.Arbitrary = True
+    doc.MiddleBackHVMH1Xoff.X = -92
+    doc.MiddleBackHVMH1Xoff.Y = -7
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackHVMH1Xoff)
+    middlebacksheet.set("A%d"%ir,'%-11.11s'%"C")
+    C = maxX - blockShape.Edges[5].Curve.Location.x
+    middlebacksheet.set("B%d"%ir,'%10.6f'%(C/25.4))
+    middlebacksheet.set("C%d"%ir,'%10.6f'%C)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','MiddleBackDimBlock')
+    doc.MiddleBackBlockDrillSheetPage.addView(doc.MiddleBackDimBlock)
+    doc.MiddleBackDimBlock.Source = middlebacksheet
+    doc.MiddleBackDimBlock.TextSize = 8
+    doc.MiddleBackDimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.MiddleBackDimBlock.recompute()
+    doc.MiddleBackDimBlock.X = 82
+    doc.MiddleBackDimBlock.Y = 120
+    doc.MiddleBackBlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.MiddleBackBlockDrillSheetPage,"BananaPiM64Model_MiddleBackBlockDrillSheet.pdf")
+    # Left (Speaker)
+    doc.addObject('TechDraw::DrawPage','MiddleLeftBlockDrillSheetPage')
+    doc.MiddleLeftBlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.MiddleLeftBlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Middle Left"
+    edt['Scale'] = '.75'
+    edt['Sheet'] = "Sheet 3 of 7"
+    doc.MiddleLeftBlockDrillSheetPage.Template.EditableTexts = edt
+    doc.MiddleLeftBlockDrillSheetPage.ViewObject.show()
+    middleleftsheet = doc.addObject('Spreadsheet::Sheet','MiddleLeftDimensionTable')
+    middleleftsheet.set("A1",'%-11.11s'%"Dim")
+    middleleftsheet.set("B1",'%10.10s'%"inch")
+    middleleftsheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','MiddleLeftView')
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftView)
+    doc.MiddleLeftView.Source = doc.M64Case_middle_leftblock
+    doc.MiddleLeftView.Direction=(0.0,0.0,-1.0)
+    doc.MiddleLeftView.Scale = .75
+    doc.MiddleLeftView.Rotation = 90
+    doc.MiddleLeftView.X = 140
+    doc.MiddleLeftView.Y = 180
+    blockShape = doc.M64Case_middle_leftblock.Shape
+    minX = 999999999
+    minY = 999999999
+    maxX = 0
+    maxY = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Y < minY:
+           minY = v.Y
+       if v.Y > maxY:
+           maxY = v.Y
+    length = maxY - minY
+    height = maxX - minX
+    #print ('*** MiddleLeft: origin (%g,%g), length = %g, height = %g'%(minX,minY,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** MiddleLeft: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** MiddleLeft: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x-minX,circ.Location.y-minY))
+    #    i += 1
+    # Vertex0  UR (minX, maxY)
+    # Vertex1  UL (maxX, maxY)
+    # Vertex2  LR (minX, minY
+    # Vertex3  LL (maxX, minY)
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftLength')
+    doc.MiddleLeftLength.Type = 'DistanceX'
+    doc.MiddleLeftLength.References2D = [(doc.MiddleLeftView,'Vertex0'),\
+                                         (doc.MiddleLeftView,'Vertex3')]
+    doc.MiddleLeftLength.FormatSpec='l'
+    doc.MiddleLeftLength.Arbitrary = True
+    doc.MiddleLeftLength.X = 0
+    doc.MiddleLeftLength.Y = -12
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftLength)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"l")
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftHeight')
+    doc.MiddleLeftHeight.Type = 'DistanceY'
+    doc.MiddleLeftHeight.References2D = [(doc.MiddleLeftView,'Vertex0'),\
+                                         (doc.MiddleLeftView,'Vertex3')]
+    doc.MiddleLeftHeight.FormatSpec='h'
+    doc.MiddleLeftHeight.Arbitrary = True
+    doc.MiddleLeftHeight.X = 105
+    doc.MiddleLeftHeight.Y = 0
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftHeight)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"h")
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+    
+    # Edge4 / Vertex6 (right) [speaker top] blockShape.Edges[4].Curve
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftSpeakerMHDia')
+    doc.MiddleLeftSpeakerMHDia.Type = 'Diameter'
+    doc.MiddleLeftSpeakerMHDia.References2D = [(doc.MiddleLeftView,'Edge5')]
+    doc.MiddleLeftSpeakerMHDia.FormatSpec='EDia (2x)'
+    doc.MiddleLeftSpeakerMHDia.Arbitrary = True
+    doc.MiddleLeftSpeakerMHDia.X = -60
+    doc.MiddleLeftSpeakerMHDia.Y = 13
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftSpeakerMHDia)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"EDia")
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(Speaker_._MHoleDia/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%Speaker_._MHoleDia)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftTopMHXoff')
+    doc.MiddleLeftTopMHXoff.Type = 'DistanceX'
+    doc.MiddleLeftTopMHXoff.References2D = [(doc.MiddleLeftView,'Vertex6'),\
+                                         (doc.MiddleLeftView,'Vertex0')]
+    doc.MiddleLeftTopMHXoff.FormatSpec='A'
+    doc.MiddleLeftTopMHXoff.Arbitrary = True
+    doc.MiddleLeftTopMHXoff.X = 54
+    doc.MiddleLeftTopMHXoff.Y = -7
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftTopMHXoff)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"A")
+    A = blockShape.Edges[4].Curve.Location.y - minY
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(A/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%A)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftTopMHYoff')
+    doc.MiddleLeftTopMHYoff.Type = 'DistanceY'
+    doc.MiddleLeftTopMHYoff.References2D = [(doc.MiddleLeftView,'Vertex6'),\
+                                         (doc.MiddleLeftView,'Vertex0')]
+    doc.MiddleLeftTopMHYoff.FormatSpec='B'
+    doc.MiddleLeftTopMHYoff.Arbitrary = True
+    doc.MiddleLeftTopMHYoff.X = 16
+    doc.MiddleLeftTopMHYoff.Y = 8
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftTopMHYoff)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"B")
+    B = blockShape.Edges[4].Curve.Location.x - minX
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(B/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%B)
+    ir += 1
+    
+    # Edge5 / Vertex9 (left)  [speaker bottom] blockShape.Edges[5].Curve
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftBottomMHXoff')
+    doc.MiddleLeftBottomMHXoff.Type = 'DistanceX'
+    doc.MiddleLeftBottomMHXoff.References2D = [(doc.MiddleLeftView,'Vertex9'),\
+                                         (doc.MiddleLeftView,'Vertex3')]
+    doc.MiddleLeftBottomMHXoff.FormatSpec='C'
+    doc.MiddleLeftBottomMHXoff.Arbitrary = True
+    doc.MiddleLeftBottomMHXoff.X = -63
+    doc.MiddleLeftBottomMHXoff.Y = -7
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftBottomMHXoff)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"C")
+    C = maxY - blockShape.Edges[5].Curve.Location.y
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(C/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%C)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleLeftBottomMHYoff')
+    doc.MiddleLeftBottomMHYoff.Type = 'DistanceY'
+    doc.MiddleLeftBottomMHYoff.References2D = [(doc.MiddleLeftView,'Vertex9'),\
+                                         (doc.MiddleLeftView,'Vertex1')]
+    doc.MiddleLeftBottomMHYoff.FormatSpec='D'
+    doc.MiddleLeftBottomMHYoff.Arbitrary = True
+    doc.MiddleLeftBottomMHYoff.X = -50
+    doc.MiddleLeftBottomMHYoff.Y = 1.5
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftBottomMHYoff)
+    middleleftsheet.set("A%d"%ir,'%-11.11s'%"D")
+    D = blockShape.Edges[5].Curve.Location.x - minX
+    middleleftsheet.set("B%d"%ir,'%10.6f'%(D/25.4))
+    middleleftsheet.set("C%d"%ir,'%10.6f'%D)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','MiddleLeftDimBlock')
+    doc.MiddleLeftBlockDrillSheetPage.addView(doc.MiddleLeftDimBlock)
+    doc.MiddleLeftDimBlock.Source = middleleftsheet
+    doc.MiddleLeftDimBlock.TextSize = 8
+    doc.MiddleLeftDimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.MiddleLeftDimBlock.recompute()
+    doc.MiddleLeftDimBlock.X = 87
+    doc.MiddleLeftDimBlock.Y = 130
+    doc.MiddleLeftBlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.MiddleLeftBlockDrillSheetPage,"BananaPiM64Model_MiddleLeftBlockDrillSheet.pdf")
+
+
+    # Right (Speaker)
+    doc.addObject('TechDraw::DrawPage','MiddleRightBlockDrillSheetPage')
+    doc.MiddleRightBlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.MiddleRightBlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Middle Right"
+    edt['Scale'] = '.75'
+    edt['Sheet'] = "Sheet 4 of 7"
+    doc.MiddleRightBlockDrillSheetPage.Template.EditableTexts = edt
+    doc.MiddleRightBlockDrillSheetPage.ViewObject.show()
+    middlerightsheet = doc.addObject('Spreadsheet::Sheet','MiddleRightDimensionTable')
+    middlerightsheet.set("A1",'%-11.11s'%"Dim")
+    middlerightsheet.set("B1",'%10.10s'%"inch")
+    middlerightsheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','MiddleRightView')
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightView)
+    doc.MiddleRightView.Source = doc.M64Case_middle_rightblock
+    doc.MiddleRightView.Direction=(0.0,0.0,-1.0)
+    doc.MiddleRightView.Scale = .75
+    #doc.MiddleRightView.Scale = 2
+    doc.MiddleRightView.Rotation = 90
+    doc.MiddleRightView.X = 140
+    doc.MiddleRightView.Y = 180
+    blockShape = doc.M64Case_middle_rightblock.Shape
+    minX = 999999999
+    minY = 999999999
+    maxX = 0
+    maxY = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Y < minY:
+           minY = v.Y
+       if v.Y > maxY:
+           maxY = v.Y
+    height = maxX - minX
+    length = maxY - minY
+    #print ('*** MiddleRight: origin (%g,%g), length = %g, height = %g'%(minX,minY,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** MiddleRight: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** MiddleRight: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x-minX,circ.Location.y-minY))
+    #    i += 1
+
+    # Vertex0 UR  minX,maxY
+    # Vertex1 UL  minX,minY
+    # Vertex2 LR  maxX,maxY
+    # Vertex3 LL  maxX,minY
+
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightLength')
+    doc.MiddleRightLength.Type = 'DistanceX'
+    doc.MiddleRightLength.References2D = [(doc.MiddleRightView,'Vertex0'),\
+                                         (doc.MiddleRightView,'Vertex3')]
+    doc.MiddleRightLength.FormatSpec='l'
+    doc.MiddleRightLength.Arbitrary = True
+    doc.MiddleRightLength.X = 0
+    doc.MiddleRightLength.Y = -12
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightLength)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"l")
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightHeight')
+    doc.MiddleRightHeight.Type = 'DistanceY'
+    doc.MiddleRightHeight.References2D = [(doc.MiddleRightView,'Vertex0'),\
+                                         (doc.MiddleRightView,'Vertex3')]
+    doc.MiddleRightHeight.FormatSpec='h'
+    doc.MiddleRightHeight.Arbitrary = True
+    doc.MiddleRightHeight.X = 105
+    doc.MiddleRightHeight.Y = 0
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightHeight)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"h")
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+
+    # Edge4 / Vertex6 (right) [Speaker top] Edges[5]
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightTopMHXoff')
+    doc.MiddleRightTopMHXoff.Type = 'DistanceX'
+    doc.MiddleRightTopMHXoff.References2D = [(doc.MiddleRightView,'Vertex6'),\
+                                         (doc.MiddleRightView,'Vertex2')]
+    doc.MiddleRightTopMHXoff.FormatSpec='A'
+    doc.MiddleRightTopMHXoff.Arbitrary = True
+    doc.MiddleRightTopMHXoff.X = 54
+    doc.MiddleRightTopMHXoff.Y = -7
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightTopMHXoff)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"A")
+    A = blockShape.Edges[4].Curve.Location.y - minY
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(A/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%A)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightTopMHYoff')
+    doc.MiddleRightTopMHYoff.Type = 'DistanceY'
+    doc.MiddleRightTopMHYoff.References2D = [(doc.MiddleRightView,'Vertex6'),\
+                                         (doc.MiddleRightView,'Vertex0')]
+    doc.MiddleRightTopMHYoff.FormatSpec='B'
+    doc.MiddleRightTopMHYoff.Arbitrary = True
+    doc.MiddleRightTopMHYoff.X = 42
+    doc.MiddleRightTopMHYoff.Y = 12
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightTopMHYoff)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"B")
+    B = blockShape.Edges[4].Curve.Location.x - minX
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(B/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%B)
+    ir += 1
+    
+    # Edge5 / Vertex9 (left) [Speaker bottom] Edges[4]
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightBottomMHXoff')
+    doc.MiddleRightBottomMHXoff.Type = 'DistanceX'
+    doc.MiddleRightBottomMHXoff.References2D = [(doc.MiddleRightView,'Vertex9'),\
+                                         (doc.MiddleRightView,'Vertex3')]
+    doc.MiddleRightBottomMHXoff.FormatSpec='C'
+    doc.MiddleRightBottomMHXoff.Arbitrary = True
+    doc.MiddleRightBottomMHXoff.X = -63
+    doc.MiddleRightBottomMHXoff.Y = -7
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightBottomMHXoff)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"C")
+    C = maxY - blockShape.Edges[5].Curve.Location.y
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(C/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%C)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightBottomMHYoff')
+    doc.MiddleRightBottomMHYoff.Type = 'DistanceY'
+    doc.MiddleRightBottomMHYoff.References2D = [(doc.MiddleRightView,'Vertex9'),\
+                                         (doc.MiddleRightView,'Vertex1')]
+    doc.MiddleRightBottomMHYoff.FormatSpec='D'
+    doc.MiddleRightBottomMHYoff.Arbitrary = True
+    doc.MiddleRightBottomMHYoff.X = -50
+    doc.MiddleRightBottomMHYoff.Y = 1.5
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightBottomMHYoff)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"D")
+    D = blockShape.Edges[5].Curve.Location.x - minX
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(D/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%D)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewDimension','MiddleRightSpeakerMHDia')
+    doc.MiddleRightSpeakerMHDia.Type = 'Diameter'
+    doc.MiddleRightSpeakerMHDia.References2D = [(doc.MiddleRightView,'Edge5')]
+    doc.MiddleRightSpeakerMHDia.FormatSpec='EDia (2x)'
+    doc.MiddleRightSpeakerMHDia.Arbitrary = True
+    doc.MiddleRightSpeakerMHDia.X = -60
+    doc.MiddleRightSpeakerMHDia.Y = 13
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightSpeakerMHDia)
+    middlerightsheet.set("A%d"%ir,'%-11.11s'%"EDia")
+    middlerightsheet.set("B%d"%ir,'%10.6f'%(Speaker_._MHoleDia/25.4))
+    middlerightsheet.set("C%d"%ir,'%10.6f'%Speaker_._MHoleDia)
+    ir += 1
+
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','MiddleRightDimBlock')
+    doc.MiddleRightBlockDrillSheetPage.addView(doc.MiddleRightDimBlock)
+    doc.MiddleRightDimBlock.Source = middlerightsheet
+    doc.MiddleRightDimBlock.TextSize = 8
+    doc.MiddleRightDimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.MiddleRightDimBlock.recompute()
+    doc.MiddleRightDimBlock.X = 82
+    doc.MiddleRightDimBlock.Y = 120
+    doc.MiddleRightBlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.MiddleRightBlockDrillSheetPage,"BananaPiM64Model_MiddleRightBlockDrillSheet.pdf")
+
+    #*****
+    # Keyboard shelf hinge block -- hinge mounting holes
+    doc.addObject('TechDraw::DrawPage','KeyboardHingeBlockDrillSheetPage')
+    doc.KeyboardHingeBlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.KeyboardHingeBlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Keyboard Hinge"
+    edt['Scale'] = '.5'
+    edt['Sheet'] = "Sheet 5 of 7"
+    doc.KeyboardHingeBlockDrillSheetPage.Template.EditableTexts = edt
+    doc.KeyboardHingeBlockDrillSheetPage.ViewObject.show()
+    keyboardhingesheet = doc.addObject('Spreadsheet::Sheet','KeyboardHingeDimensionTable')
+    keyboardhingesheet.set("A1",'%-11.11s'%"Dim")
+    keyboardhingesheet.set("B1",'%10.10s'%"inch")
+    keyboardhingesheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','KeyboardHingeView')
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeView)
+    doc.KeyboardHingeView.Source = doc.M64Case_keyboardshelf_hingeblock
+    doc.KeyboardHingeView.Direction=(0.0,1.0,0.0)
+    doc.KeyboardHingeView.Scale = .5
+    doc.KeyboardHingeView.X = 140
+    doc.KeyboardHingeView.Y = 180
+    
+    blockShape = doc.M64Case_keyboardshelf_hingeblock.Shape
+    minX = 999999999
+    minZ = 999999999
+    maxX = 0
+    maxZ = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Z < minZ:
+           minZ = v.Z
+       if v.Z > maxZ:
+           maxZ = v.Z
+    length = maxX - minX
+    height = maxZ - minZ
+    #print ('*** KeyboardHinge: origin (%g,%g), length = %g, height = %g'%(minX,minZ,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** KeyboardHinge: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** KeyboardHinge: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x,circ.Location.z))
+    #    i += 1
+
+    holediameter = blockShape.Edges[11].Curve.Radius*2
+    holezoff = blockShape.Edges[11].Curve.Location.z-minZ
+    holez1off = height-holezoff
+    #print ('*** TopBack: holezoff=%g,holez1off=%g'%(holezoff,holez1off))
+    holeoff1 = blockShape.Edges[11].Curve.Location.x-minX
+    holeoff2 = blockShape.Edges[12].Curve.Location.x-minX
+    holeoff3 = blockShape.Edges[7].Curve.Location.x-minX
+    holeoff4 = blockShape.Edges[8].Curve.Location.x-minX
+    holeoff5 = blockShape.Edges[10].Curve.Location.x-minX
+    holeoff6 = blockShape.Edges[9].Curve.Location.x-minX
+
+    # Edge6 (for Diameter)
+    doc.addObject('TechDraw::DrawViewDimension','KeyboardHingeHDia')
+    doc.KeyboardHingeHDia.Type = 'Diameter'
+    doc.KeyboardHingeHDia.References2D=[(doc.KeyboardHingeView,'Edge6')]
+    doc.KeyboardHingeHDia.FormatSpec='HDia (6x)'
+    doc.KeyboardHingeHDia.Arbitrary = True
+    doc.KeyboardHingeHDia.X = -30
+    doc.KeyboardHingeHDia.Y = 10
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeHDia)
+    keyboardhingesheet.set("A%d"%ir,'%-11.11s'%"HDia")
+    keyboardhingesheet.set("B%d"%ir,'%10.6f'%(holediameter/25.4))
+    keyboardhingesheet.set("C%d"%ir,'%10.6f'%holediameter)
+    ir += 1
+
+    # Vertex0 LR (minY,maxX)
+    # Vertex1 LL (minY,minX)
+    # Vertex2 UR (maxY,maxX)
+    # Vertex3 UL (maxY,minX)
+    doc.addObject('TechDraw::DrawViewDimension','KeyboardHingeLength')
+    doc.KeyboardHingeLength.Type = 'DistanceX'
+    doc.KeyboardHingeLength.References2D=[(doc.KeyboardHingeView,'Vertex1'),\
+                                    (doc.KeyboardHingeView,'Vertex2')]
+    doc.KeyboardHingeLength.FormatSpec='l'
+    doc.KeyboardHingeLength.Arbitrary = True
+    doc.KeyboardHingeLength.X = 0
+    doc.KeyboardHingeLength.Y = -5
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeLength)
+    keyboardhingesheet.set("A%d"%ir,'%-11.11s'%"l")
+    keyboardhingesheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    keyboardhingesheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','KeyboardHingeHeight')
+    doc.KeyboardHingeHeight.Type = 'DistanceY'
+    doc.KeyboardHingeHeight.References2D=[(doc.KeyboardHingeView,'Vertex1'),\
+                                    (doc.KeyboardHingeView,'Vertex2')]
+    doc.KeyboardHingeHeight.FormatSpec='h'
+    doc.KeyboardHingeHeight.Arbitrary = True
+    doc.KeyboardHingeHeight.X =105
+    doc.KeyboardHingeLength.Y =-11 
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeHeight)
+    keyboardhingesheet.set("A%d"%ir,'%-11.11s'%"h")
+    keyboardhingesheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    keyboardhingesheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+
+    # Vertex12 hole1 (leftmost)  Edges[11]
+    doc.addObject('TechDraw::DrawViewDimension','KeyboardHingeHoleZ')
+    doc.KeyboardHingeHoleZ.Type = 'DistanceY'
+    doc.KeyboardHingeHoleZ.References2D=[(doc.KeyboardHingeView,'Vertex1'),\
+                                   (doc.KeyboardHingeView,'Vertex12')]
+    doc.KeyboardHingeHoleZ.FormatSpec='z'
+    doc.KeyboardHingeHoleZ.Arbitrary = True
+    doc.KeyboardHingeHoleZ.X = -105
+    doc.KeyboardHingeHoleZ.Y = -5
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeHoleZ)
+    keyboardhingesheet.set("A%d"%ir,'%-11.11s'%"z")
+    keyboardhingesheet.set("B%d"%ir,'%10.6f'%(holezoff/25.4))
+    keyboardhingesheet.set("C%d"%ir,'%10.6f'%holezoff)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','KeyboardHingeHole1')
+    doc.KeyboardHingeHole1.Type = 'DistanceX'
+    doc.KeyboardHingeHole1.References2D=[(doc.KeyboardHingeView,'Vertex1'),\
+                                   (doc.KeyboardHingeView,'Vertex12')]
+    doc.KeyboardHingeHole1.FormatSpec='a'
+    doc.KeyboardHingeHole1.Arbitrary = True
+    doc.KeyboardHingeHole1.X = -80
+    doc.KeyboardHingeHole1.Y = -6
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeHole1)
+    keyboardhingesheet.set("A%d"%ir,'%-11.11s'%"a")
+    keyboardhingesheet.set("B%d"%ir,'%10.6f'%(holeoff1/25.4))
+    keyboardhingesheet.set("C%d"%ir,'%10.6f'%holeoff1)
+    ir += 1
+    # Vertex15 hole2             Edges[12]
+    doc.addObject('TechDraw::DrawViewDimension','KeyboardHingeHolePitch')
+    doc.KeyboardHingeHolePitch.Type = 'DistanceX'
+    doc.KeyboardHingeHolePitch.References2D=[(doc.KeyboardHingeView,'Vertex12'),\
+                                       (doc.KeyboardHingeView,'Vertex15')]
+    doc.KeyboardHingeHolePitch.FormatSpec='p (5x)'
+    doc.KeyboardHingeHolePitch.Arbitrary = True
+    doc.KeyboardHingeHolePitch.X = -50
+    doc.KeyboardHingeHolePitch.Y = -6
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeHolePitch)
+    keyboardhingesheet.set("A%d"%ir,'%-11.11s'%"p")
+    keyboardhingesheet.set("B%d"%ir,'%10.6f'%((holeoff2-holeoff1)/25.4))
+    keyboardhingesheet.set("C%d"%ir,'%10.6f'%(holeoff2-holeoff1))
+    ir += 1
+    # Vertex9  hole3             Edges[7]
+    # Vertex6  hole4             Edges[8]
+    # Vertex21 hole5             Edges[10]
+    # Vertex18 hole6 (rightmost) Edges[9]
+    
+    
+
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','KeyboardHingeDimBlock')
+    doc.KeyboardHingeBlockDrillSheetPage.addView(doc.KeyboardHingeDimBlock)
+    doc.KeyboardHingeDimBlock.Source = keyboardhingesheet
+    doc.KeyboardHingeDimBlock.TextSize = 8
+    doc.KeyboardHingeDimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.KeyboardHingeDimBlock.recompute()
+    doc.KeyboardHingeDimBlock.X = 82
+    doc.KeyboardHingeDimBlock.Y = 120
+    doc.KeyboardHingeBlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.KeyboardHingeBlockDrillSheetPage,"BananaPiM64Model_KeyboardHingeBlockDrillSheet.pdf")
+
+    #*****
+    # Battery cover mounting holes:
+    # in frontblock and batteryblock2:
+    # doc.M64Case_bottom_frontblock
+    # doc.M64Case_bottom_batteryblock2
+    #
+    doc.addObject('TechDraw::DrawPage','BottomFrontBlockDrillSheetPage')
+    doc.BottomFrontBlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.BottomFrontBlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Bottom Front Block"
+    edt['Scale'] = '.5'
+    edt['Sheet'] = "Sheet 6 of 7"
+    doc.BottomFrontBlockDrillSheetPage.Template.EditableTexts = edt
+    doc.BottomFrontBlockDrillSheetPage.ViewObject.show()
+    frontblocksheet = doc.addObject('Spreadsheet::Sheet','BottomFrontDimensionTable')
+    frontblocksheet.set("A1",'%-11.11s'%"Dim")
+    frontblocksheet.set("B1",'%10.10s'%"inch")
+    frontblocksheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','BottomFrontView')
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontView)
+    doc.BottomFrontView.Source = doc.M64Case_bottom_frontblock
+    doc.BottomFrontView.Direction=(0.0,0.0,1.0)
+    doc.BottomFrontView.Scale = .5
+    doc.BottomFrontView.X = 140
+    doc.BottomFrontView.Y = 180
+    
+    blockShape = doc.M64Case_bottom_frontblock.Shape
+    minX = 999999999
+    minY = 999999999
+    maxX = 0
+    maxY = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Y < minY:
+           minY = v.Y
+       if v.Y > maxY:
+           maxY = v.Y
+    length = maxX - minX
+    height = maxY - minY
+    #print ('*** BottomFront: origin (%g,%g), length = %g, height = %g'%(minX,minY,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** BottomFront: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** BottomFront: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x,circ.Location.y))
+    #    i += 1
+
+    # Vertex0 UL minX,maxY
+    # Vertex1 UR maxX,maxY
+    # Vertex2 LL minX,minY
+    # Vertex3 LR maxX,minY
+    doc.addObject('TechDraw::DrawViewDimension','BottomFrontLength')
+    doc.BottomFrontLength.Type = 'DistanceX'
+    doc.BottomFrontLength.References2D=[(doc.BottomFrontView,'Vertex1'),\
+                                    (doc.BottomFrontView,'Vertex2')]
+    doc.BottomFrontLength.FormatSpec='l'
+    doc.BottomFrontLength.Arbitrary = True
+    doc.BottomFrontLength.X = 0
+    doc.BottomFrontLength.Y = -5
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontLength)
+    frontblocksheet.set("A%d"%ir,'%-11.11s'%"l")
+    frontblocksheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    frontblocksheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','BottomFrontHeight')
+    doc.BottomFrontHeight.Type = 'DistanceY'
+    doc.BottomFrontHeight.References2D=[(doc.BottomFrontView,'Vertex1'),\
+                                    (doc.BottomFrontView,'Vertex2')]
+    doc.BottomFrontHeight.FormatSpec='h'
+    doc.BottomFrontHeight.Arbitrary = True
+    doc.BottomFrontHeight.X =105
+    doc.BottomFrontLength.Y =-11 
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontHeight)
+    frontblocksheet.set("A%d"%ir,'%-11.11s'%"h")
+    frontblocksheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    frontblocksheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+    
+    # Edge4   For diameter
+    doc.addObject('TechDraw::DrawViewDimension','BottomFrontHDia')
+    doc.BottomFrontHDia.Type = 'Diameter'
+    doc.BottomFrontHDia.References2D=[(doc.BottomFrontView,'Edge4')]
+    doc.BottomFrontHDia.FormatSpec='HDia (2x)'
+    doc.BottomFrontHDia.Arbitrary = True
+    doc.BottomFrontHDia.X = 20
+    doc.BottomFrontHDia.Y = 12
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontHDia)
+    holediameter = blockShape.Edges[4].Curve.Radius*2
+    frontblocksheet.set("A%d"%ir,'%-11.11s'%"HDia")
+    frontblocksheet.set("B%d"%ir,'%10.6f'%(holediameter/25.4))
+    frontblocksheet.set("C%d"%ir,'%10.6f'%holediameter)
+    ir += 1
+    
+    # Vertex6 left hole Edges[4]
+    doc.addObject('TechDraw::DrawViewDimension','BottomFrontHoleY')
+    doc.BottomFrontHoleY.Type = 'DistanceY'
+    doc.BottomFrontHoleY.References2D=[(doc.BottomFrontView,'Vertex2'),\
+                                   (doc.BottomFrontView,'Vertex6')]
+    doc.BottomFrontHoleY.FormatSpec='y'
+    doc.BottomFrontHoleY.Arbitrary = True
+    doc.BottomFrontHoleY.X = 50
+    doc.BottomFrontHoleY.Y = 12
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontHoleY)
+    holeyoff = blockShape.Edges[4].Curve.Location.y - minY
+    frontblocksheet.set("A%d"%ir,'%-11.11s'%"y")
+    frontblocksheet.set("B%d"%ir,'%10.6f'%(holeyoff/25.4))
+    frontblocksheet.set("C%d"%ir,'%10.6f'%holeyoff)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','BottomFrontHoleLeft')
+    doc.BottomFrontHoleLeft.Type = 'DistanceX'
+    doc.BottomFrontHoleLeft.References2D=[(doc.BottomFrontView,'Vertex2'),\
+                                   (doc.BottomFrontView,'Vertex6')]
+    doc.BottomFrontHoleLeft.FormatSpec='a'
+    doc.BottomFrontHoleLeft.Arbitrary = True
+    doc.BottomFrontHoleLeft.X = -80
+    doc.BottomFrontHoleLeft.Y = -6
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontHoleLeft)
+    holeoff = blockShape.Edges[4].Curve.Location.x - minX
+    frontblocksheet.set("A%d"%ir,'%-11.11s'%"a")
+    frontblocksheet.set("B%d"%ir,'%10.6f'%(holeoff/25.4))
+    frontblocksheet.set("C%d"%ir,'%10.6f'%holeoff)
+    ir += 1
+
+    # Vertex9 (right) Edges[5]
+    doc.addObject('TechDraw::DrawViewDimension','BottomFrontHoleSpacing')
+    doc.BottomFrontHoleSpacing.Type = 'DistanceX'
+    doc.BottomFrontHoleSpacing.References2D=[(doc.BottomFrontView,'Vertex6'),\
+                                       (doc.BottomFrontView,'Vertex9')]
+    doc.BottomFrontHoleSpacing.FormatSpec='s'
+    doc.BottomFrontHoleSpacing.Arbitrary = True
+    doc.BottomFrontHoleSpacing.X = 60
+    doc.BottomFrontHoleSpacing.Y = -6
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontHoleSpacing)
+    holespacing = blockShape.Edges[5].Curve.Location.x - \
+                  blockShape.Edges[4].Curve.Location.x
+    frontblocksheet.set("A%d"%ir,'%-11.11s'%"s")
+    frontblocksheet.set("B%d"%ir,'%10.6f'%(holespacing/25.4))
+    frontblocksheet.set("C%d"%ir,'%10.6f'%holespacing)
+    ir += 1
+    
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','BottomFrontDimBlock')
+    doc.BottomFrontBlockDrillSheetPage.addView(doc.BottomFrontDimBlock)
+    doc.BottomFrontDimBlock.Source = frontblocksheet
+    doc.BottomFrontDimBlock.TextSize = 8
+    doc.BottomFrontDimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.BottomFrontDimBlock.recompute()
+    doc.BottomFrontDimBlock.X = 82
+    doc.BottomFrontDimBlock.Y = 140
+    doc.BottomFrontBlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.BottomFrontBlockDrillSheetPage,"BananaPiM64Model_BottomFrontBlockDrillSheet.pdf")
+
+
+    doc.addObject('TechDraw::DrawPage','Battery2BlockDrillSheetPage')
+    doc.Battery2BlockDrillSheetPage.Template = doc.USLetterTemplate
+    edt = doc.Battery2BlockDrillSheetPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Battery Block 2"
+    edt['Scale'] = '1:1'
+    edt['Sheet'] = "Sheet 7 of 7"
+    doc.Battery2BlockDrillSheetPage.Template.EditableTexts = edt
+    doc.Battery2BlockDrillSheetPage.ViewObject.show()
+    batteryblock2sheet = doc.addObject('Spreadsheet::Sheet','Battery2DimensionTable')
+    batteryblock2sheet.set("A1",'%-11.11s'%"Dim")
+    batteryblock2sheet.set("B1",'%10.10s'%"inch")
+    batteryblock2sheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','Battery2View')
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2View)
+    doc.Battery2View.Source = doc.M64Case_bottom_batteryblock2
+    doc.Battery2View.Direction=(0.0,0.0,1.0)
+    doc.Battery2View.Scale = 1
+    doc.Battery2View.X = 140
+    doc.Battery2View.Y = 180
+    
+    blockShape = doc.M64Case_bottom_batteryblock2.Shape
+    minX = 999999999
+    minY = 999999999
+    maxX = 0
+    maxY = 0
+    for v in blockShape.Vertexes:
+       if v.X < minX:
+           minX = v.X
+       if v.X > maxX:
+           maxX = v.X    
+       if v.Y < minY:
+           minY = v.Y
+       if v.Y > maxY:
+           maxY = v.Y
+    length = maxX - minX
+    height = maxY - minY
+    #print ('*** Battery2: origin (%g,%g), length = %g, height = %g'%(minX,minY,length,height))    
+    #i = 0
+    #for e in blockShape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        #print('*** Battery2: Edges[%d].Curve is a %s'%(i,type(e.Curve)))
+    #        circ = e.Curve
+    #        print('*** Battery2: Edges[%d].Curve %g at (%g,%g)'%\
+    #              (i,circ.Radius*2,circ.Location.x,circ.Location.y))
+    #    i += 1
+    
+    # Vertex0 UL minX,maxY
+    # Vertex1 UR maxX,maxY
+    # Vertex2 LL minX,minY
+    # Vertex3 LR maxX,minY
+    doc.addObject('TechDraw::DrawViewDimension','Battery2Length')
+    doc.Battery2Length.Type = 'DistanceX'
+    doc.Battery2Length.References2D=[(doc.Battery2View,'Vertex1'),\
+                                    (doc.Battery2View,'Vertex2')]
+    doc.Battery2Length.FormatSpec='l'
+    doc.Battery2Length.Arbitrary = True
+    doc.Battery2Length.X = 0
+    doc.Battery2Length.Y = -5
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2Length)
+    batteryblock2sheet.set("A%d"%ir,'%-11.11s'%"l")
+    batteryblock2sheet.set("B%d"%ir,'%10.6f'%(length/25.4))
+    batteryblock2sheet.set("C%d"%ir,'%10.6f'%length)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Battery2Height')
+    doc.Battery2Height.Type = 'DistanceY'
+    doc.Battery2Height.References2D=[(doc.Battery2View,'Vertex1'),\
+                                    (doc.Battery2View,'Vertex2')]
+    doc.Battery2Height.FormatSpec='h'
+    doc.Battery2Height.Arbitrary = True
+    doc.Battery2Height.X =105
+    doc.Battery2Length.Y =-11 
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2Height)
+    batteryblock2sheet.set("A%d"%ir,'%-11.11s'%"h")
+    batteryblock2sheet.set("B%d"%ir,'%10.6f'%(height/25.4))
+    batteryblock2sheet.set("C%d"%ir,'%10.6f'%height)
+    ir += 1
+    # Edge4   For diameter
+    doc.addObject('TechDraw::DrawViewDimension','Battery2HDia')
+    doc.Battery2HDia.Type = 'Diameter'
+    doc.Battery2HDia.References2D=[(doc.Battery2View,'Edge4')]
+    doc.Battery2HDia.FormatSpec='HDia (2x)'
+    doc.Battery2HDia.Arbitrary = True
+    doc.Battery2HDia.X = -5
+    doc.Battery2HDia.Y = 15
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2HDia)
+    holediameter = blockShape.Edges[4].Curve.Radius*2
+    batteryblock2sheet.set("A%d"%ir,'%-11.11s'%"HDia")
+    batteryblock2sheet.set("B%d"%ir,'%10.6f'%(holediameter/25.4))
+    batteryblock2sheet.set("C%d"%ir,'%10.6f'%holediameter)
+    ir += 1
+        # Vertex6 left hole Edges[4]
+    doc.addObject('TechDraw::DrawViewDimension','Battery2HoleY')
+    doc.Battery2HoleY.Type = 'DistanceY'
+    doc.Battery2HoleY.References2D=[(doc.Battery2View,'Vertex2'),\
+                                   (doc.Battery2View,'Vertex6')]
+    doc.Battery2HoleY.FormatSpec='y'
+    doc.Battery2HoleY.Arbitrary = True
+    doc.Battery2HoleY.X = -45
+    doc.Battery2HoleY.Y = 12
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2HoleY)
+    holeyoff = blockShape.Edges[4].Curve.Location.y - minY
+    batteryblock2sheet.set("A%d"%ir,'%-11.11s'%"y")
+    batteryblock2sheet.set("B%d"%ir,'%10.6f'%(holeyoff/25.4))
+    batteryblock2sheet.set("C%d"%ir,'%10.6f'%holeyoff)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Battery2HoleLeft')
+    doc.Battery2HoleLeft.Type = 'DistanceX'
+    doc.Battery2HoleLeft.References2D=[(doc.Battery2View,'Vertex2'),\
+                                   (doc.Battery2View,'Vertex6')]
+    doc.Battery2HoleLeft.FormatSpec='a'
+    doc.Battery2HoleLeft.Arbitrary = True
+    doc.Battery2HoleLeft.X = -45
+    doc.Battery2HoleLeft.Y = -8
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2HoleLeft)
+    holeoff = blockShape.Edges[4].Curve.Location.x - minX
+    batteryblock2sheet.set("A%d"%ir,'%-11.11s'%"a")
+    batteryblock2sheet.set("B%d"%ir,'%10.6f'%(holeoff/25.4))
+    batteryblock2sheet.set("C%d"%ir,'%10.6f'%holeoff)
+    ir += 1
+
+    # Vertex9 (right) Edges[5]
+    doc.addObject('TechDraw::DrawViewDimension','Battery2HoleSpacing')
+    doc.Battery2HoleSpacing.Type = 'DistanceX'
+    doc.Battery2HoleSpacing.References2D=[(doc.Battery2View,'Vertex6'),\
+                                       (doc.Battery2View,'Vertex9')]
+    doc.Battery2HoleSpacing.FormatSpec='s'
+    doc.Battery2HoleSpacing.Arbitrary = True
+    doc.Battery2HoleSpacing.X =  0
+    doc.Battery2HoleSpacing.Y = -8
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2HoleSpacing)
+    holespacing = blockShape.Edges[5].Curve.Location.x - \
+                  blockShape.Edges[4].Curve.Location.x
+    batteryblock2sheet.set("A%d"%ir,'%-11.11s'%"s")
+    batteryblock2sheet.set("B%d"%ir,'%10.6f'%(holespacing/25.4))
+    batteryblock2sheet.set("C%d"%ir,'%10.6f'%holespacing)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewSpreadsheet','Battery2DimBlock')
+    doc.Battery2BlockDrillSheetPage.addView(doc.Battery2DimBlock)
+    doc.Battery2DimBlock.Source = batteryblock2sheet
+    doc.Battery2DimBlock.TextSize = 8
+    doc.Battery2DimBlock.CellEnd = "C%d"%(ir-1) 
+    doc.Battery2DimBlock.recompute()
+    doc.Battery2DimBlock.X = 110
+    doc.Battery2DimBlock.Y = 140
+    doc.Battery2BlockDrillSheetPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.Battery2BlockDrillSheetPage,"BananaPiM64Model_Battery2BlockDrillSheet.pdf")
+    sys.exit(0)

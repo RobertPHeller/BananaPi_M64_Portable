@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:24 2020
-#  Last Modified : <200614.2319>
+#  Last Modified : <200620.1326>
 #
 #  Description	
 #
@@ -85,6 +85,10 @@ class TeensyThumbStick_(object):
     _CoverButtonHole2X = 56.28
     _CoverButtonHole3X = 63.94
     _CoverButtonHoleDia = 5.08
+    _ButtonPlungerDiameter1 = 5.0
+    _ButtonPlungerDiameter2 = 7.5
+    _ButtonPlungerLength1 = 10
+    _ButtonPlungerLength2 = 1.6
     def __init__(self):
         raise RuntimeError("No Instances allowed for TeensyThumbStick_!")
     
@@ -200,20 +204,24 @@ class TeensyThumbStickCover(TeensyThumbStick_):
                                 self.cutoutorigin).extrude(coverthick)
         self.coverpanel = self.coverpanel.cut(cutout)
         bholerad = self._CoverButtonHoleDia / 2.0
+        self.buttonholes = dict()
         bholeorig = origin.add(Base.Vector(self._CoverButtonHole1X,
                                            self._CoverButtonHoleY,0))
+        self.buttonholes['left'] = bholeorig
         bhole = Part.Face(Part.Wire(Part.makeCircle(bholerad,
                                                     bholeorig))
                          ).extrude(coverthick)
         self.coverpanel = self.coverpanel.cut(bhole)
         bholeorig = origin.add(Base.Vector(self._CoverButtonHole2X,
                                            self._CoverButtonHoleY,0))
+        self.buttonholes['middle'] = bholeorig
         bhole = Part.Face(Part.Wire(Part.makeCircle(bholerad,
                                                     bholeorig))
                          ).extrude(coverthick)
         self.coverpanel = self.coverpanel.cut(bhole)
         bholeorig = origin.add(Base.Vector(self._CoverButtonHole3X,
                                            self._CoverButtonHoleY,0))
+        self.buttonholes['right'] = bholeorig
         bhole = Part.Face(Part.Wire(Part.makeCircle(bholerad,
                                                     bholeorig))
                          ).extrude(coverthick)
@@ -238,6 +246,28 @@ class TeensyThumbStickCover(TeensyThumbStick_):
         return Part.makePlane(self._CoverCutoutWidth,
                               self._CoverCutoutHeight,
                               cutouto).extrude(thick)
+
+class TeensyThumbStickButtonPlunger(TeensyThumbStick_):
+    def __init__(self,name,origin):
+        self.name = name
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector!")
+        self.origin = origin
+        len1 = Base.Vector(0,0,self._ButtonPlungerLength1)
+        len2 = Base.Vector(0,0,self._ButtonPlungerLength2)
+        self.plunger = Part.Face(Part.Wire(\
+                        Part.makeCircle(self._ButtonPlungerDiameter2/2.0,\
+                                        origin))).extrude(len2)
+        o2 = origin.add(len2)
+        self.plunger = self.plunger.fuse(Part.Face(Part.Wire(\
+                        Part.makeCircle(self._ButtonPlungerDiameter1/2,\
+                                        o2))).extrude(len1))
+    def show(self):
+        doc = App.activeDocument()
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.plunger
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
 
 if __name__ == '__main__':
     if "TeensyThumbStickCoverTechDrawing" in App.listDocuments().keys():
