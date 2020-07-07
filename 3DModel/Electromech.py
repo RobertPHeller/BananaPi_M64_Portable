@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Mon Jun 1 10:34:36 2020
-#  Last Modified : <200613.1827>
+#  Last Modified : <200706.1630>
 #
 #  Description	
 #
@@ -233,3 +233,39 @@ class Fan02510SS_05P_AT00(object):
                 y += hspace
             x += hspace
         return panel
+
+class Grommet(object):
+    _OutsideDiameter = 8.71
+    _InsideDiameter  = 3.18
+    _HoleDiameter    = 6.35
+    _Height          = 4.75
+    _PanelThick      = 1.59
+    def __init__(self,name,origin):
+        self.name = name
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector")
+        self.origin = origin
+        borig = origin.add(Base.Vector(-(self._Height/2.0),0,0))
+        XNorm = Base.Vector(1,0,0)
+        Thick = Base.Vector(self._Height,0,0)
+        self.body = Part.Face(Part.Wire(Part.makeCircle(\
+                          self._OutsideDiameter/2,borig,XNorm))).extrude(Thick)
+        self.body = self.body.cut(Part.Face(Part.Wire(Part.makeCircle(\
+                          self._InsideDiameter/2,borig,XNorm))).extrude(Thick))
+        panelorigin = origin.add(Base.Vector(-(self._PanelThick/2),-self._OutsideDiameter/2,-self._OutsideDiameter/2))
+        panelthick  = Base.Vector(self._PanelThick,0,0)
+        panel = Part.makePlane(self._OutsideDiameter,self._OutsideDiameter,\
+                               panelorigin,XNorm).extrude(panelthick)
+        self.horig = origin.add(Base.Vector(-(self._PanelThick/2),0,0))
+        panel = panel.cut(Part.Face(Part.Wire(Part.makeCircle(self._HoleDiameter/2,self.horig,XNorm))).extrude(panelthick))
+        self.body = self.body.cut(panel)
+    def show(self):
+        doc = App.activeDocument()
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+    def CutHole(self,panel):
+        XNorm = Base.Vector(1,0,0)
+        panelthick  = Base.Vector(self._PanelThick,0,0)
+        return panel.cut(Part.Face(Part.Wire(Part.makeCircle(self._HoleDiameter/2,self.horig,XNorm))).extrude(panelthick))

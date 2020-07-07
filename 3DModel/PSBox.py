@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200614.1716>
+#  Last Modified : <200706.2136>
 #
 #  Description	
 #
@@ -293,9 +293,13 @@ class PSBox(CU_3002A):
         fz = oz+self._fanZoff()
         f1origin = Base.Vector(fx,f1y,fz)
         self.fan1 = Fan02510SS_05P_AT00(self.name+"_fan1",f1origin)
+        g1origin = Base.Vector(fx-CU_3002A_._thickness/2.0,f1y-9,fz+25)
+        self.grommet1 = Grommet(self.name+"_grommet1",g1origin)
         f2y = oy+self._fan2Yoff()
         f2origin = Base.Vector(fx,f2y,fz)
         self.fan2 = Fan02510SS_05P_AT00(self.name+"_fan2",f2origin)
+        g2origin = Base.Vector(fx-CU_3002A_._thickness/2.0,f2y+25+9,fz+25)
+        self.grommet2 = Grommet(self.name+"_grommet2",g2origin)
         c = self.cover
         for i in [1,2,3,4]:
             c = c.cut(self.fan1.MountingHole(i,fx,-self.thickness()))
@@ -304,6 +308,8 @@ class PSBox(CU_3002A):
         c = c.cut(self.fan2.RoundFanHole(fx,-self.thickness()))
         c = self.fan1.DrillGrillHoles(ox+self.thickness(),-self.thickness(),2.5,3.5,c)
         c = self.fan2.DrillGrillHoles(ox+self.thickness(),-self.thickness(),2.5,3.5,c)
+        c = self.grommet1.CutHole(c)
+        c = self.grommet2.CutHole(c)
         self.cover = c
     def MountingHole(self,i,zBase):
         return self.pspcb.MountingHole(i,zBase)
@@ -334,7 +340,8 @@ class PSBox(CU_3002A):
         self.dcstrainrelief.show()
         self.fan1.show()
         self.fan2.show()
-    
+        self.grommet1.show()    
+        self.grommet2.show()    
 
 
 if __name__ == '__main__':
@@ -629,13 +636,13 @@ if __name__ == '__main__':
     doc.CoverRightView.Direction=(1.0,0.0,0.0)
     doc.CoverRightView.Caption = "Right"
     doc.CoverRightView.Scale = 1
-    # Edge137    -- Round Fan Cutout (for diaameter)
+    # Edge128    -- Round Fan Cutout (for diaameter)
     doc.addObject('TechDraw::DrawViewDimension','CoverADia')
     doc.CoverADia.Type = 'Diameter'
-    doc.CoverADia.References2D=[(doc.CoverRightView,'Edge137')]
+    doc.CoverADia.References2D=[(doc.CoverRightView,'Edge128')]
     doc.CoverADia.FormatSpec='ADia (2x)'
     doc.CoverADia.Arbitrary = True
-    doc.CoverADia.X = -40
+    doc.CoverADia.X = -32
     doc.CoverADia.Y = 0
     doc.PowerSupplyBoxCoverPage.addView(doc.CoverADia)
     coversheet.set("A%d"%ir,'%-11.11s'%"ADia")
@@ -656,11 +663,11 @@ if __name__ == '__main__':
     coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanmholedia)
     ir += 1
     # Vertex4    -- Origin
-    # Vertex354  -- Round Fan Cutout Center (left)
+    # Vertex327  -- Round Fan Cutout Center (left)
     doc.addObject('TechDraw::DrawViewDimension','CoverC')
     doc.CoverC.Type = 'DistanceX'
     doc.CoverC.References2D=[(doc.CoverRightView,'Vertex4'),\
-                             (doc.CoverRightView,'Vertex354')]
+                             (doc.CoverRightView,'Vertex327')]
     doc.CoverC.FormatSpec='C'
     doc.CoverC.Arbitrary = True
     doc.CoverC.X = -37
@@ -675,7 +682,7 @@ if __name__ == '__main__':
     doc.addObject('TechDraw::DrawViewDimension','CoverD')
     doc.CoverD.Type = 'DistanceY'
     doc.CoverD.References2D=[(doc.CoverRightView,'Vertex4'),\
-                             (doc.CoverRightView,'Vertex354')]
+                             (doc.CoverRightView,'Vertex327')]
     doc.CoverD.FormatSpec='D'
     doc.CoverD.Arbitrary = True
     doc.CoverD.X = -58.5
@@ -688,11 +695,11 @@ if __name__ == '__main__':
     coversheet.set("C%d"%ir,'%10.6f'%fYHCenter)
     ir += 1
     # Fan Mounting Holes
-    # Vertex351  -- Left Fan MH (lower left)
+    # Vertex324  -- Left Fan MH (lower left)
     doc.addObject('TechDraw::DrawViewDimension','CoverE')
     doc.CoverE.Type = 'DistanceX'
     doc.CoverE.References2D=[(doc.CoverRightView,'Vertex4'),\
-                             (doc.CoverRightView,'Vertex351')]
+                             (doc.CoverRightView,'Vertex324')]
     doc.CoverE.FormatSpec='E'
     doc.CoverE.Arbitrary = True
     doc.CoverE.X = -45
@@ -705,7 +712,7 @@ if __name__ == '__main__':
     doc.addObject('TechDraw::DrawViewDimension','CoverF')
     doc.CoverF.Type = 'DistanceY'
     doc.CoverF.References2D=[(doc.CoverRightView,'Vertex4'),\
-                             (doc.CoverRightView,'Vertex351')]
+                             (doc.CoverRightView,'Vertex324')]
     doc.CoverF.FormatSpec='F'
     doc.CoverF.Arbitrary = True
     doc.CoverF.X = 26
@@ -715,11 +722,11 @@ if __name__ == '__main__':
     coversheet.set("B%d"%ir,'%10.6f'%((fYDist+psbox.fan1.mhxyoff())/25.4))
     coversheet.set("C%d"%ir,'%10.6f'%(fYDist+psbox.fan1.mhxyoff()))
     ir += 1
-    # Vertex357  -- Left Fan MH (lower right)
+    # Vertex330  -- Left Fan MH (lower right)
     doc.addObject('TechDraw::DrawViewDimension','CoverG')
     doc.CoverG.Type = 'DistanceX'
-    doc.CoverG.References2D=[(doc.CoverRightView,'Vertex351'),\
-                             (doc.CoverRightView,'Vertex357')]
+    doc.CoverG.References2D=[(doc.CoverRightView,'Vertex324'),\
+                             (doc.CoverRightView,'Vertex330')]
     doc.CoverG.FormatSpec='G'
     doc.CoverG.Arbitrary = True
     doc.CoverG.X = -11
@@ -730,14 +737,14 @@ if __name__ == '__main__':
     coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanmholespacing)
     ir += 1
     # Vertex333  -- Left Fan MH (upper left)
-    # Vertex327  -- Left Fan MH (upper right)
-    # Vertex342  -- Round Fan Cutout Center (right)
+    # Vertex336  -- Left Fan MH (upper right)
+    # Vertex339  -- Round Fan Cutout Center (right)
     f2YDist = psbox._fan2Yoff()-psbox.thickness()
     f2YHCenter = f2YDist + (Fan02510SS_05P_AT00._fanwidth_height/2.0) 
     doc.addObject('TechDraw::DrawViewDimension','CoverH')
     doc.CoverH.Type = 'DistanceX'
-    doc.CoverH.References2D=[(doc.CoverRightView,'Vertex354'),\
-                             (doc.CoverRightView,'Vertex342')]
+    doc.CoverH.References2D=[(doc.CoverRightView,'Vertex327'),\
+                             (doc.CoverRightView,'Vertex339')]
     doc.CoverH.FormatSpec='H'
     doc.CoverH.Arbitrary = True
     doc.CoverH.X = 7.5
@@ -747,14 +754,14 @@ if __name__ == '__main__':
     coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanwidth_height/25.4))
     coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanwidth_height)
     ir += 1
-    # Vertex348  -- Right Fan MH (lower left)
-    # Vertex339  -- Right Fan MH (lower right)
-    # Vertex345  -- Right Fan MH (upper left)
-    # Vertex324  -- Right Fan MH (upper right)
+    # Vertex351  -- Right Fan MH (lower left)
+    # Vertex348  -- Right Fan MH (lower right)
+    # Vertex342  -- Right Fan MH (upper left)
+    # Vertex345  -- Right Fan MH (upper right)
     doc.addObject('TechDraw::DrawViewDimension','CoverI')
     doc.CoverI.Type = 'DistanceY'
-    doc.CoverI.References2D=[(doc.CoverRightView,'Vertex339'),\
-                             (doc.CoverRightView,'Vertex324')]
+    doc.CoverI.References2D=[(doc.CoverRightView,'Vertex348'),\
+                             (doc.CoverRightView,'Vertex345')]
     doc.CoverI.FormatSpec='I'
     doc.CoverI.Arbitrary = True
     doc.CoverI.X = 26
@@ -861,7 +868,67 @@ if __name__ == '__main__':
     coversheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
     coversheet.set("C%d"%ir,'%10.6f'%3.5)
     ir += 1
-    
+    # Edge140   Grommet1 (left) for diameter     
+    doc.addObject('TechDraw::DrawViewDimension','CoverPDia')
+    doc.CoverPDia.Type = 'Diameter'
+    doc.CoverPDia.References2D=[(doc.CoverRightView,'Edge140')]
+    doc.CoverPDia.FormatSpec='PDia (2x)'
+    doc.CoverPDia.Arbitrary = True
+    doc.CoverPDia.X = -11
+    doc.CoverPDia.Y =  30
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverPDia)
+    coversheet.set("A%d"%ir,'%-11.11s'%"PDia")
+    coversheet.set("B%d"%ir,'%10.6f'%(Grommet._HoleDiameter/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%Grommet._HoleDiameter)
+    ir += 1
+    # Vertex4   LowerLeft (origin)
+    # Vertex363 Grommet1 (left)
+    doc.addObject('TechDraw::DrawViewDimension','CoverQ')
+    doc.CoverQ.Type = 'DistanceX'
+    doc.CoverQ.References2D=[(doc.CoverRightView,'Vertex4'),\
+                             (doc.CoverRightView,'Vertex363')]
+    doc.CoverQ.FormatSpec='Q'
+    doc.CoverQ.Arbitrary = True
+    doc.CoverQ.X = -41
+    doc.CoverQ.Y = -24
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverQ)
+    g1XDist  = f1XDist - 9
+    coversheet.set("A%d"%ir,'%-11.11s'%"Q")
+    coversheet.set("B%d"%ir,'%10.6f'%(g1XDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%g1XDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverR')
+    doc.CoverR.Type = 'DistanceY'
+    doc.CoverR.References2D=[(doc.CoverRightView,'Vertex4'),\
+                             (doc.CoverRightView,'Vertex363')]
+    doc.CoverR.FormatSpec='R'
+    doc.CoverR.Arbitrary = True
+    doc.CoverR.X = -56
+    doc.CoverR.Y =  10
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverR)
+    fYDist =  psbox._fanZoff()-psbox.thickness()
+    gYDist = fYDist + 25
+    coversheet.set("A%d"%ir,'%-11.11s'%"R")
+    coversheet.set("B%d"%ir,'%10.6f'%(gYDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%gYDist)
+    ir += 1
+    # Vertex357 Grommet2 (right)
+    doc.addObject('TechDraw::DrawViewDimension','CoverS')
+    doc.CoverS.Type = 'DistanceX'
+    doc.CoverS.References2D=[(doc.CoverRightView,'Vertex363'),\
+                             (doc.CoverRightView,'Vertex357')]
+    doc.CoverS.FormatSpec='S'
+    doc.CoverS.Arbitrary = True
+    doc.CoverS.X =  19
+    doc.CoverS.Y = -24
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverS)
+    f2XDist = psbox._fan2Yoff()-psbox.thickness()
+    g2XDist = f2XDist+25+9
+    S = g2XDist - g1XDist
+    coversheet.set("A%d"%ir,'%-11.11s'%"S")
+    coversheet.set("B%d"%ir,'%10.6f'%(S/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%S)
+    ir += 1
 
     doc.CoverLeftView.recompute()
     
@@ -882,7 +949,7 @@ if __name__ == '__main__':
     doc.PowerSupplyBoxCoverPage.addView(doc.CoverDimBlock)
     doc.CoverDimBlock.recompute()
     doc.CoverDimBlock.X = 210
-    doc.CoverDimBlock.Y = 150
+    doc.CoverDimBlock.Y = 140
 
 
     doc.PowerSupplyBoxCoverPage.recompute()

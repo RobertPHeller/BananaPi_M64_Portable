@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 10:49:38 2020
-#  Last Modified : <200619.1756>
+#  Last Modified : <200706.1619>
 #
 #  Description	
 #
@@ -63,4 +63,4 @@ if __name__ == '__main__':
     doc.Label="BananaPiM64Model"
     doc.saveAs("BananaPiM64Model.fcstd")
     CutList.ListCuts("BananaPiM64Model_parts.csv")
-    sys.exit(1)
+    #sys.exit(1)
