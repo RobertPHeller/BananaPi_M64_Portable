@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200620.1318>
+#  Last Modified : <200724.0935>
 #
 #  Description	
 #
@@ -129,7 +129,7 @@ class PortableM64CaseCommon(object):
     _Height = 11 * 25.4
     def Height(self):
         return PortableM64CaseCommon._Height
-    _BottomDepth = 2.25 * 25.4
+    _BottomDepth = 2.5 * 25.4
     def BottomDepth(self):
         return PortableM64CaseCommon._BottomDepth
     _MiddleTotalDepth = 1.5 * 25.4
