@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 22:46:38 2020
-#  Last Modified : <200726.1658>
+#  Last Modified : <200727.1309>
 #
 #  Description	
 #
@@ -599,20 +599,20 @@ class PS2OnPCB(PCB2withStrips):
         mhcd42HeaderOrig = Base.Vector(ox+vinX,
                                        oy+(5*self._stripIncr),
                                        oz+self._psPCBThickness)
-        self.mhcd42Header = Header6_AboveDown('mhcd42Header',mhcd42HeaderOrig)
+        self.mhcd42Header = Header6_AboveDown(name+'_mhcd42Header',mhcd42HeaderOrig)
         yin = 15*self._stripIncr
-        self.mt3608vinM = Header1_AboveDown('mt3608vinM',Base.Vector(ox+gndX1,
+        self.mt3608vinM = Header1_AboveDown(name+'_mt3608vinM',Base.Vector(ox+gndX1,
                                                                     oy+yin,
                                                                     oz+self._psPCBThickness))
-        self.mt3608vinP = Header1_AboveDown('mt3608vinP',Base.Vector(ox+gndX2,
+        self.mt3608vinP = Header1_AboveDown(name+'_mt3608vinP',Base.Vector(ox+gndX2,
                                                                     oy+yin,
                                                                     oz+self._psPCBThickness))
         yout = 27*self._stripIncr
-        self.mt3608voutM = Header1_AboveDown('mt3608voutM',Base.Vector(ox+gndX1,
+        self.mt3608voutM = Header1_AboveDown(name+'_mt3608voutM',Base.Vector(ox+gndX1,
                                                                      oy+yout,
                                                                      oz+self._psPCBThickness))
 
-        self.mt3608voutP = Header1_AboveDown('mt3608voutP',Base.Vector(ox+gndX2,
+        self.mt3608voutP = Header1_AboveDown(name+'_mt3608voutP',Base.Vector(ox+gndX2,
                                                                     oy+yout,
                                                                     oz+self._psPCBThickness))
         yoff = (self._psPCBlength - PSK_S15C._pslength)/2.0
@@ -637,6 +637,14 @@ class PS2OnPCB(PCB2withStrips):
                             Base.Vector(ox+self._esdY,
                                         oy+self._esdX,
                                         oz))
+    def VAdjustY(self):
+        return self.mt3608.origin.y+MT3608._vadjustYOff
+    def VAdjustZ(self):
+        return self.mt3608.origin.z+MT3608._vadjustZOff
+    def KeyButtonY(self):
+        return self.mhcd42.origin.y+MHCD42._keybuttonYOff
+    def KeyButtonZ(self):
+        return self.mhcd42.origin.z+MHCD42._keybuttonZOff
     def show(self):
         PCB2withStrips.show(self)
         self.mhcd42Header.show()

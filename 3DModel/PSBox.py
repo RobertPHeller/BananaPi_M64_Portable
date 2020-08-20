@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200726.1716>
+#  Last Modified : <200818.0959>
 #
 #  Description	
 #
@@ -59,6 +59,8 @@ import datetime
 from PSPCB import *
 from Electromech import *
 from Case import *
+
+
 
 ## Al. box:      Mouser #563-CU-3002A
 # Base: 2.125in wide, 4.000in long, 1.625in high
@@ -426,22 +428,23 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 class Bud_AC(object):
     __metaclass__ = ABCMeta
-    @abstractproperty
-    def A(self):
+    @staticmethod
+    def A():
         pass
-    @abstractproperty
-    def B(self):
+    @staticmethod
+    def B():
         pass
-    @abstractproperty
-    def C(self):
+    @staticmethod
+    def C():
         pass
-    @abstractproperty
-    def TYPE(self):
+    @staticmethod
+    def TYPE():
         pass
-    @abstractproperty
-    def GUAGE(self):
+    @staticmethod
+    def GUAGE():
         pass
-    def BRACKETHOLES(self):
+    @staticmethod
+    def BRACKETHOLES():
         return False
     def _buildbox(self):
         ox = self.origin.x
@@ -529,14 +532,14 @@ class Bud_AC(object):
         
 class Bud_BPA(object):
     __metaclass__ = ABCMeta
-    @abstractproperty
-    def AA(self):
+    @staticmethod
+    def AA():
         pass
-    @abstractproperty
-    def BB(self):
+    @staticmethod
+    def BB():
         pass
-    @abstractproperty
-    def TYPE(self):
+    @staticmethod
+    def TYPE():
         pass
     def _buildbottom(self,C):
         ZNorm=Base.Vector(0,0,1)
@@ -583,15 +586,20 @@ class Bud_BPA(object):
 
 
 class AC_1404(Bud_AC):
-    def A(self):
+    @staticmethod
+    def A():
         return(5.000*25.4)
-    def B(self):
+    @staticmethod
+    def B():
         return(4.000*25.4)
-    def C(self):
+    @staticmethod
+    def C():
         return(2.000*25.4)
-    def TYPE(self):
+    @staticmethod
+    def TYPE():
         return 'C'
-    def GUAGE(self):
+    @staticmethod
+    def GUAGE():
         return(.040*25.4)
     def __init__(self,name,origin):
         self.name = name
@@ -601,13 +609,17 @@ class AC_1404(Bud_AC):
         self._buildbox()
 
 class BPA_1504(Bud_BPA):
-    def AA(self):
+    @staticmethod
+    def AA():
         return(3.875*25.4)
-    def BB(self):
+    @staticmethod
+    def BB():
         return(4.875*25.4)
-    def TYPE(self):
+    @staticmethod
+    def TYPE():
         return 'C'
-    def _C(self):
+    @staticmethod
+    def _C():
         return(2.0*25.4)
     def __init__(self,name,origin):
         self.name = name
@@ -719,6 +731,8 @@ class PSBoxOrig(CU_3006A):
 class PSBox(AC_1404,BPA_1504):
     _standoff_height = 9.0
     _standoff_dia = 5
+    def InletFlangeCutout(self,yBase,yThick):
+        return self.inlet.Flange(yBase,yThick)
     def __init__(self,name,origin):
         AC_1404.__init__(self,name,origin)
         BPA_1504.__init__(self,name,origin)
@@ -727,13 +741,13 @@ class PSBox(AC_1404,BPA_1504):
         oz = origin.z
         pcb1orig=Base.Vector(ox+PS2OnPCB._psPCBwidth+5.08+5.08,
                             oy+((self.B()-PSOnPCB._psPCBlength)/2.0),
-                            oz+self.GUAGE()+PSBox._standoff_height)
+                            oz+self.GUAGE()+self._standoff_height)
         self.pspcb1 = PSOnPCB(self.name+'_pcb1',pcb1orig)
         self.standoffs = list()
         for i in [1,2,3,4]:
             self.standoffs.append(self.pspcb1.Standoff(i,oz+self.GUAGE(),
-                                                      PSBox._standoff_height,
-                                                      PSBox._standoff_dia))
+                                                      self._standoff_height,
+                                                      self._standoff_dia))
         mhthick = Base.Vector(0,0,self.GUAGE())
         b = self.box
         for i in [1,2,3,4]:
@@ -744,19 +758,119 @@ class PSBox(AC_1404,BPA_1504):
         self.pspcb2 = PS2OnPCB(self.name+'_pcb2',pcb2orig)
         for i in [1,2,3,4]:
             self.standoffs.append(self.pspcb2.Standoff(i,oz+self.GUAGE(),
-                                                       PSBox._standoff_height,
-                                                       PSBox._standoff_dia))
+                                                       self._standoff_height,
+                                                       self._standoff_dia))
         b = self.box
         for i in [1,2,3,4]:
             mh = self.pspcb2.MountingHole(i,oz).extrude(mhthick)
             b = b.cut(mh)
         self.box = b
+        # 120VAC inlet
+        inletXoff = self.A()-(Inlet._bodywidth+5.08+(PSOnPCB._psPCBwidth-7.62))
+        inletZoff = self.C()-(Inlet._bodyheight+5.08)
+        self.inlet = Inlet(self.name+"_inlet",Base.Vector(ox+inletXoff,\
+                                                          oy+self.B(),\
+                                                          oz+inletZoff))
+        b = self.box.cut(self.inlet.bodyCutout(oy+self.B(),-self.GUAGE()))
+        self.box = b  
+        # DC/Bat out strainreliefs
+        M64_5VStrainOrig = Base.Vector(pcb1orig.x+(PSOnPCB._psPCBwidth/2),
+                                       oy,
+                                       oz+(self.C()-((DCStrainRelief._flangedia/2)+5.08)))
+        self.m64_5vstrain = DCStrainRelief(self.name+"_m64_5vstrain",M64_5VStrainOrig)
+        b = self.box.cut(self.m64_5vstrain.MountHole(oy,-self.GUAGE()))
+        self.box = b
+        LCD_12VStrainOrig = Base.Vector(ox+((DCStrainRelief._flangedia/2)+5.08),\
+                                        oy,\
+                                        oz+(self.C()-((DCStrainRelief._flangedia/2)+5.08)))
+        self.lcd_12vstrain = DCStrainRelief(self.name+"_lcd_12vstrain",LCD_12VStrainOrig)
+        b = self.box.cut(self.lcd_12vstrain.MountHole(oy,-self.GUAGE()))
+        self.box = b
+        AUX_BattStrainOrig = LCD_12VStrainOrig.add(Base.Vector(DCStrainRelief._flangedia+1.27,0,0))
+        self.aux_battstrain = DCStrainRelief(self.name+"_aux_battstrain",AUX_BattStrainOrig)
+        b = self.box.cut(self.aux_battstrain.MountHole(oy,-self.GUAGE()))
+        self.box = b
+        SATA_5VStrainOrig = AUX_BattStrainOrig.add(Base.Vector(DCStrainRelief._flangedia+1.27,0,0))
+        self.sata_5vstrain = DCStrainRelief(self.name+"_sata_5vstrain",SATA_5VStrainOrig)
+        b = self.box.cut(self.sata_5vstrain.MountHole(oy,-self.GUAGE()))
+        self.box = b
+        # Fans
+        f1x = self.pspcb1.origin.x+(self.pspcb1._psPCBwidth/2)
+        f1x -= Fan02510SS_05P_AT00_TopMount._fanwidth_height/2
+        f1y = self.pspcb1.origin.y+(self.pspcb1._psPCBlength/2)
+        f1y -= Fan02510SS_05P_AT00_TopMount._fanwidth_height/2
+        fan1Orig = Base.Vector(f1x,f1y,oz+self.C())
+        self.fan1 = Fan02510SS_05P_AT00_TopMount(self.name+'_fan1',fan1Orig)
+        for i in [1,2,3,4]:
+            b = self.bottom.cut(self.fan1.MountingHole(i,oz+self.C(),2*self.GUAGE()))
+            self.bottom = b
+        b = self.fan1.RoundFanGrill(oz+self.C(),2*self.GUAGE(),self.bottom)
+        self.bottom = b
+        f2x = self.pspcb2.origin.x+(self.pspcb2._psPCBwidth/2)
+        f2x -= Fan02510SS_05P_AT00_TopMount._fanwidth_height/2
+        f2y = self.pspcb2.origin.y+(self.pspcb2._psPCBlength/2)
+        f2y -= Fan02510SS_05P_AT00_TopMount._fanwidth_height/2
+        fan2Orig = Base.Vector(f2x,f2y,oz+self.C())
+        self.fan2 = Fan02510SS_05P_AT00_TopMount(self.name+'_fan2',fan2Orig)
+        for i in [1,2,3,4]:
+            b = self.bottom.cut(self.fan2.MountingHole(i,oz+self.C(),2*self.GUAGE()))
+            self.bottom = b
+        b = self.fan2.RoundFanGrill(oz+self.C(),2*self.GUAGE(),self.bottom)
+        self.bottom = b
+        # Vent holes
+        self._drillFanIntakeGrill(f1x)
+        self._drillFanIntakeGrill(f2x)
+        # VAdj hole
+        VAdjHoleOrig = Base.Vector(ox,self.pspcb2.VAdjustY(),self.pspcb2.VAdjustZ())
+        XNorm = Base.Vector(1,0,0)
+        HoleExtrude = Base.Vector(self.GUAGE(),0,0)
+        HoleRadius = .125*25.4
+        b = self.box.cut(Part.Face(Part.Wire(Part.makeCircle(HoleRadius,VAdjHoleOrig,XNorm))).extrude(HoleExtrude))
+        self.box = b
+        # Key Switch hole
+        KeyButtonOrig = Base.Vector(ox,self.pspcb2.KeyButtonY(),self.pspcb2.KeyButtonZ())
+        b = self.box.cut(Part.Face(Part.Wire(Part.makeCircle(HoleRadius,KeyButtonOrig,XNorm))).extrude(HoleExtrude))
+        self.box = b
+        # LED View Hole
+    def _drillFanIntakeGrill(self,ox):
+        oy = self.origin.y
+        oz = self.origin.z+self._standoff_height
+        height = self.GUAGE()
+        hdia = 2.5
+        hspace = 3.5
+        hrad = hdia/2.0
+        holeside=self.fan1._fanwidth_height
+        extrude = Base.Vector(0,height,0)
+        YNorm=Base.Vector(0,1,0)
+        x = hspace/2.0
+        panel = self.box
+        while x < holeside:
+            y = hspace/2.0
+            while y < holeside:
+                holeorig=Base.Vector(ox+x,oy,oz+y)
+                hole = Part.Face(Part.Wire(Part.makeCircle(hrad,holeorig,YNorm))).extrude(extrude)
+                panel = panel.cut(hole)
+                y += hspace
+            x += hspace
+        self.box = panel
+    def MountingHole(self,i,Z):
+        if i >= 1 and i <= 4:
+            return self.pspcb1.MountingHole(i,Z)
+        elif i >= 5 and i <= 8:
+            return self.pspcb2.MountingHole(i-4,Z)
     def show(self):
         doc = App.activeDocument()
         AC_1404.show(self)
         BPA_1504.show(self)
         self.pspcb1.show()
         self.pspcb2.show()
+        self.inlet.show()
+        self.m64_5vstrain.show()
+        self.lcd_12vstrain.show()
+        self.aux_battstrain.show()
+        self.sata_5vstrain.show()
+        self.fan1.show()
+        self.fan2.show()
         i = 1
         for standoff in self.standoffs:
             obj = doc.addObject("Part::Feature",self.name+('_Standoff%d' % i))
@@ -764,8 +878,6 @@ class PSBox(AC_1404,BPA_1504):
             obj.Label=self.name+('_Standoff%d' % i)
             obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
             i = i + 1
-            
-        
 
 if __name__ == '__main__':
     if "PowerSupplyBoxTechDrawing" in App.listDocuments().keys():
@@ -777,747 +889,1139 @@ if __name__ == '__main__':
     psbox.show()
     Gui.SendMsgToActiveView("ViewFit")
     Gui.activeDocument().activeView().viewIsometric()
-    #basebounds = psbox.base.BoundBox
-    #coverbounds = psbox.cover.BoundBox
-    #doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
-    #doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
-    #edt = doc.USLetterTemplate.EditableTexts
-    #doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
-    #doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
-    #edt = doc.USLetterTemplate.EditableTexts
-    #edt['CompanyName'] = "Deepwoods Software"
-    #edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
-    #edt['DrawingTitle1']= 'Power Supply Box'
-    #edt['DrawingTitle3']= ""
-    #edt['DrawnBy'] = "Robert Heller"
-    #edt['CheckedBy'] = ""
-    #edt['Approved1'] = ""
-    #edt['Approved2'] = ""
-    #edt['Code'] = ""
-    #edt['Weight'] = ''
-    #edt['DrawingNumber'] = datetime.datetime.now().ctime()
-    #edt['Revision'] = "A"
-    #doc.USLetterTemplate.EditableTexts = edt
-    #doc.addObject('TechDraw::DrawPage','PowerSupplyBoxBasePage')
-    #doc.PowerSupplyBoxBasePage.Template = doc.USLetterTemplate
-    #edt = doc.PowerSupplyBoxBasePage.Template.EditableTexts
-    #edt['DrawingTitle2']= "Base"
-    #edt['Scale'] = '1:1'
-    #edt['Sheet'] = "Sheet 1 of 3"
-    #doc.PowerSupplyBoxBasePage.Template.EditableTexts = edt
-    #doc.PowerSupplyBoxBasePage.ViewObject.show()
-    #basesheet = doc.addObject('Spreadsheet::Sheet','BaseDimensionTable')
-    #basesheet.set("A1",'%-11.11s'%"Dim")
-    #basesheet.set("B1",'%10.10s'%"inch")
-    #basesheet.set("C1",'%10.10s'%"mm")
-    #ir = 2
-    #doc.addObject('TechDraw::DrawViewPart','BaseTopView')
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseTopView)
-    #doc.BaseTopView.Source = doc.psbox_CU3002ABase
-    #doc.BaseTopView.X = 60
-    #doc.BaseTopView.Y = 140
-    #doc.BaseTopView.Direction=(0.0,0.0,1.0)
-    #doc.BaseTopView.Caption = "Top"
-    #doc.addObject('TechDraw::DrawViewDimension','MHDia')
-    #doc.MHDia.Type = 'Diameter'
-    #doc.MHDia.References2D=[(doc.BaseTopView,"Edge5")]
-    #doc.MHDia.FormatSpec='MHDia (4x)'
-    #doc.MHDia.Arbitrary = True
-    #doc.MHDia.X = 0
-    #doc.MHDia.Y = -40
-    #doc.PowerSupplyBoxBasePage.addView(doc.MHDia)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"MHDia")
-    #basesheet.set("B%d"%ir,'%10.6f'%(PSOnPCB._mhdia/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%PSOnPCB._mhdia)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseA')
-    #doc.BaseA.Type = 'DistanceX'
-    #doc.BaseA.References2D=[(doc.BaseTopView,"Vertex6"),(doc.BaseTopView,"Vertex9")]
-    #doc.BaseA.FormatSpec='A'
-    #doc.BaseA.Arbitrary = True
-    #doc.BaseA.X = 0
-    #doc.BaseA.Y = 40
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseA)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"A")
-    #ADist = PCBwithStrips._psPCBwidth-(PCBwithStrips._stripIncr*2)
-    #basesheet.set("B%d"%ir,'%10.6f'%(ADist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%ADist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseB')
-    #doc.BaseB.Type = 'DistanceY'
-    #doc.BaseB.References2D=[(doc.BaseTopView,"Vertex9"),(doc.BaseTopView,"Vertex12")]
-    #doc.BaseB.FormatSpec='B'
-    #doc.BaseB.Arbitrary = True
-    #doc.BaseB.X = 8
-    #doc.BaseB.Y = 0
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseB)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"B")
-    #BDist = PCBwithStrips._psPCBlength-(2*(PCBwithStrips._stripIncr+5*2.54))
-    #basesheet.set("B%d"%ir,'%10.6f'%(BDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%BDist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseC')
-    #doc.BaseC.Type = 'DistanceX'
-    #doc.BaseC.References2D=[(doc.BaseTopView,"Vertex17"),(doc.BaseTopView,"Vertex15")]
-    #doc.BaseC.FormatSpec='C'
-    #doc.BaseC.Arbitrary = True
-    #doc.BaseC.X = -25
-    #doc.BaseC.Y = -60
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseC)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"C")
-    #CDist = psbox.pspcb.mhvector[1].x - o.x
-    #basesheet.set("B%d"%ir,'%10.6f'%(CDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%CDist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseD')
-    #doc.BaseD.Type = 'DistanceY'
-    #doc.BaseD.References2D=[(doc.BaseTopView,"Vertex17"),(doc.BaseTopView,"Vertex15")]
-    #doc.BaseD.FormatSpec='D'
-    #doc.BaseD.Arbitrary = True
-    #doc.BaseD.X = -36
-    #doc.BaseD.Y = -37.5
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseD)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"D")
-    #DDist = psbox.pspcb.mhvector[1].y - o.y
-    #basesheet.set("B%d"%ir,'%10.6f'%(DDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%DDist)
-    #ir += 1
-    #doc.BaseTopView.recompute()
+    boxbounds = psbox.box.BoundBox
+    bottombounds = psbox.bottom.BoundBox
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    doc.addObject('TechDraw::DrawSVGTemplate','USLetterTemplate')
+    doc.USLetterTemplate.Template = App.getResourceDir()+"Mod/TechDraw/Templates/USLetter_Landscape.svg"
+    edt = doc.USLetterTemplate.EditableTexts
+    edt['CompanyName'] = "Deepwoods Software"
+    edt['CompanyAddress'] = '51 Locke Hill Road, Wendell, MA 01379 USA'    
+    edt['DrawingTitle1']= 'Power Supply Box'
+    edt['DrawingTitle3']= ""
+    edt['DrawnBy'] = "Robert Heller"
+    edt['CheckedBy'] = ""
+    edt['Approved1'] = ""
+    edt['Approved2'] = ""
+    edt['Code'] = ""
+    edt['Weight'] = ''
+    edt['DrawingNumber'] = datetime.datetime.now().ctime()
+    edt['Revision'] = "A"
+    doc.USLetterTemplate.EditableTexts = edt
+    doc.addObject('TechDraw::DrawPage','PowerSupplyBoxPage1')
+    doc.PowerSupplyBoxPage1.Template = doc.USLetterTemplate
+    edt = doc.PowerSupplyBoxPage1.Template.EditableTexts
+    edt['DrawingTitle2']= "Box (Bottom and Front)"
+    edt['Scale'] = '1/2'
+    edt['Sheet'] = "Sheet 1 of 3"
+    doc.PowerSupplyBoxPage1.Template.EditableTexts = edt
+    doc.PowerSupplyBoxPage1.ViewObject.show()
+    boxsheet = doc.addObject('Spreadsheet::Sheet','BoxDimensionTable1')
+    boxsheet.set("A1",'%-11.11s'%"Dim")
+    boxsheet.set("B1",'%10.10s'%"inch")
+    boxsheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+    doc.addObject('TechDraw::DrawViewPart','BoxBottomView')
+    doc.PowerSupplyBoxPage1.addView(doc.BoxBottomView)
+    doc.BoxBottomView.Source = doc.psbox_ACBox
+    doc.BoxBottomView.X = 60
+    doc.BoxBottomView.Y = 160
+    doc.BoxBottomView.Scale = .5
+    doc.BoxBottomView.Direction=(0.0,0.0,-1.0)
+    doc.BoxBottomView.Caption = "Bottom"
+    doc.addObject('TechDraw::DrawViewDimension','MHDia')
+    doc.MHDia.Type = 'Diameter'
+    doc.MHDia.References2D=[(doc.BoxBottomView,"Edge16")]
+    doc.MHDia.FormatSpec='MHDia (8x)'
+    doc.MHDia.Arbitrary = True
+    doc.MHDia.X = 3
+    doc.MHDia.Y = 1.5
+    doc.PowerSupplyBoxPage1.addView(doc.MHDia)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"MHDia")
+    boxsheet.set("B%d"%ir,'%10.6f'%(PSOnPCB._mhdia/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%PSOnPCB._mhdia)
+    ir += 1
+    # Vertex2 (upper left corner)
+    # Vertex35 (lower right corner)
+    # Vertex26 (upper left corner hole)
+    # Vertex17 (upper second hole)
+    # Vertex20 (upper third  hole)
+    # Vertex29 (upper fourth hole)
+    # Vertex23 (lower left   hole)
+    boxshape = doc.psbox_ACBox.Shape
+    #print('*** boxshape:',file=sys.__stderr__)
+    #i = 0
+    #for e in boxshape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        circ = e.Curve
+    #        if circ.Location.z == 0:
+    #            print('*** boxshape: Edges[%d].Curve %g at (%g,%g)'%\
+    #                    (i,circ.Radius*2,circ.Location.x,circ.Location.y),
+    #                    file=sys.__stderr__)
+    #    i += 1
+    #i = 0
+    #for v in boxshape.Vertexes:
+    #    if v.Z == 0:
+    #        print('*** boxshape: Vertexes[%d] at (%g,%g)'%\
+    #              (i,v.X,v.Y),file=sys.__stderr__)
+    #    i += 1
+    Vertex2 = boxshape.Vertexes[0]
+    Vertex35 = boxshape.Vertexes[139]
+    Vertex26 = boxshape.Vertexes[20]
+    Vertex17 = boxshape.Vertexes[17]
+    Vertex20 = boxshape.Vertexes[18]
+    Vertex29 = boxshape.Vertexes[21]
+    Vertex23 = boxshape.Vertexes[19]
+    doc.addObject('TechDraw::DrawViewDimension','Box1A')
+    doc.Box1A.Type = 'DistanceX'
+    doc.Box1A.References2D=[(doc.BoxBottomView,"Vertex2"),(doc.BoxBottomView,"Vertex35")]
+    doc.Box1A.FormatSpec='A'
+    doc.Box1A.Arbitrary = True
+    doc.Box1A.X = 0
+    doc.Box1A.Y = 40
+    doc.PowerSupplyBoxPage1.addView(doc.Box1A)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"A")
+    ADist = Vertex35.X - Vertex2.X #psbox.A()
+    boxsheet.set("B%d"%ir,'%10.6f'%(ADist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%ADist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1B')
+    doc.Box1B.Type = 'DistanceY'
+    doc.Box1B.References2D=[(doc.BoxBottomView,"Vertex2"),(doc.BoxBottomView,"Vertex35")]
+    doc.Box1B.FormatSpec='B'
+    doc.Box1B.Arbitrary = True
+    doc.Box1B.X = 44
+    doc.Box1B.Y = 0
+    doc.PowerSupplyBoxPage1.addView(doc.Box1B)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"B")
+    BDist = Vertex35.Y - Vertex2.Y #psbox.B()
+    boxsheet.set("B%d"%ir,'%10.6f'%(BDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%BDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1C')
+    doc.Box1C.Type = 'DistanceX'
+    doc.Box1C.References2D=[(doc.BoxBottomView,"Vertex2"),(doc.BoxBottomView,"Vertex26")]
+    doc.Box1C.FormatSpec='C'
+    doc.Box1C.Arbitrary = True
+    doc.Box1C.X = -25
+    doc.Box1C.Y = 35
+    doc.PowerSupplyBoxPage1.addView(doc.Box1C)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"C")
+    CDist = Vertex26.X - Vertex2.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(CDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%CDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1D')
+    doc.Box1D.Type = 'DistanceX'
+    doc.Box1D.References2D=[(doc.BoxBottomView,"Vertex26"),(doc.BoxBottomView,"Vertex17")]
+    doc.Box1D.FormatSpec='D'
+    doc.Box1D.Arbitrary = True
+    doc.Box1D.X = -10
+    doc.Box1D.Y = 35
+    doc.PowerSupplyBoxPage1.addView(doc.Box1D)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"D")
+    DDist = Vertex17.X - Vertex26.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(DDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%DDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1E')
+    doc.Box1E.Type = 'DistanceX'
+    doc.Box1E.References2D=[(doc.BoxBottomView,"Vertex17"),(doc.BoxBottomView,"Vertex20")]
+    doc.Box1E.FormatSpec='E'
+    doc.Box1E.Arbitrary = True
+    doc.Box1E.X = 4
+    doc.Box1E.Y = 35
+    doc.PowerSupplyBoxPage1.addView(doc.Box1E)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"E")
+    EDist = Vertex20.X - Vertex17.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(EDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%EDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1F')
+    doc.Box1F.Type = 'DistanceX'
+    doc.Box1F.References2D=[(doc.BoxBottomView,"Vertex20"),(doc.BoxBottomView,"Vertex29")]
+    doc.Box1F.FormatSpec='F'
+    doc.Box1F.Arbitrary = True
+    doc.Box1F.X = 15
+    doc.Box1F.Y = 35
+    doc.PowerSupplyBoxPage1.addView(doc.Box1F)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"F")
+    FDist = Vertex29.X - Vertex20.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(FDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%FDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1G')
+    doc.Box1G.Type = 'DistanceY'
+    doc.Box1G.References2D=[(doc.BoxBottomView,"Vertex2"),(doc.BoxBottomView,"Vertex26")]
+    doc.Box1G.FormatSpec='G'
+    doc.Box1G.Arbitrary = True
+    doc.Box1G.X = 36
+    doc.Box1G.Y = 20
+    doc.PowerSupplyBoxPage1.addView(doc.Box1G)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"G")
+    GDist = Vertex26.Y - Vertex2.Y
+    boxsheet.set("B%d"%ir,'%10.6f'%(GDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%GDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1H')
+    doc.Box1H.Type = 'DistanceY'
+    doc.Box1H.References2D=[(doc.BoxBottomView,"Vertex23"),(doc.BoxBottomView,"Vertex26")]
+    doc.Box1H.FormatSpec='H'
+    doc.Box1H.Arbitrary = True
+    doc.Box1H.X = 36
+    doc.Box1H.Y = 0
+    doc.PowerSupplyBoxPage1.addView(doc.Box1H)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"H")
+    HDist = Vertex23.Y - Vertex26.Y
+    boxsheet.set("B%d"%ir,'%10.6f'%(HDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%HDist)
+    ir += 1
+    doc.BoxBottomView.recompute()
+    
+    doc.addObject('TechDraw::DrawViewPart','BoxFrontView')
+    doc.PowerSupplyBoxPage1.addView(doc.BoxFrontView)
+    doc.BoxFrontView.Source = doc.psbox_ACBox
+    doc.BoxFrontView.X = 60
+    doc.BoxFrontView.Y = 90
+    doc.BoxFrontView.Scale = .5
+    doc.BoxFrontView.Direction=(0.0,-1.0,0.0)
+    doc.BoxFrontView.Caption = "Front"
+
+    doc.addObject('TechDraw::DrawViewDimension','Box1I')
+    doc.Box1I.Type = 'Diameter'
+    doc.Box1I.References2D=[(doc.BoxFrontView,"Edge108")]
+    doc.Box1I.FormatSpec='IDia (4x)'
+    doc.Box1I.Arbitrary = True
+    doc.Box1I.X = 0
+    doc.Box1I.Y = 17
+    doc.PowerSupplyBoxPage1.addView(doc.Box1I)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"IDia")
+    boxsheet.set("B%d"%ir,'%10.6f'%(DCStrainRelief._bodydia/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%DCStrainRelief._bodydia)
+    ir += 1
+
+    # Vertex1 (lower left corner)
+    # Vertex5 (upper right corner)
+    # Vertex311 (left most strain relief)
+    # Vertex305 (2nd strain relief)
+    # Vertex308 (3rd strain relief)
+    # Vertex302 (4th  strain relief)
     #
-    #doc.addObject('TechDraw::DrawViewPart','BaseFrontView')
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseFrontView)
-    #doc.BaseFrontView.Source = doc.psbox_CU3002ABase
-    #doc.BaseFrontView.X = 128
-    #doc.BaseFrontView.Y = 170
-    #doc.BaseFrontView.Direction=(0.0,-1.0,0.0)
-    #doc.BaseFrontView.Caption = "Front"
-    #doc.addObject('TechDraw::DrawViewDimension','BaseE')
-    #doc.BaseE.Type = 'Diameter'
-    #doc.BaseE.References2D=[(doc.BaseFrontView,"Edge15")]
-    #doc.BaseE.FormatSpec='EDia'
-    #doc.BaseE.Arbitrary = True
-    #doc.BaseE.X = 15
-    #doc.BaseE.Y = 15
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseE)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"EDia")
-    #basesheet.set("B%d"%ir,'%10.6f'%(DCStrainRelief._bodydia/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%DCStrainRelief._bodydia)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseF')
-    #doc.BaseF.Type = 'DistanceX'
-    #doc.BaseF.References2D=[(doc.BaseFrontView,"Vertex1"),\
-    #                    (doc.BaseFrontView,"Vertex14")]
-    #doc.BaseF.FormatSpec='F'
-    #doc.BaseF.Arbitrary = True
-    #doc.BaseF.X = -15
-    #doc.BaseF.Y = -10
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseF)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"F")
-    #FDist = psbox.dcstrainrelief.origin.x-o.x # DistanceX
-    #basesheet.set("B%d"%ir,'%10.6f'%(FDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%FDist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseG')
-    #doc.BaseG.Type = 'DistanceY'
-    #doc.BaseG.References2D=[(doc.BaseFrontView,"Vertex1"),\
-    #                    (doc.BaseFrontView,"Vertex14")]
-    #doc.BaseG.FormatSpec='G'
-    #doc.BaseG.Arbitrary = True
-    #doc.BaseG.X = 15
-    #doc.BaseG.Y = -10
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseG)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"G")
-    #GDist = psbox.dcstrainrelief.origin.z-o.z # DIstanceY
-    #basesheet.set("B%d"%ir,'%10.6f'%(GDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%GDist)
-    #ir += 1
-    #doc.BaseFrontView.recompute()
+    # Edge97 Upper left most Grill Hole (for diameter)
     #
-    #doc.addObject('TechDraw::DrawViewPart','BaseRearView')
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseRearView)
-    #doc.BaseRearView.Source = doc.psbox_CU3002ABase
-    #doc.BaseRearView.X = 128
-    #doc.BaseRearView.Y = 110
-    #doc.BaseRearView.Direction=(0.0,1.0,0.0)
-    #doc.BaseRearView.Caption = "Rear"
+    # Left Batch grill holes:
+    # Vertex278 Upper left most Grill Hole Center
+    # Vertex257 Upper next Grill Hole
+    # Vertex272 Next lower leftmost Grill Hole
+    # Right Batch grill holes:
+    # Vertex14  Upper Left Grill hole center
+    #boxshape = doc.psbox_ACBox.Shape
+    #print('*** boxshape:',file=sys.__stderr__)
+    #i = 0
+    #for e in boxshape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        circ = e.Curve
+    #        if circ.Location.y == 0:
+    #            print('*** boxshape: Edges[%d].Curve %g at (%g,%g)'%\
+    #                    (i,circ.Radius*2,circ.Location.x,circ.Location.z),
+    #                    file=sys.__stderr__)
+    #    i += 1
+    #i = 0
+    #for v in boxshape.Vertexes:
+    #    if v.Y == 0:
+    #        print('*** boxshape: Vertexes[%d] at (%g,%g)'%\
+    #              (i,v.X,v.Z),file=sys.__stderr__)
+    #    i += 1
+    Vertex1 = boxshape.Vertexes[0]
+    Vertex5 = boxshape.Vertexes[157]
+    Vertex311 = boxshape.Vertexes[136]
+    Vertex305 = boxshape.Vertexes[134]
+    Vertex308 = boxshape.Vertexes[135]
+    Vertex302 = boxshape.Vertexes[133]
+    Vertex278 = boxshape.Vertexes[125]
+    Vertex257 = boxshape.Vertexes[118]
+    Vertex272 = boxshape.Vertexes[123]
+    Vertex14  = boxshape.Vertexes[37]
+    doc.addObject('TechDraw::DrawViewDimension','Box1J')
+    doc.Box1J.Type = 'Diameter'
+    doc.Box1J.References2D=[(doc.BoxFrontView,"Edge97")]
+    doc.Box1J.FormatSpec='JDia (98x)'
+    doc.Box1J.Arbitrary = True
+    doc.Box1J.X = 23
+    doc.Box1J.Y = -18
+    doc.PowerSupplyBoxPage1.addView(doc.Box1J)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"JDia")
+    JDia = 2.5 
+    boxsheet.set("B%d"%ir,'%10.6f'%(JDia/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%JDia)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1K')
+    doc.Box1K.Type = 'DistanceY'
+    doc.Box1K.References2D=[(doc.BoxFrontView,"Vertex1"),\
+                        (doc.BoxFrontView,"Vertex5")]
+    doc.Box1K.FormatSpec='K'
+    doc.Box1K.Arbitrary = True
+    doc.Box1K.X = 36
+    doc.Box1K.Y = 0
+    doc.PowerSupplyBoxPage1.addView(doc.Box1K)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"K")
+    KDist = Vertex5.Z - Vertex1.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(KDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%KDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1L')
+    doc.Box1L.Type = 'DistanceX'
+    doc.Box1L.References2D=[(doc.BoxFrontView,"Vertex1"),\
+                        (doc.BoxFrontView,"Vertex5")]
+    doc.Box1L.FormatSpec='L'
+    doc.Box1L.Arbitrary = True
+    doc.Box1L.X = 0
+    doc.Box1L.Y = 35
+    doc.PowerSupplyBoxPage1.addView(doc.Box1L)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"L")
+    LDist = Vertex5.X - Vertex1.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(LDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%LDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1M')
+    doc.Box1M.Type = 'DistanceX'
+    doc.Box1M.References2D=[(doc.BoxFrontView,"Vertex1"),\
+                        (doc.BoxFrontView,"Vertex311")]
+    doc.Box1M.FormatSpec='M'
+    doc.Box1M.Arbitrary = True
+    doc.Box1M.X = -29
+    doc.Box1M.Y = 25
+    doc.PowerSupplyBoxPage1.addView(doc.Box1M)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"M")
+    MDist = Vertex311.X - Vertex1.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(MDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%MDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1N')
+    doc.Box1N.Type = 'DistanceX'
+    doc.Box1N.References2D=[(doc.BoxFrontView,"Vertex305"),\
+                        (doc.BoxFrontView,"Vertex311")]
+    doc.Box1N.FormatSpec='N'
+    doc.Box1N.Arbitrary = True
+    doc.Box1N.X = -24
+    doc.Box1N.Y = 25
+    doc.PowerSupplyBoxPage1.addView(doc.Box1N)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"N")
+    NDist = Vertex305.X - Vertex311.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(NDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%NDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1O')
+    doc.Box1O.Type = 'DistanceX'
+    doc.Box1O.References2D=[(doc.BoxFrontView,"Vertex305"),\
+                        (doc.BoxFrontView,"Vertex308")]
+    doc.Box1O.FormatSpec='O'
+    doc.Box1O.Arbitrary = True
+    doc.Box1O.X = -16
+    doc.Box1O.Y = 25
+    doc.PowerSupplyBoxPage1.addView(doc.Box1O)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"O")
+    ODist = Vertex308.X - Vertex305.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(ODist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%ODist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1P')
+    doc.Box1P.Type = 'DistanceX'
+    doc.Box1P.References2D=[(doc.BoxFrontView,"Vertex308"),\
+                        (doc.BoxFrontView,"Vertex302")]
+    doc.Box1P.FormatSpec='P'
+    doc.Box1P.Arbitrary = True
+    doc.Box1P.X = 0
+    doc.Box1P.Y = 25
+    doc.PowerSupplyBoxPage1.addView(doc.Box1P)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"P")
+    PDist = Vertex302.X - Vertex308.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(PDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%PDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1Q')
+    doc.Box1Q.Type = 'DistanceY'
+    doc.Box1Q.References2D=[(doc.BoxFrontView,"Vertex1"),\
+                        (doc.BoxFrontView,"Vertex311")]
+    doc.Box1Q.FormatSpec='Q'
+    doc.Box1Q.Arbitrary = True
+    doc.Box1Q.X = 45
+    doc.Box1Q.Y = 0
+    doc.PowerSupplyBoxPage1.addView(doc.Box1Q)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"Q")
+    QDist = Vertex311.Z - Vertex1.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(QDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%QDist)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewDimension','Box1R')
+    doc.Box1R.Type = 'DistanceX'
+    doc.Box1R.References2D=[(doc.BoxFrontView,"Vertex1"),\
+                        (doc.BoxFrontView,"Vertex278")]
+    doc.Box1R.FormatSpec='R'
+    doc.Box1R.Arbitrary = True
+    doc.Box1R.X = -26
+    doc.Box1R.Y = -15
+    doc.PowerSupplyBoxPage1.addView(doc.Box1R)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"R")
+    RDist = Vertex278.X - Vertex1.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(RDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%RDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1S')
+    doc.Box1S.Type = 'DistanceX'
+    doc.Box1S.References2D=[(doc.BoxFrontView,"Vertex278"),\
+                        (doc.BoxFrontView,"Vertex14")]
+    doc.Box1S.FormatSpec='S'
+    doc.Box1S.Arbitrary = True
+    doc.Box1S.X = 0
+    doc.Box1S.Y = -24
+    doc.PowerSupplyBoxPage1.addView(doc.Box1S)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"S")
+    SDist = Vertex14.X - Vertex278.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(SDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%SDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1T')
+    doc.Box1T.Type = 'DistanceY'
+    doc.Box1T.References2D=[(doc.BoxFrontView,"Vertex1"),\
+                        (doc.BoxFrontView,"Vertex278")]
+    doc.Box1T.FormatSpec='T'
+    doc.Box1T.Arbitrary = True
+    doc.Box1T.X = 54
+    doc.Box1T.Y = 0
+    doc.PowerSupplyBoxPage1.addView(doc.Box1T)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"T")
+    TDist = Vertex278.Z - Vertex1.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(QDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%QDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1U')
+    doc.Box1U.Type = 'DistanceX'
+    doc.Box1U.References2D=[(doc.BoxFrontView,"Vertex278"),\
+                        (doc.BoxFrontView,"Vertex257")]
+    doc.Box1U.FormatSpec='U (12x)'
+    doc.Box1U.Arbitrary = True
+    doc.Box1U.X = -8
+    doc.Box1U.Y = -31
+    doc.PowerSupplyBoxPage1.addView(doc.Box1U)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"U")
+    UDist = Vertex257.X - Vertex278.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(UDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%UDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box1V')
+    doc.Box1V.Type = 'DistanceY'
+    doc.Box1V.References2D=[(doc.BoxFrontView,"Vertex278"),\
+                        (doc.BoxFrontView,"Vertex272")]
+    doc.Box1V.FormatSpec='V (6x)'
+    doc.Box1V.Arbitrary = True
+    doc.Box1V.X = 3
+    doc.Box1V.Y = -8
+    doc.PowerSupplyBoxPage1.addView(doc.Box1V)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"V")
+    VDist = Vertex278.Z - Vertex272.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(VDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%VDist)
+    ir += 1
+
+    doc.BoxFrontView.recompute()
+    
+    boxsheet.recompute()
+    doc.addObject('TechDraw::DrawViewSpreadsheet','BoxDimBlock1')
+    doc.BoxDimBlock1.Source = boxsheet
+    doc.BoxDimBlock1.TextSize = 8
+    doc.BoxDimBlock1.CellEnd = "C%d"%(ir-1)
+    doc.PowerSupplyBoxPage1.addView(doc.BoxDimBlock1)
+    doc.BoxDimBlock1.recompute()
+    doc.BoxDimBlock1.X = 200
+    doc.BoxDimBlock1.Y = 130
+    doc.PowerSupplyBoxPage1.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxPage1,"BananaPiM64Model_PowerSupplyBoxPage1.pdf")
+    
+    
+
+    doc.addObject('TechDraw::DrawPage','PowerSupplyBoxPage2')
+    doc.PowerSupplyBoxPage2.Template = doc.USLetterTemplate
+    edt = doc.PowerSupplyBoxPage1.Template.EditableTexts
+    edt['DrawingTitle2']= "Box (Left and Back)"
+    edt['Scale'] = '1/2'
+    edt['Sheet'] = "Sheet 2 of 3"
+    doc.PowerSupplyBoxPage2.Template.EditableTexts = edt
+    doc.PowerSupplyBoxPage2.ViewObject.show()
+    boxsheet = doc.addObject('Spreadsheet::Sheet','BoxDimensionTable2')
+    boxsheet.set("A1",'%-11.11s'%"Dim")
+    boxsheet.set("B1",'%10.10s'%"inch")
+    boxsheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+
+
+    doc.addObject('TechDraw::DrawViewPart','BoxLeftView')
+    doc.PowerSupplyBoxPage2.addView(doc.BoxLeftView)
+    doc.BoxLeftView.Source = doc.psbox_ACBox
+    doc.BoxLeftView.X = 60
+    doc.BoxLeftView.Y = 170
+    doc.BoxLeftView.Scale = .5
+    doc.BoxLeftView.Direction=(-1.0,0.0,0.0)
+    doc.BoxLeftView.Caption = "Left"
+    #
+    # Edge19 -- for diameter
+    #
+    # Vertex3 -- lower right (0,0)
+    # Vertex27 -- Upper Left (1,1)
+    #
+    # Vertex17 -- Vadjust hole
+    # Vertex20 -- Key hole
+    #
+    boxshape = doc.psbox_ACBox.Shape
+    #print('*** boxshape:',file=sys.__stderr__)
+    #i = 0
+    #for e in boxshape.Edges:
+    #    if isinstance(e.Curve,Part.Circle):
+    #        circ = e.Curve
+    #        if circ.Location.x == 0:
+    #            print('*** boxshape: Edges[%d].Curve %g at (%g,%g)'%\
+    #                    (i,circ.Radius*2,circ.Location.y,circ.Location.z),
+    #                    file=sys.__stderr__)
+    #    i += 1
+    #i = 0
+    #for v in boxshape.Vertexes:
+    #    if v.X == 0:
+    #        print('*** boxshape: Vertexes[%d] at (%g,%g)'%\
+    #              (i,v.Y,v.Z),file=sys.__stderr__)
+    #    i += 1
+    #
+    Vertex3 = boxshape.Vertexes[0]
+    Vertex27 = boxshape.Vertexes[275]
+    #
+    Edge19 = boxshape.Edges[42]
+    #
+    Vertex17 = boxshape.Vertexes[32]
+    Vertex20 = boxshape.Vertexes[33]
+    #
+    doc.addObject('TechDraw::DrawViewDimension','Box2A')
+    doc.Box2A.Type = 'Diameter'
+    doc.Box2A.References2D=[(doc.BoxLeftView,"Edge19")]
+    doc.Box2A.FormatSpec='ADia (2x)'
+    doc.Box2A.Arbitrary = True
+    doc.Box2A.X = 10
+    doc.Box2A.Y = 20
+    doc.PowerSupplyBoxPage2.addView(doc.Box2A)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"ADia")
+    ADia = Edge19.Curve.Radius*2
+    boxsheet.set("B%d"%ir,'%10.6f'%(ADia/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%ADia)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2B')
+    doc.Box2B.Type = 'DistanceX'
+    doc.Box2B.References2D=[(doc.BoxLeftView,"Vertex3"),\
+                            (doc.BoxLeftView,"Vertex27")]
+    doc.Box2B.FormatSpec='B'
+    doc.Box2B.Arbitrary = True
+    doc.Box2B.X = 0
+    doc.Box2B.Y = 28
+    doc.PowerSupplyBoxPage2.addView(doc.Box2B)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"B")
+    BDist = Vertex27.Y - Vertex3.Y
+    boxsheet.set("B%d"%ir,'%10.6f'%(BDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%BDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2C')
+    doc.Box2C.Type = 'DistanceY'
+    doc.Box2C.References2D=[(doc.BoxLeftView,"Vertex3"),\
+                            (doc.BoxLeftView,"Vertex27")]
+    doc.Box2C.FormatSpec='C'
+    doc.Box2C.Arbitrary = True
+    doc.Box2C.X = 38
+    doc.Box2C.Y = 0
+    doc.PowerSupplyBoxPage2.addView(doc.Box2C)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"C")
+    CDist = Vertex27.Z - Vertex3.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(CDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%CDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2D')
+    doc.Box2D.Type = 'DistanceX'
+    doc.Box2D.References2D=[(doc.BoxLeftView,"Vertex3"),\
+                            (doc.BoxLeftView,"Vertex20")]
+    doc.Box2D.FormatSpec='D'
+    doc.Box2D.Arbitrary = True
+    doc.Box2D.X = 18
+    doc.Box2D.Y = 6
+    doc.PowerSupplyBoxPage2.addView(doc.Box2D)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"B")
+    DDist = Vertex20.Y - Vertex3.Y
+    boxsheet.set("B%d"%ir,'%10.6f'%(DDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%DDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2E')
+    doc.Box2E.Type = 'DistanceX'
+    doc.Box2E.References2D=[(doc.BoxLeftView,"Vertex20"),\
+                            (doc.BoxLeftView,"Vertex17")]
+    doc.Box2E.FormatSpec='E'
+    doc.Box2E.Arbitrary = True
+    doc.Box2E.X = -5
+    doc.Box2E.Y = 6
+    doc.PowerSupplyBoxPage2.addView(doc.Box2E)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"E")
+    EDist = Vertex17.Y - Vertex20.Y
+    boxsheet.set("B%d"%ir,'%10.6f'%(EDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%EDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2F')
+    doc.Box2F.Type = 'DistanceY'
+    doc.Box2F.References2D=[(doc.BoxLeftView,"Vertex3"),\
+                            (doc.BoxLeftView,"Vertex20")]
+    doc.Box2F.FormatSpec='F'
+    doc.Box2F.Arbitrary = True
+    doc.Box2F.X = 30
+    doc.Box2F.Y = -7
+    doc.PowerSupplyBoxPage2.addView(doc.Box2F)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"F")
+    FDist = Vertex20.Z - Vertex3.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(FDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%FDist)
+    ir += 1
+    doc.BoxLeftView.recompute()
+
+    #
+    doc.addObject('TechDraw::DrawViewPart','BoxRearView')
+    doc.PowerSupplyBoxPage2.addView(doc.BoxRearView)
+    doc.BoxRearView.Source = doc.psbox_ACBox
+    doc.BoxRearView.X = 60
+    doc.BoxRearView.Y = 125
+    doc.BoxRearView.Scale = .5
+    doc.BoxRearView.Direction=(0.0,1.0,0.0)
+    doc.BoxRearView.Caption = "Rear"
     ##Vertex1 -- origin
-    ##Vertex11 -- inlet.origin
-    ##Vertex12 -- inlet height
-    ##Vertex14 -- inlet width
-    #doc.addObject('TechDraw::DrawViewDimension','BaseH')
-    #doc.BaseH.Type = 'DistanceX'
-    #doc.BaseH.References2D=[(doc.BaseRearView,"Vertex11"),(doc.BaseRearView,"Vertex14")]
-    #doc.BaseH.FormatSpec="H"
-    #doc.BaseH.Arbitrary = True
-    #doc.BaseH.X = 12
-    #doc.BaseH.Y = 14
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseH)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"H")
-    #basesheet.set("B%d"%ir,'%10.6f'%(Inlet._bodywidth/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%Inlet._bodywidth)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseI')
-    #doc.BaseI.Type = 'DistanceY'
-    #doc.BaseI.References2D=[(doc.BaseRearView,"Vertex11"),(doc.BaseRearView,"Vertex12")]
-    #doc.BaseI.FormatSpec="I"
-    #doc.BaseI.Arbitrary = True
-    #doc.BaseI.X = 15
-    #doc.BaseI.Y = 7
-    #basesheet.set("A%d"%ir,'%-11.11s'%"I")
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseI)
-    #basesheet.set("B%d"%ir,'%10.6f'%(Inlet._bodyheight/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%Inlet._bodyheight)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseJ')
-    #doc.BaseJ.Type = 'DistanceX'
-    #doc.BaseJ.References2D=[(doc.BaseRearView,"Vertex1"),(doc.BaseRearView,"Vertex11")]
-    #doc.BaseJ.FormatSpec="J"
-    #doc.BaseJ.Arbitrary = True
-    #doc.BaseJ.X = 18
-    #doc.BaseJ.Y = -6
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseJ)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"J")
-    #JDist = psbox.inlet.origin.x - o.x
-    #basesheet.set("B%d"%ir,'%10.6f'%(JDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%JDist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','BaseK')
-    #doc.BaseK.Type = 'DistanceY'
-    #doc.BaseK.References2D=[(doc.BaseRearView,"Vertex1"),(doc.BaseRearView,"Vertex11")]
-    #doc.BaseK.FormatSpec="K"
-    #doc.BaseK.Arbitrary = True
-    #doc.BaseK.X = -12
-    #doc.BaseK.Y = -10
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseK)
-    #basesheet.set("A%d"%ir,'%-11.11s'%"K")
-    #KDist = psbox.inlet.origin.z - o.z
-    #basesheet.set("B%d"%ir,'%10.6f'%(KDist/25.4))
-    #basesheet.set("C%d"%ir,'%10.6f'%KDist)
-    #ir += 1
-    #doc.BaseRearView.recompute()
+    ##Vertex21 -- size
+    ##Vertex8 -- inlet.origin
+    ##Vertex10 -- inlet size
+    boxshape = doc.psbox_ACBox.Shape
+    #print('*** boxshape:',file=sys.__stderr__)
+    #i = 0
+    #for v in boxshape.Vertexes:
+    #    if v.Y == 101.6:
+    #        print('*** boxshape: Vertexes[%d] at (%g,%g)'%\
+    #              (i,v.X,v.Z),file=sys.__stderr__)
+    #    i += 1
+    Vertex1 = boxshape.Vertexes[0]
+    Vertex21 = boxshape.Vertexes[305]
+    Vertex8 = boxshape.Vertexes[271]
+    Vertex10 = boxshape.Vertexes[273]
+    doc.addObject('TechDraw::DrawViewDimension','Box2G')
+    doc.Box2G.Type = 'DistanceX'
+    doc.Box2G.References2D=[(doc.BoxRearView,"Vertex1"),\
+                            (doc.BoxRearView,"Vertex21")]
+    doc.Box2G.FormatSpec="G"
+    doc.Box2G.Arbitrary = True
+    doc.Box2G.X = 0
+    doc.Box2G.Y = -4
+    doc.PowerSupplyBoxPage2.addView(doc.Box2G)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"G")
+    GDist = Vertex21.Y - Vertex1.Y
+    boxsheet.set("B%d"%ir,'%10.6f'%(GDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%GDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2H')
+    doc.Box2H.Type = 'DistanceY'
+    doc.Box2H.References2D=[(doc.BoxRearView,"Vertex1"),\
+                            (doc.BoxRearView,"Vertex21")]
+    doc.Box2H.FormatSpec="H"
+    doc.Box2H.Arbitrary = True
+    doc.Box2H.X = 35
+    doc.Box2H.Y = 0
+    doc.PowerSupplyBoxPage2.addView(doc.Box2H)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"H")
+    HDist = Vertex21.Z - Vertex1.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(HDist))
+    boxsheet.set("C%d"%ir,'%10.6f'%HDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2I')
+    doc.Box2I.Type = 'DistanceX'
+    doc.Box2I.References2D=[(doc.BoxRearView,"Vertex1"),\
+                             (doc.BoxRearView,"Vertex8")]
+    doc.Box2I.FormatSpec="I"
+    doc.Box2I.Arbitrary = True
+    doc.Box2I.X = 18
+    doc.Box2I.Y = 0
+    doc.PowerSupplyBoxPage2.addView(doc.Box2I)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"I")
+    IDist = Vertex8.X - Vertex1.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(IDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%IDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2J')
+    doc.Box2J.Type = 'DistanceY'
+    doc.Box2J.References2D=[(doc.BoxRearView,"Vertex1"),\
+                            (doc.BoxRearView,"Vertex8")]
+    doc.Box2J.FormatSpec="J"
+    doc.Box2J.Arbitrary = True
+    doc.Box2J.X = -12
+    doc.Box2J.Y = -4
+    doc.PowerSupplyBoxPage2.addView(doc.Box2J)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"J")
+    JDist = Vertex8.Z - Vertex1.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(JDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%JDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2K')
+    doc.Box2K.Type = 'DistanceX'
+    doc.Box2K.References2D=[(doc.BoxRearView,"Vertex8"),\
+                             (doc.BoxRearView,"Vertex10")]
+    doc.Box2K.FormatSpec="K"
+    doc.Box2K.Arbitrary = True
+    doc.Box2K.X = -3
+    doc.Box2K.Y = 8
+    doc.PowerSupplyBoxPage2.addView(doc.Box2K)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"K")
+    KDist = Vertex10.X - Vertex8.X
+    boxsheet.set("B%d"%ir,'%10.6f'%(KDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%KDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2L')
+    doc.Box2L.Type = 'DistanceY'
+    doc.Box2L.References2D=[(doc.BoxRearView,"Vertex10"),\
+                            (doc.BoxRearView,"Vertex8")]
+    doc.Box2L.FormatSpec="L"
+    doc.Box2L.Arbitrary = True
+    doc.Box2L.X = 6
+    doc.Box2L.Y = 4
+    doc.PowerSupplyBoxPage2.addView(doc.Box2L)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"L")
+    LDist = Vertex10.Z - Vertex8.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(LDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%LDist)
+    ir += 1
+        
+
+    doc.BoxRearView.recompute()
+    
+
+
+
+    
+    doc.addObject('TechDraw::DrawViewPart','BoxISOView')
+    doc.PowerSupplyBoxPage2.addView(doc.BoxISOView)
+    doc.BoxISOView.Source = doc.psbox_ACBox
+    doc.BoxISOView.Scale = .375
+    doc.BoxISOView.X = 56
+    doc.BoxISOView.Y = 60
+    doc.BoxISOView.Direction=(1.0,-1.0,1.0)
+    doc.BoxISOView.Caption = "ISOMetric"
+    
+    doc.BoxISOView.recompute()    
+    
+    
+    boxsheet.recompute()
+    doc.addObject('TechDraw::DrawViewSpreadsheet','BoxDimBlock2')
+    doc.BoxDimBlock2.Source = boxsheet
+    doc.BoxDimBlock2.TextSize = 8
+    doc.BoxDimBlock2.CellEnd = "C%d"%(ir-1)
+    doc.PowerSupplyBoxPage2.addView(doc.BoxDimBlock2)
+    doc.BoxDimBlock2.recompute()
+    doc.BoxDimBlock2.X = 200
+    doc.BoxDimBlock2.Y = 160
+    doc.PowerSupplyBoxPage2.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxPage2,"BananaPiM64Model_PowerSupplyBoxPage2.pdf")
+    
+    
+    doc.addObject('TechDraw::DrawPage','PowerSupplyBoxCoverPage')
+    doc.PowerSupplyBoxCoverPage.Template = doc.USLetterTemplate
+    edt = doc.PowerSupplyBoxCoverPage.Template.EditableTexts
+    edt['DrawingTitle2']= "Cover"
+    edt['Sheet'] = "Sheet 3 of 3"
+    doc.PowerSupplyBoxCoverPage.Template.EditableTexts = edt
+    doc.PowerSupplyBoxCoverPage.ViewObject.show()
+    coversheet = doc.addObject('Spreadsheet::Sheet','CoverDimensionTable')
+    coversheet.set("A1",'%-11.11s'%"Dim")
+    coversheet.set("B1",'%10.10s'%"inch")
+    coversheet.set("C1",'%10.10s'%"mm")
+    ir = 2
+        
+    doc.addObject('TechDraw::DrawViewPart','CoverTopView')
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverTopView)
+    doc.CoverTopView.Source = doc.psbox_BPABottom
+    doc.CoverTopView.X = 90
+    doc.CoverTopView.Y = 140
+    doc.CoverTopView.Direction=(0.0,0.0,1.0)
+    doc.CoverTopView.Caption = "Top"
+    doc.CoverTopView.Scale = 1
+    covershape = doc.psbox_BPABottom.Shape
+    #print('*** covershape:',file=sys.__stderr__)
+    holes = list()
+    i = 0
+    for e in covershape.Edges:
+        if isinstance(e.Curve,Part.Circle):
+            circ = e.Curve
+            if circ.Location.z == psbox._C()+psbox.origin.z:
+                #print('*** covershape: Edges[%d].Curve %g at (%g,%g)'%\
+                #        (i,circ.Radius*2,circ.Location.x,circ.Location.y),
+                #        file=sys.__stderr__)
+                holes.append(tuple([i,circ.Radius,circ.Location.x,circ.Location.y]))
+        i += 1
+    i = 0
+    holeverts = dict()
+    minV = None
+    maxV = None
+    for v in covershape.Vertexes:
+        if v.Z == psbox._C()+psbox.origin.z:
+            #print('*** covershape: Vertexes[%d] at (%g,%g)'%\
+            #      (i,v.X,v.Y),file=sys.__stderr__)
+            for h in holes:
+                ie,rad,ex,ey = h
+                #print('*** covershape: ey = %g, v.Y = %g, ex = %g, rad = %g, v.X = %g'%\
+                #    (ey,v.Y,ex,rad,v.X),\
+                #     file=sys.__stderr__)
+                if closeto(ey,v.Y) and closeto(ex,v.X,fuzz=rad+.1):
+                    holeverts[h] = tuple([i,v.X,v.Y])
+                    break
+            if minV == None:
+                minV = v
+            elif v.X < minV.X and v.Y < minV.Y:
+                minV = v
+            if maxV == None:
+                maxV = v
+            elif v.X > maxV.X and v.Y > maxV.Y:
+                maxV = v
+        i += 1
+    FanMH_LeftTopLeft = None
+    FanMH_LeftTopRight = None
+    FanMH_LeftBottomLeft = None
+    FanMH_RightTopLeft = None
+    fanhm_rad = Fan02510SS_05P_AT00_TopMount._fanmholedia/2
+    GrillHole_LeftTop = None
+    GrillHole_RightTop = None
+    GrillHole_LeftD1L1 = None
+    grillhole_rad = Fan02510SS_05P_AT00_TopMount._grilholesize/2
+    for holeedge in holeverts:
+        ie,rad,ex,ey = holeedge
+        iv,X,Y = holeverts[holeedge]
+        if closeto(rad,fanhm_rad):
+            #print('*** covershape (loop1): holeedge[%s] = %s'%(holeedge, holeverts[holeedge]), \
+            #        file=sys.__stderr__)
+            #print('*** covershape (loop1):: rad = %g, fanhm_rad = %g'%\
+            #        (rad,fanhm_rad),\
+            #        file=sys.__stderr__)
+            if FanMH_LeftTopLeft == None:
+                FanMH_LeftTopLeft = covershape.Vertexes[iv]
+            elif X <= FanMH_LeftTopLeft.X and Y >= FanMH_LeftTopLeft.Y:
+                FanMH_LeftTopLeft = covershape.Vertexes[iv]
+            #print('*** covershape (loop): FanMH_LeftTopLeft = (%g,%g)'%\
+            #            (FanMH_LeftTopLeft.X,FanMH_LeftTopLeft.Y),\
+            #            file=sys.__stderr__)
+            if FanMH_LeftBottomLeft == None:
+                FanMH_LeftBottomLeft = covershape.Vertexes[iv]
+            elif X <= FanMH_LeftBottomLeft.X and Y <= FanMH_LeftBottomLeft.Y:
+                FanMH_LeftBottomLeft = covershape.Vertexes[iv]
+        if closeto(rad,grillhole_rad):
+            #print('*** covershape: holeedge[%s] = %s'%(holeedge, holeverts[holeedge]), \
+            #        file=sys.__stderr__)
+            #print('*** covershape: rad = %g, grillhole_rad = %g'%\
+            #        (rad,grillhole_rad),\
+            #        file=sys.__stderr__)
+            if GrillHole_LeftTop == None:
+                GrillHole_LeftTop = covershape.Vertexes[iv]
+            elif X <= GrillHole_LeftTop.X and Y >= GrillHole_LeftTop.Y:
+                GrillHole_LeftTop = covershape.Vertexes[iv]
+            if GrillHole_RightTop == None:
+                GrillHole_RightTop = covershape.Vertexes[iv]
+            elif X >= GrillHole_RightTop.X and Y >= GrillHole_RightTop.Y:
+                GrillHole_RightTop = covershape.Vertexes[iv]
+    FanMH_LeftTopRight = FanMH_LeftTopLeft
+    for holeedge in holeverts:
+        ie,rad,ex,ey = holeedge
+        iv,X,Y = holeverts[holeedge]
+        if closeto(rad,fanhm_rad):
+            #print('*** covershape (loop2): holeedge[%s] = %s'%(holeedge, holeverts[holeedge]), \
+            #        file=sys.__stderr__)
+            #print('*** covershape (loop2):: rad = %g, fanhm_rad = %g'%\
+            #        (rad,fanhm_rad),\
+            #        file=sys.__stderr__)
+            if closeto(X,FanMH_LeftTopLeft.X + Fan02510SS_05P_AT00_TopMount._fanmholespacing) and \
+               closeto(Y,FanMH_LeftTopLeft.Y):
+                FanMH_LeftTopRight = covershape.Vertexes[iv]
+            if FanMH_RightTopLeft == None:
+                FanMH_RightTopLeft = covershape.Vertexes[iv]
+            elif X <= FanMH_RightTopLeft.X and \
+                 X > FanMH_LeftTopRight.X and \
+                 closeto(Y,FanMH_LeftTopLeft.Y):
+                FanMH_RightTopLeft = covershape.Vertexes[iv]
+        if closeto(rad,grillhole_rad):
+            #print('*** covershape: holeedge[%s] = %s'%(holeedge, holeverts[holeedge]), \
+            #        file=sys.__stderr__)
+            #print('*** covershape: rad = %g, grillhole_rad = %g'%\
+            #        (rad,grillhole_rad),\
+            #        file=sys.__stderr__)
+            if GrillHole_LeftTop == None:
+                GrillHole_LeftTop = covershape.Vertexes[iv]
+            elif X <= GrillHole_LeftTop.X and Y >= GrillHole_LeftTop.Y:
+                GrillHole_LeftTop = covershape.Vertexes[iv]
+            if GrillHole_RightTop == None:
+                GrillHole_RightTop = covershape.Vertexes[iv]
+            elif X >= GrillHole_RightTop.X and Y >= GrillHole_RightTop.Y:
+                GrillHole_RightTop = covershape.Vertexes[iv]
+    f1center = (FanMH_LeftTopLeft.X+FanMH_LeftTopRight.X) / 2
+    f1r2 = GrillHole_LeftTop.Y - Fan02510SS_05P_AT00_TopMount._hspace()
+    f1c2 = GrillHole_LeftTop.X - Fan02510SS_05P_AT00_TopMount._hspace()
+    for holeedge in holeverts:
+        ie,rad,ex,ey = holeedge
+        iv,X,Y = holeverts[holeedge]
+        if closeto(rad,grillhole_rad):
+            #print('*** covershape (loop3): holeedge[%s] = %s'%(holeedge, holeverts[holeedge]), \
+            #        file=sys.__stderr__)
+            #print('*** covershape (loop3): rad = %g, grillhole_rad = %g'%\
+            #        (rad,grillhole_rad),\
+            #        file=sys.__stderr__)
+            if closeto(X,f1c2) and closeto(Y,f1r2):
+                GrillHole_LeftD1L1 = covershape.Vertexes[iv]
+                break
+    #print('*** covershape: minV = (%g,%g)'%(minV.X,minV.Y),\
+    #            file=sys.__stderr__)
+    #print('*** covershape: maxV = (%g,%g)'%(maxV.X,maxV.Y),\
+    #            file=sys.__stderr__)        
+    #print('*** covershape: FanMH_LeftTopLeft = (%g,%g)'%\
+    #        (FanMH_LeftTopLeft.X,FanMH_LeftTopLeft.Y),\
+    #        file=sys.__stderr__)
+    #print('*** covershape: FanMH_LeftTopRight = (%g,%g)'%\
+    #        (FanMH_LeftTopRight.X,FanMH_LeftTopRight.Y),\
+    #        file=sys.__stderr__)
+    #print('*** covershape: FanMH_LeftBottomLeft = (%g,%g)'%\
+    #        (FanMH_LeftBottomLeft.X,FanMH_LeftBottomLeft.Y),\
+    #        file=sys.__stderr__)
+    #print('*** covershape: FanMH_RightTopLeft = (%g,%g)'%\
+    #        (FanMH_RightTopLeft.X,FanMH_RightTopLeft.Y),\
+    #        file=sys.__stderr__)
+    #print('*** covershape: GrillHole_LeftTop = (%g,%g)'%\
+    #        (GrillHole_LeftTop.X,GrillHole_LeftTop.Y),\
+    #        file=sys.__stderr__)
+    #print('*** covershape: GrillHole_RightTop = (%g,%g)'%\
+    #        (GrillHole_RightTop.X,GrillHole_RightTop.Y),\
+    #        file=sys.__stderr__)
+    #print('*** covershape: GrillHole_LeftD1L1 = (%g,%g)'%\
+    #        (GrillHole_LeftD1L1.X,GrillHole_LeftD1L1.Y),\
+    #        file=sys.__stderr__)
+    # Edge62 -- Fan Mounting Hole (for diameter)
+    # Edge58 -- Fan grill hole (for diameter)
+    # Vertex0 -- origin
+    Vertex0 = minV
+    # Vertex3 -- max corner
+    Vertex3 = maxV
+    # Vertex180 -- Left Fan, top left mh
+    Vertex180 = FanMH_LeftTopLeft
+    # Vertex111 - Left Fan, top right mh
+    Vertex111 = FanMH_LeftTopRight
+    # Vertex177 - Left Fan, bottom left mh
+    Vertex177 = FanMH_LeftBottomLeft
+    # Vertex114 - Right fan, top left mh
+    Vertex114 = FanMH_RightTopLeft
+    # Vertex126 Left Fan top grill hole
+    Vertex126 = GrillHole_LeftTop
+    # Vertext36 Right Fan top grill hole
+    Vertext36 = GrillHole_RightTop
+    # Vertex132 Left Fan down one gril hole row, left one grill hole
+    Vertex132 = GrillHole_LeftD1L1
     #
-    #doc.addObject('TechDraw::DrawViewPart','BaseISOView')
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseISOView)
-    #doc.BaseISOView.Source = doc.psbox_CU3002ABase
-    #doc.BaseISOView.Scale = .375
-    #doc.BaseISOView.X = 55#210
-    #doc.BaseISOView.Y = 50#165
-    #doc.BaseISOView.Direction=(1.0,-1.0,1.0)
-    #doc.BaseISOView.Caption = "ISOMetric"
-    #
-    #doc.BaseISOView.recompute()    
-    #
-    #basesheet.recompute()
-    #doc.addObject('TechDraw::DrawViewSpreadsheet','BaseDimBlock')
-    #doc.BaseDimBlock.Source = basesheet
-    #doc.BaseDimBlock.TextSize = 8
-    #doc.BaseDimBlock.CellEnd = "C%d"%(ir-1)
-    #doc.PowerSupplyBoxBasePage.addView(doc.BaseDimBlock)
-    #doc.BaseDimBlock.recompute()
-    #doc.BaseDimBlock.X = 210
-    #doc.BaseDimBlock.Y = 160
-    #
-    #doc.PowerSupplyBoxBasePage.recompute()
-    #doc.recompute()
-    #TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxBasePage,"BananaPiM64Model_PowerSupplyBoxBasePage.pdf")
-    #
-    #
-    #doc.addObject('TechDraw::DrawPage','PowerSupplyBoxCoverPage')
-    #doc.PowerSupplyBoxCoverPage.Template = doc.USLetterTemplate
-    #edt = doc.PowerSupplyBoxCoverPage.Template.EditableTexts
-    #edt['DrawingTitle2']= "Cover"
-    #edt['Sheet'] = "Sheet 2 of 3"
-    #doc.PowerSupplyBoxCoverPage.Template.EditableTexts = edt
-    #doc.PowerSupplyBoxCoverPage.ViewObject.show()
-    #coversheet = doc.addObject('Spreadsheet::Sheet','CoverDimensionTable')
-    #coversheet.set("A1",'%-11.11s'%"Dim")
-    #coversheet.set("B1",'%10.10s'%"inch")
-    #coversheet.set("C1",'%10.10s'%"mm")
-    #ir = 2
-    #
-    #
-    #doc.addObject('TechDraw::DrawViewPart','CoverRightView')
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverRightView)
-    #doc.CoverRightView.Source = doc.psbox_CU3002ACover
-    #doc.CoverRightView.X = 80
-    #doc.CoverRightView.Y = 110
-    #doc.CoverRightView.Direction=(1.0,0.0,0.0)
-    #doc.CoverRightView.Caption = "Right"
-    #doc.CoverRightView.Scale = 1
-    ## Edge128    -- Round Fan Cutout (for diaameter)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverADia')
-    #doc.CoverADia.Type = 'Diameter'
-    #doc.CoverADia.References2D=[(doc.CoverRightView,'Edge128')]
-    #doc.CoverADia.FormatSpec='ADia (2x)'
-    #doc.CoverADia.Arbitrary = True
-    #doc.CoverADia.X = -32
-    #doc.CoverADia.Y = 0
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverADia)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"ADia")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanholedia/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanholedia)
-    #ir += 1
-    ## Edge130    -- Fan MH (for diameter)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverBDia')
-    #doc.CoverBDia.Type = 'Diameter'
-    #doc.CoverBDia.References2D=[(doc.CoverRightView,'Edge130')]
-    #doc.CoverBDia.FormatSpec='BDia (8x)'
-    #doc.CoverBDia.Arbitrary = True
-    #doc.CoverBDia.X = -39
-    #doc.CoverBDia.Y =  33
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverBDia)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"BDia")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanmholedia/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanmholedia)
-    #ir += 1
-    ## Vertex4    -- Origin
-    ## Vertex327  -- Round Fan Cutout Center (left)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverC')
-    #doc.CoverC.Type = 'DistanceX'
-    #doc.CoverC.References2D=[(doc.CoverRightView,'Vertex4'),\
-    #                         (doc.CoverRightView,'Vertex327')]
-    #doc.CoverC.FormatSpec='C'
-    #doc.CoverC.Arbitrary = True
-    #doc.CoverC.X = -37
-    #doc.CoverC.Y = 29
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverC)
-    #f1XDist = psbox._fan1Yoff()-psbox.thickness()
-    #f1XHCenter = f1XDist+(Fan02510SS_05P_AT00._fanwidth_height/2.0)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"C")
-    #coversheet.set("B%d"%ir,'%10.6f'%(f1XHCenter/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%f1XHCenter)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','CoverD')
-    #doc.CoverD.Type = 'DistanceY'
-    #doc.CoverD.References2D=[(doc.CoverRightView,'Vertex4'),\
-    #                         (doc.CoverRightView,'Vertex327')]
-    #doc.CoverD.FormatSpec='D'
-    #doc.CoverD.Arbitrary = True
-    #doc.CoverD.X = -58.5
-    #doc.CoverD.Y = -13
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverD)
-    #fYDist =  psbox._fanZoff()-psbox.thickness()
-    #fYHCenter = fYDist+(Fan02510SS_05P_AT00._fanwidth_height/2.0)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"D")
-    #coversheet.set("B%d"%ir,'%10.6f'%(fYHCenter/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%fYHCenter)
-    #ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverADia')
+    doc.CoverADia.Type = 'Diameter'
+    doc.CoverADia.References2D=[(doc.CoverTopView,'Edge62')]
+    doc.CoverADia.FormatSpec='ADia (8x)'
+    doc.CoverADia.Arbitrary = True
+    doc.CoverADia.X = -7
+    doc.CoverADia.Y = 40
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverADia)
+    coversheet.set("A%d"%ir,'%-11.11s'%"ADia")
+    coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00_TopMount._fanmholedia/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00_TopMount._fanmholedia)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverBDia')
+    doc.CoverBDia.Type = 'Diameter'
+    doc.CoverBDia.References2D=[(doc.CoverTopView,'Edge58')]
+    doc.CoverBDia.FormatSpec='BDia (50x)'
+    doc.CoverBDia.Arbitrary = True
+    doc.CoverBDia.X = -7
+    doc.CoverBDia.Y = -35
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverBDia)
+    coversheet.set("A%d"%ir,'%-11.11s'%"BDia")
+    coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00_TopMount._grilholesize/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00_TopMount._grilholesize)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverC')
+    doc.CoverC.Type = 'DistanceX'
+    doc.CoverC.References2D=[(doc.CoverTopView,'Vertex0'),\
+                             (doc.CoverTopView,'Vertex3')]
+    doc.CoverC.FormatSpec='C'
+    doc.CoverC.Arbitrary = True
+    doc.CoverC.X = 0
+    doc.CoverC.Y = 60
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverC)
+    CDist = Vertex3.X - Vertex0.X
+    coversheet.set("A%d"%ir,'%-11.11s'%"C")
+    coversheet.set("B%d"%ir,'%10.6f'%(CDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%CDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverD')
+    doc.CoverD.Type = 'DistanceY'
+    doc.CoverD.References2D=[(doc.CoverTopView,'Vertex0'),\
+                             (doc.CoverTopView,'Vertex3')]
+    doc.CoverD.FormatSpec='D'
+    doc.CoverD.Arbitrary = True
+    doc.CoverD.X = 67
+    doc.CoverD.Y = 0
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverD)
+    DDist =  Vertex3.Y - Vertex0.Y
+    coversheet.set("A%d"%ir,'%-11.11s'%"D")
+    coversheet.set("B%d"%ir,'%10.6f'%(DDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%DDist)
+    ir += 1
     ## Fan Mounting Holes
-    ## Vertex324  -- Left Fan MH (lower left)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverE')
-    #doc.CoverE.Type = 'DistanceX'
-    #doc.CoverE.References2D=[(doc.CoverRightView,'Vertex4'),\
-    #                         (doc.CoverRightView,'Vertex324')]
-    #doc.CoverE.FormatSpec='E'
-    #doc.CoverE.Arbitrary = True
-    #doc.CoverE.X = -45
-    #doc.CoverE.Y = -12
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverE)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"E")
-    #coversheet.set("B%d"%ir,'%10.6f'%((f1XDist+psbox.fan1.mhxyoff())/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%(f1XDist+psbox.fan1.mhxyoff()))
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','CoverF')
-    #doc.CoverF.Type = 'DistanceY'
-    #doc.CoverF.References2D=[(doc.CoverRightView,'Vertex4'),\
-    #                         (doc.CoverRightView,'Vertex324')]
-    #doc.CoverF.FormatSpec='F'
-    #doc.CoverF.Arbitrary = True
-    #doc.CoverF.X = 26
-    #doc.CoverF.Y = -13
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverF)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"F")
-    #coversheet.set("B%d"%ir,'%10.6f'%((fYDist+psbox.fan1.mhxyoff())/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%(fYDist+psbox.fan1.mhxyoff()))
-    #ir += 1
-    ## Vertex330  -- Left Fan MH (lower right)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverG')
-    #doc.CoverG.Type = 'DistanceX'
-    #doc.CoverG.References2D=[(doc.CoverRightView,'Vertex324'),\
-    #                         (doc.CoverRightView,'Vertex330')]
-    #doc.CoverG.FormatSpec='G'
-    #doc.CoverG.Arbitrary = True
-    #doc.CoverG.X = -11
-    #doc.CoverG.Y = -12
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverG)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"G")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanmholespacing/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanmholespacing)
-    #ir += 1
-    ## Vertex333  -- Left Fan MH (upper left)
-    ## Vertex336  -- Left Fan MH (upper right)
-    ## Vertex339  -- Round Fan Cutout Center (right)
-    #f2YDist = psbox._fan2Yoff()-psbox.thickness()
-    #f2YHCenter = f2YDist + (Fan02510SS_05P_AT00._fanwidth_height/2.0) 
-    #doc.addObject('TechDraw::DrawViewDimension','CoverH')
-    #doc.CoverH.Type = 'DistanceX'
-    #doc.CoverH.References2D=[(doc.CoverRightView,'Vertex327'),\
-    #                         (doc.CoverRightView,'Vertex339')]
-    #doc.CoverH.FormatSpec='H'
-    #doc.CoverH.Arbitrary = True
-    #doc.CoverH.X = 7.5
-    #doc.CoverH.Y = -14.5
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverH)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"H")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanwidth_height/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanwidth_height)
-    #ir += 1
-    ## Vertex351  -- Right Fan MH (lower left)
-    ## Vertex348  -- Right Fan MH (lower right)
-    ## Vertex342  -- Right Fan MH (upper left)
-    ## Vertex345  -- Right Fan MH (upper right)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverI')
-    #doc.CoverI.Type = 'DistanceY'
-    #doc.CoverI.References2D=[(doc.CoverRightView,'Vertex348'),\
-    #                         (doc.CoverRightView,'Vertex345')]
-    #doc.CoverI.FormatSpec='I'
-    #doc.CoverI.Arbitrary = True
-    #doc.CoverI.X = 26
-    #doc.CoverI.Y = 0
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverI)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"I")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanmholespacing/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanmholespacing)
-    #ir += 1
-    #doc.CoverRightView.recompute()
+    doc.addObject('TechDraw::DrawViewDimension','CoverE')
+    doc.CoverE.Type = 'DistanceX'
+    doc.CoverE.References2D=[(doc.CoverTopView,'Vertex0'),\
+                             (doc.CoverTopView,'Vertex180')]
+    doc.CoverE.FormatSpec='E'
+    doc.CoverE.Arbitrary = True
+    doc.CoverE.X = -45
+    doc.CoverE.Y = -53
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverE)
+    coversheet.set("A%d"%ir,'%-11.11s'%"E")
+    EDist = Vertex180.X - Vertex0.X
+    coversheet.set("B%d"%ir,'%10.6f'%(EDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%EDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverF')
+    doc.CoverF.Type = 'DistanceY'
+    doc.CoverF.References2D=[(doc.CoverTopView,'Vertex0'),\
+                             (doc.CoverTopView,'Vertex180')]
+    doc.CoverF.FormatSpec='F'
+    doc.CoverF.Arbitrary = True
+    doc.CoverF.X = -54
+    doc.CoverF.Y = -15
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverF)
+    coversheet.set("A%d"%ir,'%-11.11s'%"F")
+    FDist = Vertex180.Y - Vertex0.Y
+    coversheet.set("B%d"%ir,'%10.6f'%(FDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%FDist)
+    ir += 1
+    
+    doc.addObject('TechDraw::DrawViewDimension','CoverG')
+    doc.CoverG.Type = 'DistanceX'
+    doc.CoverG.References2D=[(doc.CoverTopView,'Vertex180'),\
+                             (doc.CoverTopView,'Vertex114')]
+    doc.CoverG.FormatSpec='G'
+    doc.CoverG.Arbitrary = True
+    doc.CoverG.X = -10
+    doc.CoverG.Y = -18
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverG)
+    coversheet.set("A%d"%ir,'%-11.11s'%"G")
+    GDist = Vertex114.X - Vertex180.X
+    coversheet.set("B%d"%ir,'%10.6f'%(GDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%GDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverH')
+    doc.CoverH.Type = 'DistanceX'
+    doc.CoverH.References2D=[(doc.CoverTopView,'Vertex180'),\
+                             (doc.CoverTopView,'Vertex111')]
+    doc.CoverH.FormatSpec='H'
+    doc.CoverH.Arbitrary = True
+    doc.CoverH.X = 10
+    doc.CoverH.Y = 23
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverH)
+    coversheet.set("A%d"%ir,'%-11.11s'%"H")
+    HDist = Vertex111.X - Vertex180.X
+    coversheet.set("B%d"%ir,'%10.6f'%(HDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%HDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverI')
+    doc.CoverI.Type = 'DistanceY'
+    doc.CoverI.References2D=[(doc.CoverTopView,'Vertex180'),\
+                             (doc.CoverTopView,'Vertex177')]
+    doc.CoverI.FormatSpec='I'
+    doc.CoverI.Arbitrary = True
+    doc.CoverI.X = 50
+    doc.CoverI.Y = 0
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverI)
+    coversheet.set("A%d"%ir,'%-11.11s'%"I")
+    IDist = Vertex180.Y - Vertex177.Y
+    coversheet.set("B%d"%ir,'%10.6f'%(IDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%IDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverJ')
+    doc.CoverJ.Type = 'DistanceX'
+    doc.CoverJ.References2D=[(doc.CoverTopView,'Vertex0'),\
+                             (doc.CoverTopView,'Vertex126')]
+    doc.CoverJ.FormatSpec='J'
+    doc.CoverJ.Arbitrary = True
+    doc.CoverJ.X = -45
+    doc.CoverJ.Y =  30
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverJ)
+    coversheet.set("A%d"%ir,'%-11.11s'%"J")
+    JDist = Vertex126.X - Vertex0.X
+    coversheet.set("B%d"%ir,'%10.6f'%(JDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%JDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverK')
+    doc.CoverK.Type = 'DistanceY'
+    doc.CoverK.References2D=[(doc.CoverTopView,'Vertex0'),\
+                             (doc.CoverTopView,'Vertex126')]
+    doc.CoverK.FormatSpec='K'
+    doc.CoverK.Arbitrary = True
+    doc.CoverK.X =  54
+    doc.CoverK.Y = -27
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverK)
+    coversheet.set("A%d"%ir,'%-11.11s'%"K")
+    KDist = Vertex126.Y - Vertex0.Y
+    coversheet.set("B%d"%ir,'%10.6f'%(KDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%KDist)
+    ir += 1
+
+    doc.addObject('TechDraw::DrawViewDimension','CoverL')
+    doc.CoverL.Type = 'DistanceX'
+    doc.CoverL.References2D=[(doc.CoverTopView,'Vertex126'),\
+                             (doc.CoverTopView,'Vertex132')]
+    doc.CoverL.FormatSpec='L'
+    doc.CoverL.Arbitrary = True
+    doc.CoverL.X = -29
+    doc.CoverL.Y =  20
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverL)
+    coversheet.set("A%d"%ir,'%-11.11s'%"L")
+    LDist = Vertex126.X - Vertex132.X
+    coversheet.set("B%d"%ir,'%10.6f'%(LDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%LDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','CoverM')
+    doc.CoverM.Type = 'DistanceY'
+    doc.CoverM.References2D=[(doc.CoverTopView,'Vertex126'),\
+                             (doc.CoverTopView,'Vertex132')]
+    doc.CoverM.FormatSpec='M'
+    doc.CoverM.Arbitrary = True
+    doc.CoverM.X = -46
+    doc.CoverM.Y =   9
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverM)
+    coversheet.set("A%d"%ir,'%-11.11s'%"M")
+    MDist = Vertex126.Y - Vertex132.Y
+    coversheet.set("B%d"%ir,'%10.6f'%(MDist/25.4))
+    coversheet.set("C%d"%ir,'%10.6f'%MDist)
+    ir += 1
+    #
+    doc.CoverTopView.recompute()
     #
     #
-    #doc.addObject('TechDraw::DrawViewPart','CoverLeftView')
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverLeftView)
-    #doc.CoverLeftView.Source = doc.psbox_CU3002ACover
-    #doc.CoverLeftView.X = 80
-    #doc.CoverLeftView.Y = 170
-    #doc.CoverLeftView.Direction=(-1.0,0.0,0.0)
-    #doc.CoverLeftView.Caption = "Left"
-    #
-    ## Edge126   -- upper left hole edge (for diameter)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverJDia')
-    #doc.CoverJDia.Type = 'Diameter'
-    #doc.CoverJDia.References2D=[(doc.CoverLeftView,'Edge126')]
-    #doc.CoverJDia.FormatSpec='JDia (98x)'
-    #doc.CoverJDia.Arbitrary = True
-    #doc.CoverJDia.X =   0
-    #doc.CoverJDia.Y =  27
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverJDia)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"JDia")
-    #coversheet.set("B%d"%ir,'%10.6f'%(2.5/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%2.5)
-    #ir += 1
-    ## Vertex0 -- origin (lower right)    
-    ## Vertex378 -- lower right hole (right fan (#1))
-    #doc.addObject('TechDraw::DrawViewDimension','CoverK')
-    #doc.CoverK.Type = 'DistanceX'
-    #doc.CoverK.References2D=[(doc.CoverLeftView,'Vertex0'),\
-    #                         (doc.CoverLeftView,'Vertex378')]
-    #doc.CoverK.FormatSpec='K'
-    #doc.CoverK.Arbitrary = True
-    #doc.CoverK.X =  40
-    #doc.CoverK.Y = -10
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverK)
-    #h1xdist = f1XDist + (3.5/2.0)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"K")
-    #coversheet.set("B%d"%ir,'%10.6f'%(h1xdist/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%h1xdist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','CoverL')
-    #doc.CoverL.Type = 'DistanceY'
-    #doc.CoverL.References2D=[(doc.CoverLeftView,'Vertex0'),\
-    #                         (doc.CoverLeftView,'Vertex378')]
-    #doc.CoverL.FormatSpec='L'
-    #doc.CoverL.Arbitrary = True
-    #doc.CoverL.X =  30
-    #doc.CoverL.Y = -12.5
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverL)
-    #h1ydist = fYDist + (3.5/2.0)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"L")
-    #coversheet.set("B%d"%ir,'%10.6f'%(h1ydist/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%h1ydist)
-    #ir += 1
-    # Vertex270 -- lower right hole (left fan (#2))
-    #doc.addObject('TechDraw::DrawViewDimension','CoverM')
-    #doc.CoverM.Type = 'DistanceX'
-    #doc.CoverM.References2D=[(doc.CoverLeftView,'Vertex270'),\
-    #                         (doc.CoverLeftView,'Vertex378')] 
-    #doc.CoverM.FormatSpec='M'
-    #doc.CoverM.Arbitrary = True
-    #doc.CoverM.X =   9
-    #doc.CoverM.Y = -13.5
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverM)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"M")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanwidth_height/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanwidth_height)
-    #ir += 1
-    ## Vertex375 -- one up lower right hole (right ran (#1))
-    #doc.addObject('TechDraw::DrawViewDimension','CoverN')
-    #doc.CoverN.Type = 'DistanceY'
-    #doc.CoverN.References2D=[(doc.CoverLeftView,'Vertex375'),\
-    #                         (doc.CoverLeftView,'Vertex378')] 
-    #doc.CoverN.FormatSpec='N (6x)'
-    #doc.CoverN.Arbitrary = True
-    #doc.CoverN.X =  30
-    #doc.CoverN.Y =   8
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverN)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"N")
-    #coversheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%3.5)
-    #ir += 1
-    #
-    ## Vertex297 -- one over lower right hole (right ran (#1)) 
-    #doc.addObject('TechDraw::DrawViewDimension','CoverO')
-    #doc.CoverO.Type = 'DistanceX'
-    #doc.CoverO.References2D=[(doc.CoverLeftView,'Vertex297'),\
-    #                         (doc.CoverLeftView,'Vertex378')] 
-    #doc.CoverO.FormatSpec='O (12x)'
-    #doc.CoverO.Arbitrary = True
-    #doc.CoverO.X =  12
-    #doc.CoverO.Y = -23
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverO)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"O")
-    #coversheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%3.5)
-    #ir += 1
-    ## Edge140   Grommet1 (left) for diameter     
-    #doc.addObject('TechDraw::DrawViewDimension','CoverPDia')
-    #doc.CoverPDia.Type = 'Diameter'
-    #doc.CoverPDia.References2D=[(doc.CoverRightView,'Edge140')]
-    #doc.CoverPDia.FormatSpec='PDia (2x)'
-    #doc.CoverPDia.Arbitrary = True
-    #doc.CoverPDia.X = -11
-    #doc.CoverPDia.Y =  30
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverPDia)
-    #coversheet.set("A%d"%ir,'%-11.11s'%"PDia")
-    #coversheet.set("B%d"%ir,'%10.6f'%(Grommet._HoleDiameter/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%Grommet._HoleDiameter)
-    #ir += 1
-    ## Vertex4   LowerLeft (origin)
-    ## Vertex363 Grommet1 (left)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverQ')
-    #doc.CoverQ.Type = 'DistanceX'
-    #doc.CoverQ.References2D=[(doc.CoverRightView,'Vertex4'),\
-    #                         (doc.CoverRightView,'Vertex363')]
-    #doc.CoverQ.FormatSpec='Q'
-    #doc.CoverQ.Arbitrary = True
-    #doc.CoverQ.X = -41
-    #doc.CoverQ.Y = -24
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverQ)
-    #g1XDist  = f1XDist - 9
-    #coversheet.set("A%d"%ir,'%-11.11s'%"Q")
-    #coversheet.set("B%d"%ir,'%10.6f'%(g1XDist/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%g1XDist)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','CoverR')
-    #doc.CoverR.Type = 'DistanceY'
-    #doc.CoverR.References2D=[(doc.CoverRightView,'Vertex4'),\
-    #                         (doc.CoverRightView,'Vertex363')]
-    #doc.CoverR.FormatSpec='R'
-    #doc.CoverR.Arbitrary = True
-    #doc.CoverR.X = -56
-    #doc.CoverR.Y =  10
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverR)
-    #fYDist =  psbox._fanZoff()-psbox.thickness()
-    #gYDist = fYDist + 25
-    #coversheet.set("A%d"%ir,'%-11.11s'%"R")
-    #coversheet.set("B%d"%ir,'%10.6f'%(gYDist/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%gYDist)
-    #ir += 1
-    ## Vertex357 Grommet2 (right)
-    #doc.addObject('TechDraw::DrawViewDimension','CoverS')
-    #doc.CoverS.Type = 'DistanceX'
-    #doc.CoverS.References2D=[(doc.CoverRightView,'Vertex363'),\
-    #                         (doc.CoverRightView,'Vertex357')]
-    #doc.CoverS.FormatSpec='S'
-    #doc.CoverS.Arbitrary = True
-    #doc.CoverS.X =  19
-    #doc.CoverS.Y = -24
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverS)
-    #f2XDist = psbox._fan2Yoff()-psbox.thickness()
-    #g2XDist = f2XDist+25+9
-    #S = g2XDist - g1XDist
-    #coversheet.set("A%d"%ir,'%-11.11s'%"S")
-    #coversheet.set("B%d"%ir,'%10.6f'%(S/25.4))
-    #coversheet.set("C%d"%ir,'%10.6f'%S)
-    #ir += 1
-    #
-    #doc.CoverLeftView.recompute()
-    #
-    #doc.addObject('TechDraw::DrawViewPart','CoverISOView')
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverISOView)
-    #doc.CoverISOView.Source = doc.psbox_CU3002ACover
-    #doc.CoverISOView.X = 55
-    #doc.CoverISOView.Y = 50
-    #doc.CoverISOView.Scale = .375
-    #doc.CoverISOView.Direction=(1.0,-1.0,1.0)
-    #doc.CoverISOView.Caption = "ISOMetric"
-    #doc.CoverISOView.recompute()
-    #
-    #doc.addObject('TechDraw::DrawViewSpreadsheet','CoverDimBlock')
-    #doc.CoverDimBlock.Source = coversheet
-    #doc.CoverDimBlock.TextSize = 8
-    #doc.CoverDimBlock.CellEnd = "C%d"%(ir-1)
-    #doc.PowerSupplyBoxCoverPage.addView(doc.CoverDimBlock)
-    #doc.CoverDimBlock.recompute()
-    #doc.CoverDimBlock.X = 210
-    #doc.CoverDimBlock.Y = 140
+    doc.addObject('TechDraw::DrawViewSpreadsheet','CoverDimBlock')
+    doc.CoverDimBlock.Source = coversheet
+    doc.CoverDimBlock.TextSize = 8
+    doc.CoverDimBlock.CellEnd = "C%d"%(ir-1)
+    doc.PowerSupplyBoxCoverPage.addView(doc.CoverDimBlock)
+    doc.CoverDimBlock.recompute()
+    doc.CoverDimBlock.X = 210
+    doc.CoverDimBlock.Y = 140
     #
     #
-    #doc.PowerSupplyBoxCoverPage.recompute()
-    #doc.recompute()
-    #TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxCoverPage,"BananaPiM64Model_PowerSupplyBoxCoverPage.pdf")
-    #
-    #doc.addObject('TechDraw::DrawPage','PowerSupplyBoxGrillPage')
-    #doc.PowerSupplyBoxGrillPage.Template = doc.USLetterTemplate
-    #edt = doc.PowerSupplyBoxGrillPage.Template.EditableTexts
-    #edt['DrawingTitle2']= "Grill"
-    #edt['Sheet'] = "Sheet 3 of 3"
-    #doc.PowerSupplyBoxGrillPage.Template.EditableTexts = edt
-    #doc.PowerSupplyBoxGrillPage.ViewObject.show()
-    #grillsheet = doc.addObject('Spreadsheet::Sheet','GrillDimensionTable')
-    #grillsheet.set("A1",'%-11.11s'%"Dim")
-    #grillsheet.set("B1",'%10.10s'%"inch")
-    #grillsheet.set("C1",'%10.10s'%"mm")
-    #ir = 2
-    #
-    #doc.addObject('TechDraw::DrawViewPart','PSGrillRightView')
-    #doc.PowerSupplyBoxGrillPage.addView(doc.PSGrillRightView)
-    #doc.PSGrillRightView.Source = doc.psgrill
-    #doc.PSGrillRightView.X = 80
-    #doc.PSGrillRightView.Y = 170
-    #doc.PSGrillRightView.Direction=(1.0,0.0,0.0)
-    #doc.PSGrillRightView.Scale = 1
-    ## Edge74         Upper Left Hole (diameter)
-    #doc.addObject('TechDraw::DrawViewDimension','GrillGDia')
-    #doc.GrillGDia.Type = 'Diameter'
-    #doc.GrillGDia.References2D=[(doc.PSGrillRightView,"Edge74")]
-    #doc.GrillGDia.FormatSpec="GDia (98x)"
-    #doc.GrillGDia.Arbitrary = True
-    #doc.GrillGDia.X = 0
-    #doc.GrillGDia.Y = 22
-    #doc.PowerSupplyBoxGrillPage.addView(doc.GrillGDia)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"GDia")
-    #grillsheet.set("B%d"%ir,'%10.6f'%(2.5/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%2.5)
-    #ir += 1
-    ## Vertex1        Origin (Lower Left)
-    ## Vertex2        Extent (Upper Right)
-    #doc.addObject('TechDraw::DrawViewDimension','GrillW')
-    #doc.GrillW.Type = 'DistanceX'
-    #doc.GrillW.References2D=[(doc.PSGrillRightView,"Vertex1"),\
-    #                         (doc.PSGrillRightView,"Vertex2")]
-    #doc.GrillW.FormatSpec="W"
-    #doc.GrillW.Arbitrary = True
-    #doc.GrillW.X = 0
-    #doc.GrillW.Y = 30
-    #doc.PowerSupplyBoxGrillPage.addView(doc.GrillW)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"W")
-    #grillsheet.set("B%d"%ir,'%10.6f'%(grillw/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%grillw)
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','GrillH')
-    #doc.GrillH.Type = 'DistanceY'
-    #doc.GrillH.References2D=[(doc.PSGrillRightView,"Vertex1"),\
-    #                         (doc.PSGrillRightView,"Vertex2")]
-    #doc.GrillH.FormatSpec="H"
-    #doc.GrillH.Arbitrary = True
-    #doc.GrillH.X = 50
-    #doc.GrillH.Y =  0
-    #doc.PowerSupplyBoxGrillPage.addView(doc.GrillH)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"H")
-    #grillsheet.set("B%d"%ir,'%10.6f'%(grillh/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%grillh)
-    #ir += 1
-    ## Vertex252 -- grill orig hole
-    #doc.addObject('TechDraw::DrawViewDimension','GrillX')
-    #doc.GrillX.Type = 'DistanceX'
-    #doc.GrillX.References2D=[(doc.PSGrillRightView,"Vertex1"),\
-    #                         (doc.PSGrillRightView,"Vertex252")]
-    #doc.GrillX.FormatSpec="X"
-    #doc.GrillX.Arbitrary = True
-    #doc.GrillX.X = -12
-    #doc.GrillX.Y = -30
-    #doc.PowerSupplyBoxGrillPage.addView(doc.GrillX)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"X")
-    #grillsheet.set("B%d"%ir,'%10.6f'%((5+(3.5/2))/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%(5+(3.5/2)))
-    #ir += 1
-    #doc.addObject('TechDraw::DrawViewDimension','GrillY')
-    #doc.GrillY.Type = 'DistanceY'
-    #doc.GrillY.References2D=[(doc.PSGrillRightView,"Vertex1"),\
-    #                         (doc.PSGrillRightView,"Vertex252")]
-    #doc.GrillY.FormatSpec="Y"
-    #doc.GrillY.Arbitrary = True
-    #doc.GrillY.X = -40
-    #doc.GrillY.Y = -14
-    #doc.PowerSupplyBoxGrillPage.addView(doc.GrillY)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"Y")
-    #grillsheet.set("B%d"%ir,'%10.6f'%((5+(3.5/2))/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%(5+(3.5/2)))
-    #ir += 1
-    ## Vertex159 -- grill orig hole (#2)
-    #doc.addObject('TechDraw::DrawViewDimension','GrillD')
-    #doc.GrillD.Type = 'DistanceX'
-    #doc.GrillD.References2D=[(doc.PSGrillRightView,"Vertex252"),\
-    #                         (doc.PSGrillRightView,"Vertex159")]
-    #doc.GrillD.FormatSpec="D"
-    #doc.GrillD.Arbitrary = True
-    #doc.GrillD.X = -9
-    #doc.GrillD.Y = -20
-    #doc.PowerSupplyBoxGrillPage.addView(doc.GrillD)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"D")
-    #grillsheet.set("B%d"%ir,'%10.6f'%(Fan02510SS_05P_AT00._fanwidth_height/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%Fan02510SS_05P_AT00._fanwidth_height)
-    #ir += 1
-    ## Vertex243 -- horiz. pitch hole
-    #doc.addObject('TechDraw::DrawViewDimension','Grillph')
-    #doc.Grillph.Type = 'DistanceX'
-    #doc.Grillph.References2D=[(doc.PSGrillRightView,"Vertex252"),\
-    #                          (doc.PSGrillRightView,"Vertex243")]
-    #doc.Grillph.FormatSpec="ph (12x)"
-    #doc.Grillph.Arbitrary = True
-    #doc.Grillph.X = -44
-    #doc.Grillph.Y = -24.5
-    #doc.PowerSupplyBoxGrillPage.addView(doc.Grillph)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"ph")
-    #grillsheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%3.5)
-    #ir += 1
-    ## Vertex255 -- vert. pitch hole
-    #doc.addObject('TechDraw::DrawViewDimension','Grillpv')
-    #doc.Grillpv.Type = 'DistanceY'
-    #doc.Grillpv.References2D=[(doc.PSGrillRightView,"Vertex252"),\
-    #                          (doc.PSGrillRightView,"Vertex255")]
-    #doc.Grillpv.FormatSpec="pv (6x)"
-    #doc.Grillpv.Arbitrary=True
-    #doc.Grillpv.X = -53
-    #doc.Grillpv.Y = 5
-    #doc.PowerSupplyBoxGrillPage.addView(doc.Grillpv)
-    #grillsheet.set("A%d"%ir,'%-11.11s'%"pv")
-    #grillsheet.set("B%d"%ir,'%10.6f'%(3.5/25.4))
-    #grillsheet.set("C%d"%ir,'%10.6f'%3.5)
-    #ir += 1
-    #
-    #
-    #
-    #
-    #doc.PSGrillRightView.recompute()
-    #
-    #doc.addObject('TechDraw::DrawViewPart','PSGrillISOView')
-    #doc.PowerSupplyBoxGrillPage.addView(doc.PSGrillISOView)
-    #doc.PSGrillISOView.Source = doc.psgrill
-    #doc.PSGrillISOView.X = 71
-    #doc.PSGrillISOView.Y = 100
-    #doc.PSGrillISOView.Direction=(1.0,1.0,1.0)
-    #doc.PSGrillISOView.Scale = 1
-    #
-    #doc.addObject('TechDraw::DrawViewSpreadsheet','PSGrillDimBlock')
-    #doc.PowerSupplyBoxGrillPage.addView(doc.PSGrillDimBlock)
-    #doc.PSGrillDimBlock.Source = grillsheet
-    #doc.PSGrillDimBlock.TextSize = 8
-    #doc.PSGrillDimBlock.CellEnd = "C%d"%(ir-1)
-    #doc.PSGrillDimBlock.recompute()
-    #doc.PSGrillDimBlock.X = 210
-    #doc.PSGrillDimBlock.Y = 150 
-    #
-    #doc.PowerSupplyBoxGrillPage.recompute()
-    #doc.recompute()
-    #TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxGrillPage,"BananaPiM64Model_PowerSupplyBoxGrillPage.pdf")
-    #sys.exit(1)    
+    doc.PowerSupplyBoxCoverPage.recompute()
+    doc.recompute()
+    TechDrawGui.exportPageAsPdf(doc.PowerSupplyBoxCoverPage,"BananaPiM64Model_PowerSupplyBoxCoverPage.pdf")
+    sys.exit(1)    

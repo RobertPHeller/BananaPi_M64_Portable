@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Mon Jun 1 10:34:36 2020
-#  Last Modified : <200706.1630>
+#  Last Modified : <200814.1428>
 #
 #  Description	
 #
@@ -102,13 +102,14 @@ class Inlet(object):
         obj.Label=self.name+'_solderlugs'
         obj.ViewObject.ShapeColor=tuple([.75,.75,.75])
 
+# 561-MP3P4
 
 class DCStrainRelief(object):
-    _holedia = 11.40
-    _flangedia = 13.40
-    _flangedepth = 4.0
-    _bodydia = 13.31
-    _bodydepth = 6.0
+    _holedia = (.437*25.4)
+    _flangedia = (.484*25.4)
+    _flangedepth = (.41*25.4)-6.75
+    _bodydia = (.437*25.4)
+    _bodydepth = 6.75 # Measured
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -228,6 +229,170 @@ class Fan02510SS_05P_AT00(object):
             y = hspace/2.0
             while y < holeside:
                 holeorig=Base.Vector(ox,oy+x,oz+y)
+                panel = panel.cut(Part.Face(Part.Wire(Part.makeCircle(hrad,holeorig,XNorm))
+                                           ).extrude(extrude))
+                y += hspace
+            x += hspace
+        return panel
+
+class Fan02510SS_05P_AT00_TopMount(object):
+    _fanwidth_height = 25
+    _fandepth = 10
+    _fanmholespacing = 20
+    _fanmholedia = 2.8
+    _fanholedia = 24.3
+    _grilholesize = (3/32)*25.4
+    @classmethod
+    def _hspace(cls):
+        return cls._fanwidth_height/8
+    def mhxyoff(self):
+        return (self._fanwidth_height-\
+                self._fanmholespacing)/2.0
+    def __init__(self,name,origin):
+        self.name = name
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector")
+        self.origin = origin
+        ox = origin.x
+        oy = origin.y
+        oz = origin.z
+        forig = Base.Vector(ox,oy,oz)
+        ZNorm=Base.Vector(0,0,1)
+        fanextrude = Base.Vector(0,0,-self._fandepth)
+        self.body = Part.makePlane(self._fanwidth_height,
+                                   self._fanwidth_height,
+                                   forig,ZNorm
+                                  ).extrude(fanextrude)
+        mhXYoff = self.mhxyoff()
+        self.mh = dict()
+        self.mh[1] = Base.Vector(ox+mhXYoff,oy+mhXYoff,oz)
+        self.mh[2] = Base.Vector(ox+mhXYoff,
+                               oy+mhXYoff+
+                                 self._fanmholespacing,
+                               oz)
+        self.mh[3] = Base.Vector(ox+mhXYoff+self._fanmholespacing,
+                               oy+mhXYoff,
+                               oz)
+        self.mh[4] = Base.Vector(ox+mhXYoff+
+                                 self._fanmholespacing,
+                               oy+mhXYoff+
+                                 self._fanmholespacing,
+                               oz)
+        fanmhrad = self._fanmholedia/2.0
+        for i in [1,2,3,4]:
+            self.body = self.body.cut(Part.Face(Part.Wire(Part.makeCircle(fanmhrad,self.mh[i],ZNorm))).extrude(fanextrude))
+    def show(self):
+        doc = App.activeDocument()
+        obj = doc.addObject("Part::Feature",self.name)
+        obj.Shape = self.body
+        obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([0.0,0.0,0.0])
+    def MountingHole(self,i,zBase,zDepth):
+        mh = Base.Vector(self.mh[i].x,self.mh[i].y,zBase)
+        fanmhrad = self._fanmholedia/2.0
+        ZNorm=Base.Vector(0,0,1)
+        extrude = Base.Vector(0,0,zDepth)
+        return Part.Face(Part.Wire(Part.makeCircle(fanmhrad,mh,ZNorm))
+                        ).extrude(extrude)
+    def RoundFanHole(self,zBase,height):
+        ox=self.origin.x+(self._fanwidth_height/2.0)
+        oy=self.origin.y+(self._fanwidth_height/2.0)
+        oz=zBase
+        holeorig=Base.Vector(ox,oy,oz)
+        holerad=self._fanholedia/2.0
+        ZNorm=Base.Vector(0,0,1)
+        extrude = Base.Vector(0,0,height)
+        return Part.Face(Part.Wire(Part.makeCircle(holerad,holeorig,ZNorm))
+                        ).extrude(extrude)
+    def RoundFanGrill(self,zBase,height,panel):
+        hdia = self._grilholesize
+        hrad = hdia/2.0
+        hspace = self._hspace()
+        rowholespaces = [0,1,2,3]
+        ox=self.origin.x
+        oy=self.origin.y
+        oz=zBase
+        center = self._fanwidth_height/2
+        for hs in rowholespaces:
+            if hs == 0:
+                panel = panel.cut(self._cutgrillhole(ox+center,oy+center,oz,\
+                                                    hrad,height))
+            else:
+                rxy = hs*hspace
+                panel = panel.cut(self._cutgrillhole(ox+center,oy+(center+rxy),\
+                                                     oz,hrad,height))
+                panel = panel.cut(self._cutgrillhole(ox+center,oy+(center-rxy),\
+                                                     oz,hrad,height))
+                panel = panel.cut(self._cutgrillhole(ox+(center+rxy),oy+center,\
+                                                     oz,hrad,height))
+                panel = panel.cut(self._cutgrillhole(ox+(center-rxy),oy+center,\
+                                                     oz,hrad,height))
+                if hs == 1:
+                    panel = panel.cut(self._cutgrillhole(ox+(center+rxy),\
+                                                         oy+(center+rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center-rxy),\
+                                                         oy+(center-rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center+rxy),\
+                                                         oy+(center-rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center-rxy),\
+                                                         oy+(center+rxy),oz,\
+                                                         hrad,height))
+                elif hs == 2:
+                    panel = panel.cut(self._cutgrillhole(ox+(center+hspace),\
+                                                         oy+(center+rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center-hspace),\
+                                                         oy+(center+rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center+hspace),\
+                                                         oy+(center-rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center-hspace),\
+                                                         oy+(center-rxy),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center-rxy),\
+                                                         oy+(center+hspace),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center-rxy),\
+                                                         oy+(center-hspace),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center+rxy),\
+                                                         oy+(center+hspace),oz,\
+                                                         hrad,height))
+                    panel = panel.cut(self._cutgrillhole(ox+(center+rxy),\
+                                                         oy+(center-hspace),oz,\
+                                                         hrad,height))
+        return panel
+    def _cutgrillhole(self,xh,yh,zh,rad,height):
+        horig=Base.Vector(xh,yh,zh)
+        hthick = Base.Vector(0,0,height)
+        ZNorm=Base.Vector(0,0,1)
+        return Part.Face(Part.Wire(Part.makeCircle(rad,horig,ZNorm))).extrude(hthick)
+    def SquareFanHole(self,zBase,height):
+        ox=self.origin.x
+        oy=self.origin.y+self._fanwidth_height
+        oz=zBase
+        holeorig=Base.Vector(ox,oy,oz)
+        holeside=self._fanwidth_height
+        ZNorm=Base.Vector(0,0,1)
+        extrude = Base.Vector(0,0,height)
+        return Part.makePlane(holeside,holeside,holeorig,ZNorm).extrude(extrude)
+    def DrillGrillHoles(self,zBase,height,hdia,hspace,panel):
+        ox=self.origin.x
+        oy=self.origin.y
+        oz=zBase
+        hrad = hdia/2.0
+        holeside=self._fanwidth_height
+        extrude = Base.Vector(0,0,height)
+        ZNorm=Base.Vector(0,0,1)
+        x = hspace/2.0
+        while x < holeside:
+            y = hspace/2.0
+            while y < holeside:
+                holeorig=Base.Vector(ox+y,oy+x,oz)
                 panel = panel.cut(Part.Face(Part.Wire(Part.makeCircle(hrad,holeorig,XNorm))
                                            ).extrude(extrude))
                 y += hspace

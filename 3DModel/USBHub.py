@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Jun 3 19:32:20 2020
-#  Last Modified : <200606.1910>
+#  Last Modified : <200727.1320>
 #
 #  Description	
 #
@@ -45,7 +45,11 @@ import Part
 from FreeCAD import Base
 import FreeCAD as App
 
+from abc import ABCMeta, abstractmethod, abstractproperty
+
+
 class USBHub_(object):
+    __metaclass__ = ABCMeta
     _Length     = 104.66
     _Height     = 36
     _Width      = 22.24
@@ -60,8 +64,6 @@ class USBHub_(object):
             polypoints.append(origin.add(Base.Vector(x,y,z)))
         return Part.Face(Part.Wire(Part.makePolygon(polypoints))
                         ).extrude(extrudeVector)
-    def __init__(self):
-        raise RuntimeError("No instances allowed for USBHub_!")
         
 class USBHub(USBHub_):
     def __init__(self,name,origin):
@@ -69,8 +71,8 @@ class USBHub(USBHub_):
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
-        self.body = USBHub_._createPolygon(origin,USBHub_._EndPoly,
-                                           Base.Vector(USBHub_._Length,0,0))
+        self.body = self._createPolygon(origin,self._EndPoly,
+                                           Base.Vector(self._Length,0,0))
     def show(self):
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name)
@@ -84,8 +86,8 @@ class USBHub90(USBHub_):
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
-        self.body = USBHub_._createPolygon(origin,USBHub_._EndPoly90,
-                                           Base.Vector(0,USBHub_._Length,0))
+        self.body = self._createPolygon(origin,self._EndPoly90,
+                                           Base.Vector(0,self._Length,0))
     def show(self):
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name)
@@ -99,8 +101,8 @@ class USBHub270(USBHub_):
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
-        self.body = USBHub_._createPolygon(origin,USBHub_._EndPoly270,
-                                           Base.Vector(0,USBHub_._Length,0))
+        self.body = self._createPolygon(origin,self._EndPoly270,
+                                           Base.Vector(0,self._Length,0))
     def show(self):
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name)

@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Thu Jun 4 19:26:46 2020
-#  Last Modified : <200615.1749>
+#  Last Modified : <200728.2027>
 #
 #  Description	
 #
@@ -45,7 +45,10 @@ import Part
 from FreeCAD import Base
 import FreeCAD as App
 
+from abc import ABCMeta, abstractmethod, abstractproperty
+
 class PianoHinge_(object):
+    __metaclass__ = ABCMeta
     _Length = 12*25.4
     _Thick  = 1.00
     _FoldHeight = 15.93
@@ -58,39 +61,36 @@ class PianoHinge_(object):
     _Holespace  = 50.8
     _HoleCount = 6
     _HoleSideOff = 10.54/2.0
-    def __init__(self):
-        raise RuntimeError("No Instances allowed for PianoHinge_!")
-    @staticmethod
-    def _flange(origin,startConn=True,connectAbove=True):
+    def _flange(self,origin,startConn=True,connectAbove=True):
         YNorm = Base.Vector(0,1,0)
-        Thick = Base.Vector(0,PianoHinge_._Thick,0)
-        base = Part.makePlane(PianoHinge_._FlangeWidth,PianoHinge_._Length,
+        Thick = Base.Vector(0,self._Thick,0)
+        base = Part.makePlane(self._FlangeWidth,self._Length,
                               origin,YNorm).extrude(Thick)
         if connectAbove:
-            zoff = PianoHinge_._FlangeWidth
+            zoff = self._FlangeWidth
         else:
-            zoff = -(PianoHinge_._PinOff+(PianoHinge_._PinDia/2.0))
+            zoff = -(self._PinOff+(self._PinDia/2.0))
         if startConn:
             xoff = 0
         else:
-            xoff = PianoHinge_._PinFlangeL
-        while xoff < PianoHinge_._Length:
+            xoff = self._PinFlangeL
+        while xoff < self._Length:
             o = origin.add(Base.Vector(xoff,0,zoff))
-            conn = Part.makePlane(PianoHinge_._PinOff+(PianoHinge_._PinDia/2.0),
-                                  PianoHinge_._PinFlangeL,
+            conn = Part.makePlane(self._PinOff+(self._PinDia/2.0),
+                                  self._PinFlangeL,
                                   o,YNorm).extrude(Thick)
             base = base.fuse(conn)
-            xoff += PianoHinge_._PinFlangeL*2
-        holex = PianoHinge_._1stHoleOff
-        holeRad = PianoHinge_._HoleDia/2.0
+            xoff += self._PinFlangeL*2
+        holex = self._1stHoleOff
+        holeRad = self._HoleDia/2.0
         holes = list()
-        while holex < PianoHinge_._Length:
-            ho = origin.add(Base.Vector(holex,0,PianoHinge_._HoleSideOff))
+        while holex < self._Length:
+            ho = origin.add(Base.Vector(holex,0,self._HoleSideOff))
             holes.append(ho)
             hole = Part.Face(Part.Wire(Part.makeCircle(holeRad,ho,YNorm))
                             ).extrude(Thick)
             base = base.cut(hole)
-            holex += PianoHinge_._Holespace
+            holex += self._Holespace
         return (base,holes)
             
 class PianoHingeFlatOutsideBack(PianoHinge_):
@@ -99,18 +99,18 @@ class PianoHingeFlatOutsideBack(PianoHinge_):
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
-        flange1,holes1 = PianoHinge_._flange(origin,startConn=False,connectAbove=True)
+        flange1,holes1 = self._flange(origin,startConn=False,connectAbove=True)
         pinorig = origin.add(Base.Vector(0,
-                                         PianoHinge_._PinDia/2.0,
-                                 PianoHinge_._FlangeWidth+PianoHinge_._PinOff+PianoHinge_._PinDia/2.0))
+                                         self._PinDia/2.0,
+                                 self._FlangeWidth+self._PinOff+self._PinDia/2.0))
         XNorm = Base.Vector(1,0,0)
-        pinL  = Base.Vector(PianoHinge_._Length,0,0)
-        pin = Part.Face(Part.Wire(Part.makeCircle(PianoHinge_._PinDia/2.0,
+        pinL  = Base.Vector(self._Length,0,0)
+        pin = Part.Face(Part.Wire(Part.makeCircle(self._PinDia/2.0,
                                                  pinorig,
                                                  XNorm))).extrude(pinL)
         flange2o = origin.add(Base.Vector(0,0,
-                        PianoHinge_._FlangeWidth+(PianoHinge_._PinOff*2.0)+PianoHinge_._PinDia))
-        flange2,holes2 = PianoHinge_._flange(flange2o,
+                        self._FlangeWidth+(self._PinOff*2.0)+self._PinDia))
+        flange2,holes2 = self._flange(flange2o,
                                       startConn=True,connectAbove=False)
         self.hinge = flange1.fuse(pin.fuse(flange2))
         self.holes = dict()
@@ -131,10 +131,17 @@ class PianoHingeFlatOutsideBack(PianoHinge_):
     def MountingHole(self,f,h,baseY,height):
         mh = self.holes[f,h]
         mh = Base.Vector(mh.x,baseY,mh.z)
-        return Part.Face(Part.Wire(Part.makeCircle(PianoHinge_._HoleDia/2.0,
+        return Part.Face(Part.Wire(Part.makeCircle(self._HoleDia/2.0,
                                    mh,Base.Vector(0,1,0)))
                         ).extrude(Base.Vector(0,height,0))
 
+
+class PianoHingeFlatOutsideBack_10inches(PianoHingeFlatOutsideBack):
+    _Length = 10*25.4
+    _HoleCount = 5
+    def __init__(self,name,origin):
+        super().__init__(name,origin)
+        
 
 class PianoHingeFlatInsideClosedFront(PianoHinge_):
     def __init__(self,name,origin):
@@ -142,17 +149,17 @@ class PianoHingeFlatInsideClosedFront(PianoHinge_):
         if not isinstance(origin,Base.Vector):
             raise RuntimeError("origin is not a Vector!")
         self.origin = origin
-        flange1,holes1 = PianoHinge_._flange(origin,startConn=False,connectAbove=True)
+        flange1,holes1 = self._flange(origin,startConn=False,connectAbove=True)
         pinorig = origin.add(Base.Vector(0,
-                                         PianoHinge_._PinDia/2.0,
-                                 PianoHinge_._FlangeWidth+PianoHinge_._PinOff+PianoHinge_._PinDia/2.0))
+                                         self._PinDia/2.0,
+                                 self._FlangeWidth+self._PinOff+self._PinDia/2.0))
         XNorm = Base.Vector(1,0,0)
-        pinL  = Base.Vector(PianoHinge_._Length,0,0)
-        pin = Part.Face(Part.Wire(Part.makeCircle(PianoHinge_._PinDia/2.0,
+        pinL  = Base.Vector(self._Length,0,0)
+        pin = Part.Face(Part.Wire(Part.makeCircle(self._PinDia/2.0,
                                                  pinorig,
                                                  XNorm))).extrude(pinL)
-        flange2o = origin.add(Base.Vector(0,PianoHinge_._PinDia-PianoHinge_._Thick,0))
-        flange2,holes2 = PianoHinge_._flange(flange2o,
+        flange2o = origin.add(Base.Vector(0,self._PinDia-self._Thick,0))
+        flange2,holes2 = self._flange(flange2o,
                                       startConn=True,connectAbove=True)
         self.hinge = flange1.fuse(pin.fuse(flange2))
         self.holes = dict()
@@ -173,7 +180,7 @@ class PianoHingeFlatInsideClosedFront(PianoHinge_):
     def MountingHole(self,f,h,baseY,height):
         mh = self.holes[f,h]
         mh = Base.Vector(mh.x,baseY,mh.z)
-        return Part.Face(Part.Wire(Part.makeCircle(PianoHinge_._HoleDia/2.0,
+        return Part.Face(Part.Wire(Part.makeCircle(self._HoleDia/2.0,
                                    mh,Base.Vector(0,1,0)))
                         ).extrude(Base.Vector(0,height,0))
 
@@ -181,5 +188,6 @@ class PianoHingeFlatInsideClosedFront(PianoHinge_):
 
 
 if __name__ == '__main__':
-    hinge = PianoHingeFlatInsideClosedFront("testhinge",Base.Vector(0,0,0))
+    App.ActiveDocument=App.newDocument("testhinge")
+    hinge = PianoHingeFlatOutsideBack_10inches("testhinge",Base.Vector(0,0,0))
     hinge.show()

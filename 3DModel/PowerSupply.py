@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sun May 31 08:03:12 2020
-#  Last Modified : <200726.1431>
+#  Last Modified : <200727.1002>
 #
 #  Description	
 #
@@ -114,6 +114,8 @@ class MHCD42(object):
     _padsizeX = 1.5748
     _padsizeY = 2.286
     _padThick = .1
+    _keybuttonYOff = 19.5
+    _keybuttonZOff = 2.6
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -173,6 +175,8 @@ class MT3608(object):
     _padsizeX  = 3.36
     _padsizeY  = 5.08
     _padThick  = .1
+    _vadjustYOff = 28.5
+    _vadjustZOff = 4.75
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
