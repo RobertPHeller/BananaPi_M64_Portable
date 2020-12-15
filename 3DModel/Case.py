@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Tue Jun 2 09:21:27 2020
-#  Last Modified : <200728.2059>
+#  Last Modified : <200822.0933>
 #
 #  Description	
 #
@@ -632,7 +632,7 @@ class PortableM64CaseBottom(PortableM64CaseCommon):
                     Base.Vector(bpanelMH2_x,bpanelMH2_y,0))))\
                     .extrude(bpanelMHDepth)
         for i in [1,2,3,4]:
-            self.panel.cutfrom(bpanelMHShapes[i])
+            #self.panel.cutfrom(bpanelMHShapes[i])
             self.bpanel = self.bpanel.cut(bpanelMHShapes[i])
             if i == 1 or i == 2:
                 self.frontblock.cutfrom(bpanelMHShapes[i])
