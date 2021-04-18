@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Sat May 30 19:30:31 2020
-#  Last Modified : <200818.0959>
+#  Last Modified : <210418.1358>
 #
 #  Description	
 #
@@ -1117,7 +1117,7 @@ if __name__ == '__main__':
     # Vertex272 Next lower leftmost Grill Hole
     # Right Batch grill holes:
     # Vertex14  Upper Left Grill hole center
-    #boxshape = doc.psbox_ACBox.Shape
+    boxshape = doc.psbox_ACBox.Shape
     #print('*** boxshape:',file=sys.__stderr__)
     #i = 0
     #for e in boxshape.Edges:
@@ -1295,8 +1295,8 @@ if __name__ == '__main__':
     doc.PowerSupplyBoxPage1.addView(doc.Box1T)
     boxsheet.set("A%d"%ir,'%-11.11s'%"T")
     TDist = Vertex278.Z - Vertex1.Z
-    boxsheet.set("B%d"%ir,'%10.6f'%(QDist/25.4))
-    boxsheet.set("C%d"%ir,'%10.6f'%QDist)
+    boxsheet.set("B%d"%ir,'%10.6f'%(TDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%TDist)
     ir += 1
     doc.addObject('TechDraw::DrawViewDimension','Box1U')
     doc.Box1U.Type = 'DistanceX'
@@ -1484,6 +1484,20 @@ if __name__ == '__main__':
     FDist = Vertex20.Z - Vertex3.Z
     boxsheet.set("B%d"%ir,'%10.6f'%(FDist/25.4))
     boxsheet.set("C%d"%ir,'%10.6f'%FDist)
+    ir += 1
+    doc.addObject('TechDraw::DrawViewDimension','Box2Fa')
+    doc.Box2Fa.Type = 'DistanceY'
+    doc.Box2Fa.References2D=[(doc.BoxLeftView,"Vertex3"),\
+                             (doc.BoxLeftView,"Vertex17")]
+    doc.Box2Fa.FormatSpec='Fa'
+    doc.Box2Fa.Arbitrary = True
+    doc.Box2Fa.X = 48
+    doc.Box2Fa.Y = -7
+    doc.PowerSupplyBoxPage2.addView(doc.Box2Fa)
+    boxsheet.set("A%d"%ir,'%-11.11s'%"Fa")
+    FaDist = Vertex17.Z - Vertex3.Z
+    boxsheet.set("B%d"%ir,'%10.6f'%(FaDist/25.4))
+    boxsheet.set("C%d"%ir,'%10.6f'%FaDist)
     ir += 1
     doc.BoxLeftView.recompute()
 
