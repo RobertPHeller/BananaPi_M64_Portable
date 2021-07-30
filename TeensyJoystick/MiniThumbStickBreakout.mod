@@ -1,0 +1,104 @@
+PCBNEW-LibModule-V1  Mon 20 Apr 2020 20:52:13 EDT
+# encoding utf-8
+Units mm
+$INDEX
+MiniThumbStickBreakout
+$EndINDEX
+$MODULE MiniThumbStickBreakout
+Po 0 0 0 15 5E9E4371 00000000 ~~
+Li MiniThumbStickBreakout
+Sc 0
+AR 
+Op 0 0 0
+T0 0 -5.08 1.016 1.016 0 0.1524 N V 21 N "MiniThumbStickBreakout"
+T1 0 5.08 1.016 1.016 0 0.1524 N V 21 N "VAL**"
+DS -12.7 -12.7 12.7 -12.7 0.1524 21
+DS 12.7 -12.7 12.7 12.7 0.1524 21
+DS 12.7 12.7 -12.7 12.7 0.1524 21
+DS -12.7 12.7 -12.7 -12.7 0.1524 21
+$PAD
+Sh "1" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 3.81 -11.43
+$EndPAD
+$PAD
+Sh "2" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 1.27 -11.43
+$EndPAD
+$PAD
+Sh "3" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -1.27 -11.43
+$EndPAD
+$PAD
+Sh "4" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -3.81 -11.43
+$EndPAD
+$PAD
+Sh "1" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 3.81 11.43
+$EndPAD
+$PAD
+Sh "2" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 1.27 11.43
+$EndPAD
+$PAD
+Sh "3" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -1.27 11.43
+$EndPAD
+$PAD
+Sh "4" C 1.524 1.524 0 0 0
+Dr 0.762 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po -3.81 11.43
+$EndPAD
+$PAD
+Sh "" C 3.302 3.302 0 0 0
+Dr 2 0 0
+At HOLE N 00E0FFFF
+Ne 0 ""
+Po -10.16 10.16
+$EndPAD
+$PAD
+Sh "" C 3.302 3.302 0 0 0
+Dr 2 0 0
+At HOLE N 00E0FFFF
+Ne 0 ""
+Po 10.16 10.16
+$EndPAD
+$PAD
+Sh "" C 3.302 3.302 0 0 0
+Dr 2 0 0
+At HOLE N 00E0FFFF
+Ne 0 ""
+Po 10.16 -10.16
+$EndPAD
+$PAD
+Sh "" C 3.302 3.302 0 0 0
+Dr 2 0 0
+At HOLE N 00E0FFFF
+Ne 0 ""
+Po -10.16 -10.16
+$EndPAD
+$EndMODULE MiniThumbStickBreakout
+$EndLIBRARY

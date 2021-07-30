@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name MiniThumbStickBreakout)(type Legacy)(uri "$(KIPRJMOD)/MiniThumbStickBreakout.mod")(options "")(descr ""))
+  (lib (name Buttons_Switches_ThroughHole)(type KiCad)(uri "$(KISYSMOD)Buttons_Switches_ThroughHole.pretty")(options "")(descr ""))
+)

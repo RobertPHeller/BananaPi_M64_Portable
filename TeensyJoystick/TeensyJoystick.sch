@@ -1,0 +1,330 @@
+EESchema Schematic File Version 2
+LIBS:TeensyJoystick-rescue
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:thumb_stick
+LIBS:switches
+LIBS:TeensyJoystick-cache
+EELAYER 25 0
+EELAYER END
+$Descr USLetter 11000 8500
+encoding utf-8
+Sheet 1 1
+Title ""
+Date "21 apr 2020"
+Rev ""
+Comp "Released under the CERN Open Hardware License v1.2"
+Comment1 "jenner@wickerbox.net - http://wickerbox.net"
+Comment2 "Designed by Jenner at Wickerbox Electronics"
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L VIN #PWR01
+U 1 1 57379B4D
+P 3125 2075
+F 0 "#PWR01" H 3125 1925 50  0001 C CNN
+F 1 "VIN" H 3125 2215 50  0000 C CNN
+F 2 "" H 3125 2075 50  0000 C CNN
+F 3 "" H 3125 2075 50  0000 C CNN
+	1    3125 2075
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V-RESCUE-TeensyJoystick #PWR02
+U 1 1 57379B69
+P 3350 2075
+F 0 "#PWR02" H 3350 1925 50  0001 C CNN
+F 1 "+3.3V" H 3350 2215 50  0000 C CNN
+F 2 "" H 3350 2075 50  0000 C CNN
+F 3 "" H 3350 2075 50  0000 C CNN
+	1    3350 2075
+	1    0    0    -1  
+$EndComp
+Text Label 3100 2800 0    60   ~ 0
+D2
+Text Label 3100 2900 0    60   ~ 0
+D3
+Text Label 3100 3000 0    60   ~ 0
+D4
+Text Label 3100 3500 0    60   ~ 0
+D9
+Text Label 3100 3600 0    60   ~ 0
+D10
+Text Label 3100 4100 0    60   ~ 0
+D15
+$Comp
+L GND-RESCUE-TeensyJoystick #PWR03
+U 1 1 5737A0A3
+P 3100 5550
+F 0 "#PWR03" H 3100 5300 50  0001 C CNN
+F 1 "GND" H 3100 5400 50  0000 C CNN
+F 2 "" H 3100 5550 50  0000 C CNN
+F 3 "" H 3100 5550 50  0000 C CNN
+	1    3100 5550
+	1    0    0    -1  
+$EndComp
+$Comp
+L VBAT #PWR04
+U 1 1 5737AB90
+P 3625 2075
+F 0 "#PWR04" H 3625 1925 50  0001 C CNN
+F 1 "VBAT" H 3625 2215 50  0000 C CNN
+F 2 "" H 3625 2075 50  0000 C CNN
+F 3 "" H 3625 2075 50  0000 C CNN
+	1    3625 2075
+	1    0    0    -1  
+$EndComp
+$Comp
+L TEENSY3.2-72MHz J1
+U 1 1 57382FA4
+P 2700 3850
+F 0 "J1" H 2500 5700 50  0000 L CNN
+F 1 "TEENSY3.2-72MHz" H 2500 2050 50  0000 L CNN
+F 2 "Wickerlib:TEENSY-3.2-NOSILK" V 2450 5000 50  0001 C CIN
+F 3 "https://www.pjrc.com/teensy/" H 2950 4500 5   0001 C CNN
+F 4 "PJRC" V 2450 5000 50  0001 C CIN "MF_Name"
+F 5 "TEENSY3.2" V 2450 5000 50  0001 C CIN "MF_PN"
+F 6 "PJRC" V 2450 5000 50  0001 C CIN "S1_Name"
+F 7 "TEENSY3.2" V 2450 5000 50  0001 C CIN "S1_PN"
+F 8 "TEENSY 3.2 32BIT 72MHZ" V 2450 5000 50  0001 C CIN "Description"
+	1    2700 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L THUMB_STICK M101
+U 1 1 5E9E2C4F
+P 4900 4250
+F 0 "M101" H 4900 4450 30  0000 C CNN
+F 1 "THUMB_STICK" H 4900 4050 30  0000 C CNN
+F 2 "MiniThumbStickBreakout:MiniThumbStickBreakout" H 4900 4250 60  0001 C CNN
+F 3 "" H 4900 4250 60  0000 C CNN
+	1    4900 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_Push SW1
+U 1 1 6102AF9C
+P 3850 2700
+F 0 "SW1" H 3900 2800 50  0000 L CNN
+F 1 "SW_Push" H 3850 2640 50  0000 C CNN
+F 2 "Buttons_Switches_THT:SW_PUSH_6mm" H 3850 2900 50  0001 C CNN
+F 3 "" H 3850 2900 50  0001 C CNN
+	1    3850 2700
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_Push SW2
+U 1 1 6102B013
+P 3850 2950
+F 0 "SW2" H 3900 3050 50  0000 L CNN
+F 1 "SW_Push" H 3850 2890 50  0000 C CNN
+F 2 "Buttons_Switches_THT:SW_PUSH_6mm" H 3850 3150 50  0001 C CNN
+F 3 "" H 3850 3150 50  0001 C CNN
+	1    3850 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_Push SW3
+U 1 1 6102B054
+P 3850 3250
+F 0 "SW3" H 3900 3350 50  0000 L CNN
+F 1 "SW_Push" H 3850 3190 50  0000 C CNN
+F 2 "Buttons_Switches_THT:SW_PUSH_6mm" H 3850 3450 50  0001 C CNN
+F 3 "" H 3850 3450 50  0001 C CNN
+	1    3850 3250
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR05
+U 1 1 6102B211
+P 4200 3550
+F 0 "#PWR05" H 4200 3300 50  0001 C CNN
+F 1 "GND" H 4200 3400 50  0000 C CNN
+F 2 "" H 4200 3550 50  0001 C CNN
+F 3 "" H 4200 3550 50  0001 C CNN
+	1    4200 3550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3000 2150 3125 2150
+Wire Wire Line
+	3125 2150 3125 2075
+Wire Wire Line
+	3000 2450 3625 2450
+Wire Wire Line
+	3625 2450 3625 2075
+Wire Wire Line
+	2400 4850 2400 1850
+Wire Wire Line
+	2400 1850 3250 1850
+Wire Wire Line
+	4500 2350 4500 4050
+Wire Wire Line
+	4500 5300 4500 4450
+Wire Wire Line
+	4100 4000 4100 4150
+Wire Wire Line
+	4100 4150 4500 4150
+Wire Wire Line
+	3900 4100 3900 4350
+Wire Wire Line
+	3900 4350 4500 4350
+Wire Wire Line
+	3650 2800 3650 2700
+Wire Wire Line
+	3650 2900 3650 2950
+Wire Wire Line
+	3650 3000 3650 3250
+Wire Wire Line
+	4200 2700 4200 3550
+Wire Wire Line
+	4200 2700 4050 2700
+Wire Wire Line
+	4050 2950 4200 2950
+Connection ~ 4200 2950
+Wire Wire Line
+	4050 3250 4200 3250
+Connection ~ 4200 3250
+$Comp
+L LED D1
+U 1 1 6102B3E3
+P 3600 3500
+F 0 "D1" H 3600 3600 50  0000 C CNN
+F 1 "LED" H 3600 3400 50  0000 C CNN
+F 2 "LEDs:LED_D3.0mm" H 3600 3500 50  0001 C CNN
+F 3 "" H 3600 3500 50  0001 C CNN
+	1    3600 3500
+	-1   0    0    1   
+$EndComp
+$Comp
+L LED D2
+U 1 1 6102B42E
+P 3600 3800
+F 0 "D2" H 3600 3900 50  0000 C CNN
+F 1 "LED" H 3600 3700 50  0000 C CNN
+F 2 "LEDs:LED_D3.0mm" H 3600 3800 50  0001 C CNN
+F 3 "" H 3600 3800 50  0001 C CNN
+	1    3600 3800
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3400 3600 3400 3800
+Wire Wire Line
+	3400 3800 3450 3800
+$Comp
+L R R1
+U 1 1 6102B57E
+P 3950 3500
+F 0 "R1" V 4030 3500 50  0000 C CNN
+F 1 "R" V 3950 3500 50  0000 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 3880 3500 50  0001 C CNN
+F 3 "" H 3950 3500 50  0001 C CNN
+	1    3950 3500
+	0    1    1    0   
+$EndComp
+$Comp
+L R R2
+U 1 1 6102B5F1
+P 3950 3800
+F 0 "R2" V 4030 3800 50  0000 C CNN
+F 1 "R" V 3950 3800 50  0000 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 3880 3800 50  0001 C CNN
+F 3 "" H 3950 3800 50  0001 C CNN
+	1    3950 3800
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3750 3500 3800 3500
+Wire Wire Line
+	3750 3800 3800 3800
+Wire Wire Line
+	4100 3500 4100 3800
+Wire Wire Line
+	4200 3550 4100 3550
+Connection ~ 4100 3550
+Wire Wire Line
+	3450 3500 2950 3500
+Wire Wire Line
+	3400 3600 2950 3600
+Wire Wire Line
+	4100 4000 2950 4000
+Wire Wire Line
+	3900 4100 2950 4100
+Wire Wire Line
+	3650 2800 2950 2800
+Wire Wire Line
+	3650 2900 2950 2900
+Wire Wire Line
+	3650 3000 2950 3000
+Wire Wire Line
+	2950 5300 4500 5300
+Wire Wire Line
+	3100 5300 3100 5550
+Connection ~ 3100 5300
+Wire Wire Line
+	2950 5400 3100 5400
+Connection ~ 3100 5400
+Wire Wire Line
+	2950 5500 3100 5500
+Connection ~ 3100 5500
+Wire Wire Line
+	3000 2350 4500 2350
+Wire Wire Line
+	3350 2350 3350 2050
+Wire Wire Line
+	3000 2250 3350 2250
+Connection ~ 3350 2250
+Connection ~ 3350 2350
+Wire Wire Line
+	3250 1850 3250 2250
+Connection ~ 3250 2250
+NoConn ~ 2950 2600
+NoConn ~ 2950 2700
+NoConn ~ 2950 3100
+NoConn ~ 2950 3200
+NoConn ~ 2950 3300
+NoConn ~ 2950 3400
+NoConn ~ 2950 3700
+NoConn ~ 2950 3800
+NoConn ~ 2950 3900
+Text Label 3100 4000 0    50   ~ 0
+D14
+NoConn ~ 2950 4200
+NoConn ~ 2950 4300
+NoConn ~ 2950 4400
+NoConn ~ 2950 4500
+NoConn ~ 2950 4600
+NoConn ~ 2950 4700
+NoConn ~ 2950 4800
+NoConn ~ 2950 4900
+NoConn ~ 3000 5050
+NoConn ~ 3000 5150
+$EndSCHEMATC
