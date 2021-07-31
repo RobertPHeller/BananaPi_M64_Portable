@@ -9,7 +9,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Fri Jul 30 11:03:18 2021
-#  Last Modified : <210730.1744>
+#  Last Modified : <210731.0920>
 #
 #  Description	
 #
@@ -109,6 +109,9 @@ class ThumbStick(object):
     _KnobBodyZoff = 1
     _KnobBodyDia = 16
     _KnobTopDia = 18
+    @classmethod
+    def CutoutDiameter(cls):
+        return (cls._KnobTopDia*1.25)
     _KnobBodyHeight = 6
     _KnobTopHeight = 3
     _KnobColor = tuple([0.4,.4,1.0])
@@ -292,11 +295,11 @@ class Teensy(object):
     _BoardOffZ = 2.54
     _BoardThick = 1.6
     _boardColor = tuple([0.0,1.0,0.0])
-    _USBWidth = 5.78
+    USBWidth = 5.78
     _USBLength = 7.54
-    _USBYOff = 1.579+.064
+    _USBYOff = 8.509-5.25
     _USBXOff = 17.018+1.62
-    _USBZ = 1.87
+    USBZ = 1.87
     _USBColor = tuple([0.85,0.85,0.85])
     _PinG1X = -15.748
     _PinG1Y = -7.239
@@ -355,10 +358,10 @@ class Teensy(object):
         self.board = boardsurf.extrude(Base.Vector(0,0,self._BoardThick))
         self.ubody = header1.extrude(Base.Vector(0,0,self._BoardOffZ))
         self.lbody = header2.extrude(Base.Vector(0,0,self._BoardOffZ))
-        usbOrig = Base.Vector(ox-self._USBXOff,oy-self._USBYOff,\
+        self.usbOrig = Base.Vector(ox-self._USBXOff,oy-self._USBYOff,\
                                 oz+self._BoardOffZ+self._BoardThick)
-        self.usb = Part.makePlane(self._USBLength,self._USBWidth,usbOrig)\
-                        .extrude(Base.Vector(0,0,self._USBZ))
+        self.usb = Part.makePlane(self._USBLength,self.USBWidth,self.usbOrig)\
+                        .extrude(Base.Vector(0,0,self.USBZ))
     def show(self):
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name+"_board")
@@ -379,7 +382,7 @@ class Teensy(object):
         obj.ViewObject.ShapeColor=self._USBColor
         
 class LED(object):
-    _Diameter = 3
+    Diameter = 3
     _Height =   5.55
     def __init__(self,name,origin,color):
         self.name = name
@@ -389,7 +392,7 @@ class LED(object):
         ox = origin.x
         oy = origin.y
         oz = origin.z
-        self.led = Part.Face(Part.Wire(Part.makeCircle(self._Diameter/2,origin)))\
+        self.led = Part.Face(Part.Wire(Part.makeCircle(self.Diameter/2,origin)))\
                     .extrude(Base.Vector(0,0,self._Height))
         self.color = color
     def show(self):
@@ -452,19 +455,21 @@ class PCB(object):
             boardsurf = boardsurf.cut(mh)
         self.board = boardsurf.extrude(Base.Vector(0,0,PCB._PCBThickness))
         componentZ = oz+PCB._PCBThickness
-        sw3Origin = Base.Vector(ox+PCB._sw3X,oy+PCB._swY,componentZ)
-        self.sw3 = TactileSwitch(name+"_Sw3",sw3Origin)
-        sw2Origin = Base.Vector(ox+PCB._sw2X,oy+PCB._swY,componentZ)
-        self.sw2 = TactileSwitch(name+"_Sw2",sw2Origin)
-        sw1Origin = Base.Vector(ox+PCB._sw1X,oy+PCB._swY,componentZ)
-        self.sw1 = TactileSwitch(name+"_Sw1",sw1Origin)
-        thumbStickOrigin = Base.Vector(ox+PCB._ThumbStickX,oy+PCB._ThumbStickY,\
+        self.sw3Origin = Base.Vector(ox+PCB._sw3X,oy+PCB._swY,componentZ)
+        self.sw3 = TactileSwitch(name+"_Sw3",self.sw3Origin)
+        self.sw2Origin = Base.Vector(ox+PCB._sw2X,oy+PCB._swY,componentZ)
+        self.sw2 = TactileSwitch(name+"_Sw2",self.sw2Origin)
+        self.sw1Origin = Base.Vector(ox+PCB._sw1X,oy+PCB._swY,componentZ)
+        self.sw1 = TactileSwitch(name+"_Sw1",self.sw1Origin)
+        self.thumbStickOrigin = Base.Vector(ox+PCB._ThumbStickX,oy+PCB._ThumbStickY,\
                                         componentZ)
-        self.thumbStick = ThumbStick(name+"_thumbStick",thumbStickOrigin)
+        self.thumbStick = ThumbStick(name+"_thumbStick",self.thumbStickOrigin)
         teensyOrogin = Base.Vector(ox+PCB._TeensyX,oy+PCB._TeensyY,componentZ)
         self.teensy = Teensy(name+"_teensy",teensyOrogin)
-        self.led1 = LED("XLED",Base.Vector(ox+self._LED1X,oy+self._LEDY,componentZ),self._LED1Color)
-        self.led2 = LED("YLED",Base.Vector(ox+self._LED2X,oy+self._LEDY,componentZ),self._LED2Color)
+        self.led1origin = Base.Vector(ox+self._LED1X,oy+self._LEDY,componentZ)
+        self.led1 = LED("XLED",self.led1origin,self._LED1Color)
+        self.led2origin = Base.Vector(ox+self._LED2X,oy+self._LEDY,componentZ)
+        self.led2 = LED("YLED",self.led2origin,self._LED2Color)
         
     def show(self):
         doc = App.activeDocument()
@@ -489,6 +494,16 @@ class Box(object):
     _BottomHeight = 4+6
     _Color = tuple([0.0,0.0,0.0])
     _RidgeSize = 2
+    _StandoffDiameter = 5
+    _Number3Clear = .099*25.4
+    _Number3TapHole = (5/64)*25.4
+    _TopHeight = 15
+    _PlungerShaftDia = 5
+    _PlungerBaseDia  = 8
+    _USBHoleYLength = 11
+    _USBHomeZHeight = 8
+    _USBZOff = (8-Teensy.USBZ)/2.0
+    _USBYOff = (11-Teensy.USBWidth)/2.0
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -502,34 +517,162 @@ class Box(object):
         YNorm=Base.Vector(0,1,0)
         YNormR=Base.Vector(0,-1,0)
         self.board = PCB(name+"_board",Base.Vector(ox+self._PCBXOff,oy+self._PCBYOff,oz+self._BottomHeight))
-        self.bottom = Part.makePlane(self._OuterWidth,self._OuterLength,origin)\
+        self.bottom = self.MakeBottom()
+        self.top    = self.MakeTop(origin.add(Base.Vector(0,0,\
+                                        self._BottomHeight+self._TopHeight)))
+    def MakeBottom(self):
+        origin = self.origin
+        ox = origin.x
+        oy = origin.y
+        oz = origin.z
+        XNorm=Base.Vector(1,0,0)
+        XNormR=Base.Vector(-1,0,0)
+        YNorm=Base.Vector(0,1,0)
+        YNormR=Base.Vector(0,-1,0)
+        bottom = Part.makePlane(self._OuterWidth,self._OuterLength,origin)\
                     .extrude(Base.Vector(0,0,self._ShellThick))
-        self.bottom = \
-            self.bottom.fuse(Part.makePlane(self._BottomHeight-self._ShellThick,\
+        bottom = \
+            bottom.fuse(Part.makePlane(self._BottomHeight-self._ShellThick,\
                                             self._OuterLength,\
                                             origin.add(Base.Vector(0,self._OuterLength,self._ShellThick)),XNorm)\
                   .extrude(Base.Vector(self._ShellThick,0,0)))
-        self.bottom = \
-            self.bottom.fuse(Part.makePlane(self._RidgeSize,\
+        bottom = \
+            bottom.fuse(Part.makePlane(self._RidgeSize,\
                                             self._OuterLength,\
                                             origin.add(Base.Vector(0,self._OuterLength,self._BottomHeight)),XNorm)\
                   .extrude(Base.Vector(self._RidgeSize,0,0)))
-        self.bottom = \
-            self.bottom.fuse(Part.makePlane(self._BottomHeight-self._ShellThick,\
-                                            self._OuterLength,\
-                                            origin.add(Base.Vector(self._OuterWidth,self._OuterLength,self._BottomHeight)),XNormR)\
+        bottom = \
+            bottom.fuse(Part.makePlane(self._BottomHeight-self._ShellThick,\
+                                       self._OuterLength,\
+                                       origin.add(Base.Vector(self._OuterWidth,\
+                                                              self._OuterLength,\
+                                                              self._BottomHeight)),\
+                                       XNormR)\
                   .extrude(Base.Vector(-self._ShellThick,0,0)))
-        self.bottom = \
-            self.bottom.fuse(Part.makePlane(self._RidgeSize,\
+        bottom = \
+            bottom.fuse(Part.makePlane(self._RidgeSize,\
                                             self._OuterLength,\
                                             origin.add(Base.Vector(self._OuterWidth,self._OuterLength,self._BottomHeight+self._RidgeSize)),XNormR)\
                   .extrude(Base.Vector(-self._RidgeSize,0,0)))
-                  
+        bottom = \
+            bottom.fuse(Part.makePlane(self._BottomHeight-self._ShellThick,
+                                            self._OuterWidth-(self._ShellThick*2),\
+                                            origin.add(Base.Vector(self._ShellThick,0,self._ShellThick)),\
+                                            YNorm)\
+                  .extrude(Base.Vector(0,self._ShellThick,0)))
+        bottom = \
+            bottom.fuse(Part.makePlane(self._RidgeSize,\
+                                            self._OuterWidth-(self._RidgeSize*2),
+                                            origin.add(Base.Vector(self._RidgeSize,0,self._BottomHeight)),
+                                            YNorm)\
+                   .extrude(Base.Vector(0,self._RidgeSize,0)))                         
+        bottom = \
+            bottom.fuse(Part.makePlane(self._BottomHeight-self._ShellThick,
+                                            self._OuterWidth-(self._ShellThick*2),\
+                                            origin.add(Base.Vector(self._ShellThick,self._OuterLength-self._ShellThick,self._BottomHeight)),\
+                                            YNormR)\
+                  .extrude(Base.Vector(0,self._ShellThick,0)))
+        bottom = \
+            bottom.fuse(Part.makePlane(self._RidgeSize,\
+                                            self._OuterWidth-(self._RidgeSize*2),
+                                            origin.add(Base.Vector(self._RidgeSize,self._OuterLength-self._RidgeSize,self._BottomHeight+self._RidgeSize)),
+                                            YNormR)\
+                   .extrude(Base.Vector(0,self._RidgeSize,0)))
+        for i in [1,2,3,4]:
+            h = self.board.mhvector[i]
+            bottom = bottom.fuse(Part.Face(Part.Wire(\
+                            Part.makeCircle(self._StandoffDiameter/2.0,
+                                            Base.Vector(h.x,h.y,oz+self._ShellThick))))\
+                                            .extrude(Base.Vector(0,0,self._BottomHeight-self._ShellThick)))
+            bottom = bottom.cut(Part.Face(Part.Wire(\
+                            Part.makeCircle(self._Number3Clear/2.0,
+                                            Base.Vector(h.x,h.y,oz))))\
+                                            .extrude(Base.Vector(0,0,self._BottomHeight)))
+        return(bottom)
+    def MakeTop(self,origin,deltaZ=-1):
+        if not isinstance(origin,Base.Vector):
+            raise RuntimeError("origin is not a Vector")
+        XNorm=Base.Vector(1,0,0)
+        XNormR=Base.Vector(-1,0,0)
+        YNorm=Base.Vector(0,1,0)
+        YNormR=Base.Vector(0,-1,0)
+        if deltaZ<0:
+            toporigin = origin.add(Base.Vector(0,0,-self._ShellThick))
+        else:
+            toporigin = origin
+        top  = Part.makePlane(self._OuterWidth,self._OuterLength,toporigin)\
+                    .extrude(Base.Vector(0,0,self._ShellThick))
+        plunger1Org=Base.Vector(origin.x+self.board.sw1Origin.x,origin.y+self.board.sw1Origin.y,toporigin.z)
+        top = top.cut(Part.Face(Part.Wire(Part.makeCircle(self._PlungerShaftDia/2,plunger1Org))).extrude(Base.Vector(0,0,self._ShellThick)))
+        plunger2Org=Base.Vector(origin.x+self.board.sw2Origin.x,origin.y+self.board.sw2Origin.y,toporigin.z)
+        top = top.cut(Part.Face(Part.Wire(Part.makeCircle(self._PlungerShaftDia/2,plunger2Org))).extrude(Base.Vector(0,0,self._ShellThick)))
+        plunger3Org=Base.Vector(origin.x+self.board.sw3Origin.x,origin.y+self.board.sw3Origin.y,toporigin.z)
+        top = top.cut(Part.Face(Part.Wire(Part.makeCircle(self._PlungerShaftDia/2,plunger3Org))).extrude(Base.Vector(0,0,self._ShellThick)))
+        thumbStickHoleOrigin=Base.Vector(origin.x+self.board.thumbStickOrigin.x,origin.y+self.board.thumbStickOrigin.y,toporigin.z)
+        top = top.cut(Part.Face(Part.Wire(Part.makeCircle(ThumbStick.CutoutDiameter()/2,thumbStickHoleOrigin))).extrude(Base.Vector(0,0,self._ShellThick)))
+        l1Org=Base.Vector(origin.x+self.board.led1origin.x,origin.y+self.board.led1origin.y,toporigin.z)
+        top = top.cut(Part.Face(Part.Wire(Part.makeCircle(LED.Diameter/2,l1Org))).extrude(Base.Vector(0,0,self._ShellThick)))
+        l2Org=Base.Vector(origin.x+self.board.led2origin.x,origin.y+self.board.led2origin.y,toporigin.z)
+        top = top.cut(Part.Face(Part.Wire(Part.makeCircle(LED.Diameter/2,l2Org))).extrude(Base.Vector(0,0,self._ShellThick)))
+        sideHeight = self._TopHeight-self._RidgeSize
+        if deltaZ<0:
+            origin1 = origin.add(Base.Vector(0,0,-sideHeight))
+        else:
+            origin1 = origin.add(Base.Vector(0,0,self._ShellThick))
+        sideHeight -= self._ShellThick
+        top = \
+            top.fuse(Part.makePlane(sideHeight,self._OuterLength,\
+                                        origin1.add(Base.Vector(0,\
+                                                        self._OuterLength,0)),\
+                                        XNorm)\
+                  .extrude(Base.Vector(self._ShellThick,0,0)))
+        if deltaZ<0:
+            ridgeZ = -self._RidgeSize
+        else:
+            ridgeZ = sideHeight
+        w = self._RidgeSize
+        h = self._OuterLength-(self._RidgeSize*2)
+        o = origin1.add(Base.Vector(self._RidgeSize,\
+                                    self._OuterLength-(self._RidgeSize*1),\
+                                    ridgeZ))
+        e = Base.Vector(self._RidgeSize,0,0)
+        top = \
+            top.fuse(Part.makePlane(w,h,o,XNorm).extrude(e))
+        h = self._USBHoleYLength
+        w = self._USBHomeZHeight
+        uz = self.board.teensy.usbOrig.z-self.board.origin.z
+        o = origin1.add(Base.Vector(0,
+                                    self.board.teensy.usbOrig.y-self._USBYOff+w,\
+                                    uz-self._USBZOff))
+        if deltaZ<0:
+            o = o.add(Base.Vector(0,Teensy.USBWidth/2,-Teensy.USBZ))
+            w += o.z-ridgeZ
+            o = Base.Vector(o.x,o.y,ridgeZ)
+        else:
+            o = o.add(Base.Vector(0,Teensy.USBWidth/2,Teensy.USBZ))
+            w += ridgeZ
+            o = Base.Vector(o.x,o.y,origin.z+self._ShellThick)
+        e = Base.Vector(self._ShellThick,0)
+        top = top.cut(Part.makePlane(w,h,o,XNorm).extrude(e))
+        top = \
+            top.fuse(Part.makePlane(sideHeight,\
+                                    self._OuterLength,\
+                                    origin1.add(Base.Vector(self._OuterWidth,\
+                                                            self._OuterLength,\
+                                                            sideHeight)),\
+                                    XNormR)\
+                   .extrude(Base.Vector(-self._ShellThick,0,0)))
+
+        return(top)
     def show(self):
         doc = App.activeDocument()
         obj = doc.addObject("Part::Feature",self.name+"_bottom")
         obj.Shape = self.bottom
         obj.Label=self.name+'_bottom'
+        obj.ViewObject.ShapeColor=self._Color
+        obj = doc.addObject("Part::Feature",self.name+"_top")
+        obj.Shape = self.top
+        obj.Label=self.name+'_top'
         obj.ViewObject.ShapeColor=self._Color
         self.board.show()
     
@@ -544,8 +687,13 @@ if __name__ == '__main__':
     o = Base.Vector(0,0,0)
     box = Box("box",o)
     box.show()
+    temp = box.MakeTop(Base.Vector(100,0,0),1)
+    obj = doc.addObject("Part::Feature","tempTop")
+    obj.Shape = temp
+    obj.Label='tempTop'
+    obj.ViewObject.ShapeColor=tuple([1.0,1.0,0.0])
     doc.saveAs("TeensyJoystick.FCStd")
     Gui.SendMsgToActiveView("ViewFit")
-    Gui.activeDocument().activeView().viewIsometric()
+    Gui.activeDocument().activeView().viewRight()
     ThumbStick.knobSTL("ThumbStickKnob.stl")
     
