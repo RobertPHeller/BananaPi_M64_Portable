@@ -1,0 +1,17 @@
+Cmp-Mod V01 Created by CvPcb (2013-june-11)-stable date = Mon 20 Apr 2020 20:52:43 EDT
+
+BeginCmp
+TimeStamp = /57382FA4;
+Reference = J1;
+ValeurCmp = TEENSY3.2-72MHz;
+IdModule  = Wickerlib:TEENSY-3.2-NOSILK;
+EndCmp
+
+BeginCmp
+TimeStamp = /5E9E2C4F;
+Reference = M101;
+ValeurCmp = THUMB_STICK;
+IdModule  = MiniThumbStickBreakout;
+EndCmp
+
+EndListe
