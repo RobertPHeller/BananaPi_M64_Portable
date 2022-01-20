@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Wed Apr 22 09:48:24 2020
-//  Last Modified : <200504.1035>
+//  Last Modified : <220120.0903>
 //
 //  Description	
 //
@@ -72,6 +72,6 @@ int8_t JoyAxis::Read()
         raw = -raw;
     }
     //Serial.print(" raw (after reverse_): ");Serial.println(raw);
-    return (int8_t)(raw / 16);
+    return (int8_t)(raw / 32);
 }
 
