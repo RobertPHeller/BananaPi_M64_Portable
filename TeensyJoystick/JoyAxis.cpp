@@ -8,7 +8,7 @@
 //  Author        : $Author$
 //  Created By    : Robert Heller
 //  Created       : Wed Apr 22 09:48:24 2020
-//  Last Modified : <220120.0903>
+//  Last Modified : <220125.0954>
 //
 //  Description	
 //
@@ -64,7 +64,7 @@ int8_t JoyAxis::Read()
 {
     delay(5);
     //Serial.print("*** JoyAxis::Read(): pin=");Serial.print(pin_);
-    int raw = (analogRead(pin_) >> 2)&0xFC;
+    int raw = (analogRead(pin_) >> 2)&0xFF;
     //Serial.print(" raw (from analogRead): ");Serial.print(raw);
     raw -= zerooff_;
     //Serial.print(" raw (after zerooff_): ");Serial.print(raw);
