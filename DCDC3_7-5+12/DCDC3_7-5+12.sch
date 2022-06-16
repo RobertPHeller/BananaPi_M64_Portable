@@ -124,9 +124,9 @@ Wire Wire Line
 Wire Wire Line
 	5150 2950 5400 2950
 Wire Wire Line
-	4900 5100 5150 5100
+	5150 5100 4900 5100
 Wire Wire Line
-	5150 5100 5150 4950
+	5150 4550 5150 5100
 Wire Wire Line
 	5150 4950 5600 4950
 Wire Wire Line
@@ -190,4 +190,21 @@ Wire Wire Line
 Wire Wire Line
 	5550 6850 5550 6800
 Connection ~ 5400 5000
+$Comp
+L Conn_01x02_Male J1
+U 1 1 62AB8A27
+P 5700 4550
+F 0 "J1" H 5700 4650 50  0000 C CNN
+F 1 "FAN" H 5700 4350 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 5700 4550 50  0001 C CNN
+F 3 "" H 5700 4550 50  0001 C CNN
+	1    5700 4550
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 4650 5400 4650
+Connection ~ 5400 4650
+Wire Wire Line
+	5500 4550 5150 4550
+Connection ~ 5150 4950
 $EndSCHEMATC
