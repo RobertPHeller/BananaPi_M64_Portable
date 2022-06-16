@@ -32,6 +32,7 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:xl6009
+LIBS:mechanical
 LIBS:DCDC3_7-5+12-cache
 EELAYER 25 0
 EELAYER END
@@ -129,7 +130,7 @@ Wire Wire Line
 Wire Wire Line
 	5150 4950 5600 4950
 Wire Wire Line
-	5400 3050 5400 5000
+	5400 3050 5400 6850
 Wire Wire Line
 	5400 5000 5600 5000
 Wire Wire Line
@@ -140,4 +141,53 @@ Wire Wire Line
 	2500 3950 2500 3900
 Connection ~ 2500 3900
 Connection ~ 5400 3950
+$Comp
+L Mounting_Hole MK1
+U 1 1 62AB236D
+P 4050 6700
+F 0 "MK1" H 4050 6900 50  0000 C CNN
+F 1 "Mounting_Hole" H 4050 6825 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.5mm" H 4050 6700 50  0001 C CNN
+F 3 "" H 4050 6700 50  0001 C CNN
+	1    4050 6700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mounting_Hole MK2
+U 1 1 62AB23F8
+P 4500 6750
+F 0 "MK2" H 4500 6950 50  0000 C CNN
+F 1 "Mounting_Hole" H 4500 6875 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.5mm" H 4500 6750 50  0001 C CNN
+F 3 "" H 4500 6750 50  0001 C CNN
+	1    4500 6750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mounting_Hole MK3
+U 1 1 62AB2447
+P 4950 6700
+F 0 "MK3" H 4950 6900 50  0000 C CNN
+F 1 "Mounting_Hole" H 4950 6825 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.5mm" H 4950 6700 50  0001 C CNN
+F 3 "" H 4950 6700 50  0001 C CNN
+	1    4950 6700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mounting_Hole_PAD MK4
+U 1 1 62AB248C
+P 5550 6700
+F 0 "MK4" H 5550 6950 50  0000 C CNN
+F 1 "Mounting_Hole_PAD" H 5550 6875 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.5mm_Pad" H 5550 6700 50  0001 C CNN
+F 3 "" H 5550 6700 50  0001 C CNN
+	1    5550 6700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5400 6850 5550 6850
+Wire Wire Line
+	5550 6850 5550 6800
+Connection ~ 5400 5000
 $EndSCHEMATC

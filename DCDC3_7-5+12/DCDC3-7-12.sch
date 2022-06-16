@@ -32,6 +32,7 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:xl6009
+LIBS:mechanical
 LIBS:DCDC3_7-5+12-cache
 EELAYER 25 0
 EELAYER END
