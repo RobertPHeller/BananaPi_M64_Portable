@@ -1,4 +1,4 @@
-update=Thu 16 Jun 2022 08:30:15 AM EDT
+update=Tue 12 Jul 2022 11:38:13 AM EDT
 version=1
 last_client=kicad
 [pcbnew]
@@ -63,3 +63,4 @@ LibName31=contrib
 LibName32=valves
 LibName33=xl6009
 LibName34=mechanical
+LibName35=TPS61088QRHLRQ1
