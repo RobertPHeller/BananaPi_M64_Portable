@@ -2,7 +2,7 @@
 <export version="D">
   <design>
     <source>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/DCDC3_7-5+12.sch</source>
-    <date>Thu 14 Jul 2022 08:58:53 AM EDT</date>
+    <date>Thu 14 Jul 2022 03:14:02 PM EDT</date>
     <tool>Eeschema 4.0.7+dfsg1-1ubuntu2</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -114,6 +114,9 @@
     <comp ref="C1">
       <value>220uf</value>
       <footprint>Capacitors_SMD:CP_Elec_5x5.7</footprint>
+      <fields>
+        <field name="Mouser Part Number">667-6SVPE220MW </field>
+      </fields>
       <libsource lib="device" part="CP1_Small"/>
       <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
       <tstamp>62CF4538</tstamp>
@@ -162,7 +165,7 @@
       <value>40K</value>
       <footprint>Resistors_SMD:R_0805</footprint>
       <fields>
-        <field name="Mouser Part Numbr">71-CRCW080540K0FKEA </field>
+        <field name="Mouser Part Number">71-CRCW080540K0FKEA </field>
       </fields>
       <libsource lib="device" part="R"/>
       <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
@@ -261,6 +264,9 @@
     <comp ref="U2">
       <value>XL6009</value>
       <footprint>TO_SOT_Packages_SMD:TO-263-5_TabPin3</footprint>
+      <fields>
+        <field name="XLSEMI Part Number">XL6009</field>
+      </fields>
       <libsource lib="xl6009" part="XL6009"/>
       <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
       <tstamp>62AA163E</tstamp>
@@ -278,6 +284,9 @@
     <comp ref="L2">
       <value>33uH</value>
       <footprint>PM5022S-330M-RC:INDPM183140X690N</footprint>
+      <fields>
+        <field name="Mouser Part Number">542-PM5022S-330M-RC</field>
+      </fields>
       <libsource lib="device" part="L_Small"/>
       <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
       <tstamp>62AA3BD9</tstamp>
@@ -305,6 +314,9 @@
     <comp ref="R3">
       <value>3K</value>
       <footprint>Resistors_SMD:R_0805_HandSoldering</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-CRCW0805-3K</field>
+      </fields>
       <libsource lib="device" part="R"/>
       <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
       <tstamp>62AA3BDC</tstamp>
@@ -312,6 +324,9 @@
     <comp ref="R4">
       <value>1K</value>
       <footprint>Resistors_SMD:R_0805_HandSoldering</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-CRCW08051K00FKEAH</field>
+      </fields>
       <libsource lib="device" part="R"/>
       <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
       <tstamp>62AA3BDD</tstamp>
@@ -610,15 +625,6 @@
     </libpart>
   </libparts>
   <libraries>
-    <library logical="device">
-      <uri>/usr/share/kicad/library/device.lib</uri>
-    </library>
-    <library logical="transistors">
-      <uri>/usr/share/kicad/library/transistors.lib</uri>
-    </library>
-    <library logical="conn">
-      <uri>/usr/share/kicad/library/conn.lib</uri>
-    </library>
     <library logical="xl6009">
       <uri>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/xl6009.lib</uri>
     </library>
@@ -627,6 +633,15 @@
     </library>
     <library logical="lm3488">
       <uri>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/lm3488.lib</uri>
+    </library>
+    <library logical="transistors">
+      <uri>/usr/share/kicad/library/transistors.lib</uri>
+    </library>
+    <library logical="conn">
+      <uri>/usr/share/kicad/library/conn.lib</uri>
+    </library>
+    <library logical="device">
+      <uri>/usr/share/kicad/library/device.lib</uri>
     </library>
   </libraries>
   <nets>
