@@ -2,7 +2,7 @@
 <export version="D">
   <design>
     <source>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/DCDC3_7-5+12.sch</source>
-    <date>Thu 14 Jul 2022 03:14:02 PM EDT</date>
+    <date>Thu 14 Jul 2022 03:32:35 PM EDT</date>
     <tool>Eeschema 4.0.7+dfsg1-1ubuntu2</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -235,7 +235,7 @@
       <value>560uF</value>
       <footprint>Capacitors_SMD:CP_Elec_10x10.5</footprint>
       <fields>
-        <field name="Mouser Part Number"> 667-20SVPF560M</field>
+        <field name="Mouser Part Number">667-20SVPF560M</field>
       </fields>
       <libsource lib="device" part="CP1_Small"/>
       <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
@@ -266,6 +266,8 @@
       <footprint>TO_SOT_Packages_SMD:TO-263-5_TabPin3</footprint>
       <fields>
         <field name="XLSEMI Part Number">XL6009</field>
+        <field name="Manufacturer">XLSEMI</field>
+        <field name="Mfg Part #">XL6009</field>
       </fields>
       <libsource lib="xl6009" part="XL6009"/>
       <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
