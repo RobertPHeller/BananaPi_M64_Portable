@@ -38,14 +38,14 @@ LIBS:lm3488
 LIBS:DCDC3_7-5+12-cache
 EELAYER 25 0
 EELAYER END
-$Descr A4 11693 8268
+$Descr USLetter 11000 8500
 encoding utf-8
 Sheet 1 3
-Title ""
+Title "5v and 12v (from battery) power supply"
 Date ""
-Rev ""
-Comp ""
-Comment1 ""
+Rev "1.0"
+Comp "Deepwoods Software"
+Comment1 "Main page"
 Comment2 ""
 Comment3 ""
 Comment4 ""

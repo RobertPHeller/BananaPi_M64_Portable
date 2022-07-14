@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/DCDC3_7-5+12.sch</source>
+    <date>Thu 14 Jul 2022 08:58:53 AM EDT</date>
+    <tool>Eeschema 4.0.7+dfsg1-1ubuntu2</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>5v and 12v (from battery) power supply</title>
+        <company>Deepwoods Software</company>
+        <rev>1.0</rev>
+        <date/>
+        <source>DCDC3_7-5+12.sch</source>
+        <comment number="1" value="Main page"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="2" name="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/">
+      <title_block>
+        <title>5v and 12v (from battery) power supply</title>
+        <company>Deepwoods Software</company>
+        <rev>1.0</rev>
+        <date/>
+        <source>DCDC3-7-12.sch</source>
+        <comment number="1" value="12V section"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="3" name="/DCDC 3.7 to 5/" tstamps="/62AA2A38/">
+      <title_block>
+        <title>5v and 12v (from battery) power supply</title>
+        <company>Deepwoods Software</company>
+        <rev>1.0</rev>
+        <date/>
+        <source>DCDC3-7-5.sch</source>
+        <comment number="1" value="5V section"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="T1">
+      <value>+ 3.7V -</value>
+      <footprint>Terminal_Blocks:TerminalBlock_Pheonix_MPT-2.54mm_2pol</footprint>
+      <libsource lib="conn" part="Screw_Terminal_01x02"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AA365C</tstamp>
+    </comp>
+    <comp ref="T2">
+      <value>+ 12V -</value>
+      <footprint>Terminal_Blocks:TerminalBlock_Pheonix_MPT-2.54mm_2pol</footprint>
+      <libsource lib="conn" part="Screw_Terminal_01x02"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AA399B</tstamp>
+    </comp>
+    <comp ref="T3">
+      <value>+ 5V -</value>
+      <footprint>Terminal_Blocks:TerminalBlock_Pheonix_MPT-2.54mm_2pol</footprint>
+      <libsource lib="conn" part="Screw_Terminal_01x02"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AA39D8</tstamp>
+    </comp>
+    <comp ref="MK1">
+      <value>Mounting_Hole</value>
+      <footprint>Mounting_Holes:MountingHole_3.5mm</footprint>
+      <libsource lib="mechanical" part="Mounting_Hole"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AB236D</tstamp>
+    </comp>
+    <comp ref="MK2">
+      <value>Mounting_Hole</value>
+      <footprint>Mounting_Holes:MountingHole_3.5mm</footprint>
+      <libsource lib="mechanical" part="Mounting_Hole"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AB23F8</tstamp>
+    </comp>
+    <comp ref="MK3">
+      <value>Mounting_Hole</value>
+      <footprint>Mounting_Holes:MountingHole_3.5mm</footprint>
+      <libsource lib="mechanical" part="Mounting_Hole"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AB2447</tstamp>
+    </comp>
+    <comp ref="MK4">
+      <value>Mounting_Hole_PAD</value>
+      <footprint>Mounting_Holes:MountingHole_3.5mm_Pad</footprint>
+      <libsource lib="mechanical" part="Mounting_Hole_PAD"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AB248C</tstamp>
+    </comp>
+    <comp ref="J1">
+      <value>FAN</value>
+      <footprint>Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm</footprint>
+      <libsource lib="conn" part="Conn_01x02_Male"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>62AB8A27</tstamp>
+    </comp>
+    <comp ref="U1">
+      <value>LM3488</value>
+      <footprint>Housings_SSOP:TSSOP-8_3x3mm_Pitch0.65mm</footprint>
+      <fields>
+        <field name="Mouser Part Number">926-LM3488MM </field>
+      </fields>
+      <libsource lib="lm3488" part="LM3488"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF42F4</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>220uf</value>
+      <footprint>Capacitors_SMD:CP_Elec_5x5.7</footprint>
+      <libsource lib="device" part="CP1_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4538</tstamp>
+    </comp>
+    <comp ref="C2">
+      <value>100nf</value>
+      <footprint>Capacitors_SMD:C_0402</footprint>
+      <fields>
+        <field name="Mouser Part Number">81-GRM155R70J104KA1D </field>
+      </fields>
+      <libsource lib="device" part="C_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4737</tstamp>
+    </comp>
+    <comp ref="C5">
+      <value>1nf</value>
+      <footprint>Capacitors_SMD:C_0402</footprint>
+      <fields>
+        <field name="Mouser Part Number">81-GRM1555C1H102JA1J</field>
+      </fields>
+      <libsource lib="device" part="C_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4A22</tstamp>
+    </comp>
+    <comp ref="C6">
+      <value>15nf</value>
+      <footprint>Capacitors_SMD:C_0805</footprint>
+      <fields>
+        <field name="Mouser Part Number">810-CGA4F2C0G1H153J </field>
+      </fields>
+      <libsource lib="device" part="C_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4A43</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>6.81K</value>
+      <footprint>Resistors_SMD:R_0402</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-CRCW0402-6.81K-E3</field>
+      </fields>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4A62</tstamp>
+    </comp>
+    <comp ref="R2">
+      <value>40K</value>
+      <footprint>Resistors_SMD:R_0805</footprint>
+      <fields>
+        <field name="Mouser Part Numbr">71-CRCW080540K0FKEA </field>
+      </fields>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4C67</tstamp>
+    </comp>
+    <comp ref="R7">
+      <value>100</value>
+      <footprint>Resistors_SMD:R_0402</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-CRCW0402100RFKEDC </field>
+      </fields>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4DE7</tstamp>
+    </comp>
+    <comp ref="R8">
+      <value>5m</value>
+      <footprint>Resistors_SMD:R_0612</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-WFCP06125L000FE66</field>
+      </fields>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4E14</tstamp>
+    </comp>
+    <comp ref="C7">
+      <value>10pf</value>
+      <footprint>Capacitors_SMD:C_0805</footprint>
+      <fields>
+        <field name="Mouser Part Number">187-CL21C100CBANNNC </field>
+      </fields>
+      <libsource lib="device" part="C_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF4E3B</tstamp>
+    </comp>
+    <comp ref="Q1">
+      <value> CSD16323Q3</value>
+      <footprint>Q3:Q3</footprint>
+      <fields>
+        <field name="Mouser Part Number">595-CSD16323Q3 </field>
+      </fields>
+      <libsource lib="transistors" part="CSD16325Q5"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF54E2</tstamp>
+    </comp>
+    <comp ref="R5">
+      <value>1K</value>
+      <footprint>Resistors_SMD:R_0402</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-CRCW0402-1.0K</field>
+      </fields>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF5A75</tstamp>
+    </comp>
+    <comp ref="R6">
+      <value>8.45K</value>
+      <footprint>Resistors_SMD:R_0402</footprint>
+      <fields>
+        <field name="Mouser Part Number">71-CRCW0402-8.45K-E3</field>
+      </fields>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF5BA5</tstamp>
+    </comp>
+    <comp ref="C8">
+      <value>560uF</value>
+      <footprint>Capacitors_SMD:CP_Elec_10x10.5</footprint>
+      <fields>
+        <field name="Mouser Part Number"> 667-20SVPF560M</field>
+      </fields>
+      <libsource lib="device" part="CP1_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF6011</tstamp>
+    </comp>
+    <comp ref="D1">
+      <value>550mV </value>
+      <footprint>Diodes_SMD:D_SMC</footprint>
+      <fields>
+        <field name="Mouser Part Number">241-SK54_R1_00001 </field>
+      </fields>
+      <libsource lib="device" part="D_Schottky"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF6222</tstamp>
+    </comp>
+    <comp ref="L1">
+      <value>1.8uh</value>
+      <footprint>XAL6030:INDM5564X32N</footprint>
+      <fields>
+        <field name="Mouser Part Number">994-XAL6030-182MEC </field>
+      </fields>
+      <libsource lib="device" part="L_Small"/>
+      <sheetpath names="/DCDC 3.7 - 12/" tstamps="/62AA2A0D/"/>
+      <tstamp>62CF64DF</tstamp>
+    </comp>
+    <comp ref="U2">
+      <value>XL6009</value>
+      <footprint>TO_SOT_Packages_SMD:TO-263-5_TabPin3</footprint>
+      <libsource lib="xl6009" part="XL6009"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA163E</tstamp>
+    </comp>
+    <comp ref="C3">
+      <value>220uf 50V</value>
+      <footprint>Capacitors_SMD:CP_Elec_10x10.5</footprint>
+      <fields>
+        <field name="Mouser Part Number">667-EEE-FK1H221V </field>
+      </fields>
+      <libsource lib="device" part="CP1_Small"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA183B</tstamp>
+    </comp>
+    <comp ref="L2">
+      <value>33uH</value>
+      <footprint>PM5022S-330M-RC:INDPM183140X690N</footprint>
+      <libsource lib="device" part="L_Small"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA3BD9</tstamp>
+    </comp>
+    <comp ref="D2">
+      <value>SS34</value>
+      <footprint>Diodes_SMD:D_SMB_Handsoldering</footprint>
+      <fields>
+        <field name="Mouser Part Number">750-SS34BF-HF</field>
+      </fields>
+      <libsource lib="device" part="D_Schottky"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA3BDA</tstamp>
+    </comp>
+    <comp ref="C4">
+      <value>220uf 50V</value>
+      <footprint>Capacitors_SMD:CP_Elec_10x10.5</footprint>
+      <fields>
+        <field name="Mouser Part Number">667-EEE-FK1H221V </field>
+      </fields>
+      <libsource lib="device" part="CP1_Small"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA3BDB</tstamp>
+    </comp>
+    <comp ref="R3">
+      <value>3K</value>
+      <footprint>Resistors_SMD:R_0805_HandSoldering</footprint>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA3BDC</tstamp>
+    </comp>
+    <comp ref="R4">
+      <value>1K</value>
+      <footprint>Resistors_SMD:R_0805_HandSoldering</footprint>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/DCDC 3.7 to 5/" tstamps="/62AA2A38/"/>
+      <tstamp>62AA3BDD</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="device" part="CP1_Small">
+      <description>Polarised capacitor</description>
+      <footprints>
+        <fp>CP_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">CP1_Small</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="transistors" part="CSD17578Q5A">
+      <aliases>
+        <alias>CSD17579Q5A</alias>
+        <alias>CSD16570Q5B</alias>
+        <alias>CSD17577Q5A</alias>
+        <alias>CSD18509Q5B</alias>
+        <alias>CSD18540Q5B</alias>
+        <alias>CSD17573Q5B</alias>
+        <alias>CSD17576Q5B</alias>
+        <alias>CSD19534Q5A</alias>
+        <alias>CSD17570Q5B</alias>
+        <alias>CSD19533Q5A</alias>
+        <alias>CSD19502Q5B</alias>
+        <alias>CSD19532Q5B</alias>
+        <alias>CSD19531Q5A</alias>
+        <alias>CSD18563Q5A</alias>
+        <alias>CSD18537NQ5A</alias>
+        <alias>CSD18532NQ5B</alias>
+        <alias>CSD17556Q5B</alias>
+        <alias>CSD18502Q5B</alias>
+        <alias>CSD18532Q5B</alias>
+        <alias>CSD17552Q5A</alias>
+        <alias>CSD17559Q5</alias>
+        <alias>CSD18534Q5A</alias>
+        <alias>CSD18533Q5A</alias>
+        <alias>CSD17555Q5A</alias>
+        <alias>CSD17551Q5A</alias>
+        <alias>CSD18501Q5A</alias>
+        <alias>CSD18503Q5A</alias>
+        <alias>CSD18504Q5A</alias>
+        <alias>CSD18531Q5A</alias>
+        <alias>CSD17553Q5A</alias>
+        <alias>CSD16342Q5A</alias>
+        <alias>CSD17322Q5A</alias>
+        <alias>CSD17327Q5A</alias>
+        <alias>CSD17522Q5A</alias>
+        <alias>CSD17527Q5A</alias>
+        <alias>CSD17501Q5A</alias>
+        <alias>CSD17506Q5A</alias>
+        <alias>CSD17505Q5A</alias>
+        <alias>CSD17507Q5A</alias>
+        <alias>CSD17510Q5A</alias>
+        <alias>CSD17311Q5</alias>
+        <alias>CSD17312Q5</alias>
+        <alias>CSD17303Q5</alias>
+        <alias>CSD16415Q5</alias>
+        <alias>CSD17302Q5A</alias>
+        <alias>CSD17305Q5A</alias>
+        <alias>CSD17306Q5A</alias>
+        <alias>CSD17307Q5A</alias>
+        <alias>CSD17310Q5A</alias>
+        <alias>CSD17301Q5A</alias>
+        <alias>CSD16408Q5</alias>
+        <alias>CSD16322Q5</alias>
+        <alias>CSD16325Q5</alias>
+        <alias>CSD16321Q5</alias>
+        <alias>CSD16414Q5</alias>
+        <alias>CSD16401Q5</alias>
+        <alias>CSD16403Q5A</alias>
+        <alias>CSD16404Q5A</alias>
+        <alias>CSD16407Q5</alias>
+        <alias>CSD16410Q5A</alias>
+        <alias>CSD16412Q5A</alias>
+        <alias>CSD16413Q5A</alias>
+        <alias>BSC026N08NS5ATMA1</alias>
+        <alias>BSC030N08NS5ATMA1</alias>
+        <alias>BSC035N10NS5ATMA1</alias>
+        <alias>BSC037N08NS5ATMA1</alias>
+        <alias>BSC040N10NS5ATMA1</alias>
+        <alias>BSC040N08NS5ATMA1</alias>
+        <alias>BSC046N10NS3GATMA1</alias>
+        <alias>BSC047N08NS3GATMA1</alias>
+        <alias>BSC052N08NS5ATMA1</alias>
+        <alias>BSC057N08NS3GATMA1</alias>
+        <alias>BSC060N10NS3GATMA1</alias>
+        <alias>BSC061N08NS5ATMA1</alias>
+        <alias>BSC070N10NS3GATMA1</alias>
+        <alias>BSC070N10NS5ATMA1</alias>
+        <alias>BSC072N08NS5ATMA1</alias>
+        <alias>BSC079N10NSGATMA1</alias>
+        <alias>BSC082N10LSGATMA1</alias>
+        <alias>BSC098N10NS5ATMA1</alias>
+        <alias>BSC100N10NSFGATMA1</alias>
+        <alias>BSC105N10LSFGATMA1</alias>
+        <alias>BSC109N10NS3GATMA1</alias>
+        <alias>BSC117N08NS5ATMA1</alias>
+        <alias>BSC118N10NSGATMA1</alias>
+        <alias>BSC123N08NS3GATMA1</alias>
+        <alias>BSC123N10LSGATMA1</alias>
+        <alias>BSC159N10LSFGATMA1</alias>
+        <alias>BSC160N10NS3GATMA1</alias>
+        <alias>BSC196N10NSGATMA1</alias>
+        <alias>BSC252N10NSFGATMA1</alias>
+        <alias>BSC265N10LSFGATMA1</alias>
+        <alias>BSC340N08NS3GATMA1</alias>
+        <alias>BSC440N10NS3GATMA1</alias>
+        <alias>BSC028N06LS3</alias>
+      </aliases>
+      <description>NexFET N-Channel Power MOSFET, Vds 30V, Rdson 6.9mOhm, Id 25A, Qg (typ) 7.9nC, SON8 5x6mm</description>
+      <docs>http://www.ti.com/lit/gpn/csd17578q5a</docs>
+      <footprints>
+        <fp>TDSON*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">CSD17578Q5A</field>
+        <field name="Footprint">TO_SOT_Packages_SMD:TDSON-8-1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="S" type="passive"/>
+        <pin num="2" name="S" type="passive"/>
+        <pin num="3" name="S" type="passive"/>
+        <pin num="4" name="G" type="passive"/>
+        <pin num="5" name="D" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="C_Small">
+      <description>Unpolarized capacitor</description>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Small</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="Conn_01x02_Male">
+      <description>Generic connector, single row, 01x02</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_??x*mm*</fp>
+        <fp>Connector*:*1x??x*mm*</fp>
+        <fp>Pin?Header?Straight?1X*</fp>
+        <fp>Pin?Header?Angled?1X*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02_Male</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="D_Schottky">
+      <description>Schottky diode</description>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*SingleDiode</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Schottky</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="lm3488" part="LM3488">
+      <description>LM3488/-Q1 Automotive High-Efficiency Controller for Boost, SEPIC and Fly-Back DC-DC Converters</description>
+      <footprints>
+        <fp>TSSOP-8_3x3*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">LM3488</field>
+      </fields>
+      <pins>
+        <pin num="1" name="ISEN" type="input"/>
+        <pin num="2" name="COMP" type="input"/>
+        <pin num="3" name="FB" type="input"/>
+        <pin num="4" name="AGND" type="input"/>
+        <pin num="5" name="PGND" type="input"/>
+        <pin num="6" name="DR" type="power_out"/>
+        <pin num="7" name="FA" type="input"/>
+        <pin num="8" name="VIN" type="power_in"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="L_Small">
+      <description>Inductor, small symbol</description>
+      <footprints>
+        <fp>Choke_*</fp>
+        <fp>*Coil*</fp>
+        <fp>Inductor_*</fp>
+        <fp>L_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">L</field>
+        <field name="Value">L_Small</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="mechanical" part="Mounting_Hole">
+      <description>Mounting Hole without connection</description>
+      <footprints>
+        <fp>Mounting?Hole*</fp>
+        <fp>Hole*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">MK</field>
+        <field name="Value">Mounting_Hole</field>
+      </fields>
+    </libpart>
+    <libpart lib="mechanical" part="Mounting_Hole_PAD">
+      <description>Mounting Hole with connection</description>
+      <footprints>
+        <fp>Mounting?Hole*</fp>
+        <fp>Hole*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">MK</field>
+        <field name="Value">Mounting_Hole_PAD</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="R">
+      <description>Resistor</description>
+      <footprints>
+        <fp>R_*</fp>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="Screw_Terminal_01x02">
+      <description>Generic screw terminal, single row, 01x02</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*Terminal*Block*:*</fp>
+        <fp>TerminalBlock*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Screw_Terminal_01x02</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="xl6009" part="XL6009">
+      <description>Switching Current Boost DC/DC converter</description>
+      <footprints>
+        <fp>TO363-5_TabPin3</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">XL6009</field>
+      </fields>
+      <pins>
+        <pin num="1" name="GND" type="power_in"/>
+        <pin num="2" name="EN" type="input"/>
+        <pin num="3" name="SW" type="power_out"/>
+        <pin num="4" name="VIN" type="power_in"/>
+        <pin num="5" name="FB" type="input"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="device">
+      <uri>/usr/share/kicad/library/device.lib</uri>
+    </library>
+    <library logical="transistors">
+      <uri>/usr/share/kicad/library/transistors.lib</uri>
+    </library>
+    <library logical="conn">
+      <uri>/usr/share/kicad/library/conn.lib</uri>
+    </library>
+    <library logical="xl6009">
+      <uri>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/xl6009.lib</uri>
+    </library>
+    <library logical="mechanical">
+      <uri>/usr/share/kicad/library/mechanical.lib</uri>
+    </library>
+    <library logical="lm3488">
+      <uri>/home/heller/BananaPi_M64_Portable/DCDC3_7-5+12/lm3488.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="/DCDC 3.7 to 5/5V">
+      <node ref="J1" pin="1"/>
+      <node ref="R3" pin="1"/>
+      <node ref="T3" pin="1"/>
+      <node ref="C4" pin="1"/>
+      <node ref="D2" pin="1"/>
+    </net>
+    <net code="2" name="/DCDC 3.7 - 12/12V">
+      <node ref="T2" pin="1"/>
+      <node ref="R6" pin="1"/>
+      <node ref="D1" pin="1"/>
+      <node ref="C8" pin="1"/>
+    </net>
+    <net code="3" name="/DCDC 3.7 - 12/3.7V">
+      <node ref="C2" pin="1"/>
+      <node ref="C1" pin="1"/>
+      <node ref="L1" pin="1"/>
+      <node ref="U1" pin="8"/>
+      <node ref="T1" pin="1"/>
+      <node ref="C3" pin="1"/>
+      <node ref="L2" pin="1"/>
+      <node ref="U2" pin="2"/>
+      <node ref="U2" pin="4"/>
+    </net>
+    <net code="4" name="GND">
+      <node ref="C5" pin="2"/>
+      <node ref="U1" pin="4"/>
+      <node ref="U1" pin="5"/>
+      <node ref="C7" pin="2"/>
+      <node ref="C2" pin="2"/>
+      <node ref="C1" pin="2"/>
+      <node ref="U2" pin="1"/>
+      <node ref="C4" pin="2"/>
+      <node ref="R4" pin="2"/>
+      <node ref="R1" pin="2"/>
+      <node ref="R2" pin="2"/>
+      <node ref="R8" pin="2"/>
+      <node ref="C3" pin="2"/>
+      <node ref="T1" pin="2"/>
+      <node ref="T3" pin="2"/>
+      <node ref="T2" pin="2"/>
+      <node ref="R5" pin="1"/>
+      <node ref="MK4" pin="1"/>
+      <node ref="C8" pin="2"/>
+      <node ref="J1" pin="2"/>
+    </net>
+    <net code="5" name="Net-(Q1-Pad4)">
+      <node ref="Q1" pin="4"/>
+      <node ref="U1" pin="6"/>
+    </net>
+    <net code="6" name="Net-(R5-Pad2)">
+      <node ref="U1" pin="3"/>
+      <node ref="R5" pin="2"/>
+      <node ref="R6" pin="2"/>
+    </net>
+    <net code="7" name="Net-(D1-Pad2)">
+      <node ref="Q1" pin="5"/>
+      <node ref="Q1" pin="5"/>
+      <node ref="Q1" pin="5"/>
+      <node ref="L1" pin="2"/>
+      <node ref="D1" pin="2"/>
+    </net>
+    <net code="8" name="Net-(C7-Pad1)">
+      <node ref="R7" pin="2"/>
+      <node ref="C7" pin="1"/>
+      <node ref="R8" pin="1"/>
+      <node ref="Q1" pin="1"/>
+      <node ref="Q1" pin="2"/>
+      <node ref="Q1" pin="3"/>
+    </net>
+    <net code="9" name="Net-(R7-Pad1)">
+      <node ref="U1" pin="1"/>
+      <node ref="R7" pin="1"/>
+    </net>
+    <net code="10" name="Net-(R2-Pad1)">
+      <node ref="U1" pin="7"/>
+      <node ref="R2" pin="1"/>
+    </net>
+    <net code="11" name="Net-(C5-Pad1)">
+      <node ref="C6" pin="1"/>
+      <node ref="U1" pin="2"/>
+      <node ref="C5" pin="1"/>
+    </net>
+    <net code="12" name="Net-(C6-Pad2)">
+      <node ref="C6" pin="2"/>
+      <node ref="R1" pin="1"/>
+    </net>
+    <net code="13" name="Net-(R3-Pad2)">
+      <node ref="R4" pin="1"/>
+      <node ref="R3" pin="2"/>
+      <node ref="U2" pin="5"/>
+    </net>
+    <net code="14" name="Net-(D2-Pad2)">
+      <node ref="D2" pin="2"/>
+      <node ref="L2" pin="2"/>
+      <node ref="U2" pin="3"/>
+    </net>
+  </nets>
+</export>
